@@ -48,7 +48,7 @@ User.register = function(data, cb) {
   } else {
     cb({flash: "Only 20 alphanumeric characters max please!", redirect: "/register"}, null);
   }
-}
+};
 
 User.login = function(data, cb) {
   User.findOne({username: data.username}, function(err, model) {
@@ -64,6 +64,26 @@ User.login = function(data, cb) {
       });
     }
   });
-}
+};
+
+User.getNameFromID = function(id, cb) {
+  User.findOne({id: id}, function(err, model) {
+    if (err || !model) {
+      cb("user not found", null);
+    } else {
+      cb(null, model);
+    }
+  });
+};
+
+User.getIDFromName = function(name, cb) {
+  User.findOne({name: name}, function(err, model) {
+    if (err || !model) {
+      cb("user not found", null);
+    } else {
+      cb(null, model);
+    }
+  });
+};
 
 module.exports = User;
