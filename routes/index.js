@@ -40,9 +40,9 @@ router.get('/', function(req, res, next) {
 // Login //
 router.get('/login', function(req, res, next) {
     if (req.session.loggedin) {
-        res.redirect(baseURL + '/');
+      res.redirect(baseURL + '/');
     } else {
-        res.render('login', { messages: req.flash('info'), session: req.session });
+      res.render('login', { messages: req.flash('info'), session: req.session });
     }
 });
 
@@ -50,22 +50,15 @@ router.post('/login', function(req, res, next) {
   if (req.session.loggedin) {
     res.redirect(baseURL + '/');
   } else {
-    User.findOne({username: req.body.username}, function(err, model) {
-      if (err || !model) {
-        req.flash('info', "Invalid username or password!");
-        res.redirect(baseURL + '/login');
+    User.login({username: req.body.username, password: req.body.password}, function(err, data) {
+      if (err) {
+        req.flash('info', err.flash);
+        res.redirect(baseURL + err.redirect);
       } else {
-        model.validPass(req.body.password, function(err, match) {
-          if (match) {
-            req.session.loggedin = true;
-            req.session.user = model;
-            req.flash('info', "Logged in successfully! Welcome to RandomAPI!");
-            res.redirect(baseURL + '/');
-          } else {
-            req.flash('info', "Invalid username or password!");
-            res.redirect(baseURL + '/login');
-          }
-        });
+        req.session.loggedin = true;
+        req.session.user = data.model;
+        req.flash('info', data.flash);
+        res.redirect(baseURL + data.redirect);
       }
     });
   }
@@ -103,7 +96,7 @@ router.post('/register', function(req, res, next) {
         req.flash('info', data.flash);
         res.redirect(baseURL + data.redirect);
       }
-    })
+    });
   } else {
     res.redirect(baseURL + '/index');
   }

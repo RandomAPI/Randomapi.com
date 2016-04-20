@@ -50,4 +50,20 @@ User.register = function(data, cb) {
   }
 }
 
+User.login = function(data, cb) {
+  User.findOne({username: data.username}, function(err, model) {
+    if (err || !model) {
+      cb({flash: "Invalid username or password!", redirect: "/login"}, null);
+    } else {
+      model.validPass(data.password, function(err, match) {
+        if (match) {
+          cb(null, {user: model, flash: "Logged in successfully! Welcome to RandomAPI!", redirect: "/"});
+        } else {
+          cb({flash: "Invalid username of password!", redirect: "/login"}, null);
+        }
+      });
+    }
+  });
+}
+
 module.exports = User;
