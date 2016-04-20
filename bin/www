@@ -5,14 +5,15 @@
  */
 
 var app = require('../app');
-var debug = require('debug')('RandomAPI 2.0:server');
+var debug = require('debug')('RandomAPI:server');
 var http = require('http');
+var settings = require('../settings.json');
 
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
+var port = normalizePort(process.env.PORT || settings.general.port);
 app.set('port', port);
 
 /**

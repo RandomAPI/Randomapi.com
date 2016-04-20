@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>RandomAPI :: New List</title>
+    <link rel="stylesheet" href="css/general.css">
+</head>
+
+<body>
+    <div align="center">
+        <div id="note">
+            <%=messages%>
+        </div>
+        <h1>New List</h1>
+        <hr width="50%">
+        <% include ../../snippets/nav %>
+        <form enctype="multipart/form-data" action="" method="POST">
+        Choose a file to upload: <input name="file" type="file" /><br />
+        <input type="submit" value="Upload File" />
+        </form>
+    </div>
+    <script src="js/favicon.min.js"></script>
+</body>
+
+</html>

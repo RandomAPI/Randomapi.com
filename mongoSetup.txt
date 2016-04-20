@@ -1,0 +1,11 @@
+use randomapi;
+db.createUser({
+    user: "randomapi",
+    pwd: "randomapi",
+    roles: [ "readWrite", "dbAdmin" ]
+});
+db.addUser({
+    user: "randomapi",
+    pwd: "randomapi",
+    roles: [ "readWrite", "dbAdmin" ]
+});

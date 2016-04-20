@@ -1,11 +1,16 @@
+var settings = require('../settings.json');
 var mongoose = require('mongoose');
-var settings = require('../settings');
 
-module.exports = testEnv => {
-  var dbName = settings.db + (testEnv ? '-test' : '');
+var options = {
+  user: settings.db.user,
+  pass: settings.db.password
+};
 
-  mongoose.connect('mongodb://localhost/' + dbName);
-  var db = mongoose.connection;
+mongoose.connect("mongodb://" + settings.db.host + "/" + settings.db.database, options);
+var conn = mongoose.connection;
 
-  db.on('error', console.error.bind(console, 'connection error:'));
-}
+conn.on('error', console.error.bind(console, 'connection error:'));
+
+conn.once('open', function (callback) {
+  console.log("I am opened!");
+});

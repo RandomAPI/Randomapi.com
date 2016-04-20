@@ -1,4 +1,7 @@
 node_modules
+*.swp
+*.swo
+*.log
 .DS_Store
 npm-debug.log
-old
+.viewsMin

@@ -1,4 +1,20 @@
 {
-  "port": 3000,
-  "db": "randomapi"
+    "general": {
+        "version": "0.0.1",
+        "port": "3000",
+        "behindReverseProxy": false
+    },
+    "session": {
+        "key": "RandomAPI Session",
+        "secret": "CHANGE THIS TO SOMETHING SECRET",
+        "host": "localhost",
+        "prefix": "sess:",
+        "port": 6379
+    },
+    "db": {
+        "host": "localhost",
+        "user": "randomapi",
+        "password": "randomapi",
+        "database": "randomapi"
+    }
 }

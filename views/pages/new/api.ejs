@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>RandomAPI :: New API</title>
+    <link rel="stylesheet" href="css/general.css">
+</head>
+
+<body>
+    <div align="center">
+        <div id="note">
+            <%=messages%>
+        </div>
+        <h1>New API</h1>
+        <hr width="50%">
+        <% include ../../snippets/nav %>
+        <form action="" method="POST">
+        <input type="text" name="name" placeholder="API Name" autofocus><br><br>
+        <textarea name="code" rows="5" cols="75"></textarea><br>
+        <input type="submit" value="Add new API">
+        </form>
+    </div>
+    <script src="js/favicon.min.js"></script>
+</body>
+
+</html>
