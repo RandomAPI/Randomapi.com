@@ -56,7 +56,7 @@ router.post('/login', function(req, res, next) {
         res.redirect(baseURL + err.redirect);
       } else {
         req.session.loggedin = true;
-        req.session.user = data.model;
+        req.session.user = data.user;
         req.flash('info', data.flash);
         res.redirect(baseURL + data.redirect);
       }
@@ -92,7 +92,7 @@ router.post('/register', function(req, res, next) {
         res.redirect(baseURL + err.redirect);
       } else {
         req.session.loggedin = true;
-        req.session.user = data.model;
+        req.session.user = data.user;
         req.flash('info', data.flash);
         res.redirect(baseURL + data.redirect);
       }

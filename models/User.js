@@ -66,7 +66,7 @@ User.login = function(data, cb) {
   });
 };
 
-User.getNameFromID = function(id, cb) {
+User.getByID = function(id, cb) {
   User.findOne({id: id}, function(err, model) {
     if (err || !model) {
       cb("user not found", null);
@@ -76,8 +76,8 @@ User.getNameFromID = function(id, cb) {
   });
 };
 
-User.getIDFromName = function(name, cb) {
-  User.findOne({name: name}, function(err, model) {
+User.getByName = function(name, cb) {
+  User.findOne({username: name}, function(err, model) {
     if (err || !model) {
       cb("user not found", null);
     } else {

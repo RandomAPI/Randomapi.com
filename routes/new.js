@@ -2,7 +2,8 @@ var express  = require('express');
 var fs       = require('fs');
 var router   = express.Router();
 var settings = require('../settings.json');
-var User     = require('../models/User.js');
+var API      = require('../models/API.js');
+var List     = require('../models/List.js');
 var multer   = require('multer');
 var crypto   = require('crypto');
 var storage = multer.diskStorage({
@@ -53,12 +54,12 @@ router.get('/api', function(req, res, next) {
 });
 
 router.post('/api', function(req, res, next) {
-  console.log(req.body);
-  // Get unique api id
-
-  fs.writeFile('./data/apis/1.api', req.body.code.replace(/\r\n/g, '\n'), 'utf8', function(err) {
-    if (err) console.log(err);
-    res.status(204).end();
+  API.add({name: req.body.name, owner: req.session.user.id}, function(model) {
+    fs.writeFile('./data/apis/' + model.id + '.api', req.body.code.replace(/\r\n/g, '\n'), 'utf8', function(err) {
+      if (err) console.log(err);
+      req.flash('info', "API " + req.body.name + " was added successfully!");
+      res.redirect(baseURL + '/view/api');
+    });
   });
 });
 
@@ -72,8 +73,12 @@ router.get('/list', function(req, res, next) {
 });
 
 router.post('/list', upload.any(), function(req, res, next) {
-  console.log(req.body) // form fields
-  console.log(req.files) // form files
-  res.status(204).end()
+  List.add({name: req.body.name, owner: req.session.user.id}, function(model) {
+    fs.rename('./'+ req.files[0].path, './data/lists/' + model.id + '.list', function(err) {
+      if (err) console.log(err);
+      req.flash('info', "List " + req.body.name + " was added successfully!");
+      res.redirect(baseURL + '/view/list');
+    });
+  });
 });
 module.exports = router;
