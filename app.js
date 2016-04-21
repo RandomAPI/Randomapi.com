@@ -22,6 +22,7 @@ var index = require('./routes/index');
 var newRoute = require('./routes/new');
 var view = require('./routes/view');
 var deleteRoute = require('./routes/delete');
+var api = require('./routes/api');
 
 // view engine setup
 app.set('views', path.join(__dirname, '.viewsMin/pages'));
@@ -59,6 +60,7 @@ app.use('/', index);
 app.use('/new', newRoute);
 app.use('/view', view);
 app.use('/delete', deleteRoute);
+app.use('/api', api);
 
 // production error handler
 // no stacktraces leaked to user

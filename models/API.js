@@ -98,4 +98,14 @@ API.getAPI = function(id, cb) {
   });
 };
 
+API.getAPIByRef = function(ref, cb) {
+  API.findOne({ref: ref}, function(err, doc) {
+    if (doc === null) {
+      cb("API wasn't found", null);
+    } else {
+      cb(null, doc);
+    }
+  });
+};
+
 module.exports = API;

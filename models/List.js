@@ -98,4 +98,14 @@ List.getList = function(id, cb) {
   });
 };
 
+List.getListByRef = function(ref, cb) {
+  List.findOne({ref: ref}, function(err, doc) {
+    if (doc === null) {
+      cb("List wasn't found", null);
+    } else {
+      cb(null, doc);
+    }
+  });
+};
+
 module.exports = List;
