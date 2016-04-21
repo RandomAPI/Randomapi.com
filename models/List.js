@@ -88,4 +88,14 @@ List.getLists = function(id, cb) {
   });
 };
 
+List.getList = function(id, cb) {
+  List.findOne({id: id}, function(err, doc) {
+    if (doc === null) {
+      cb("List wasn't found", null);
+    } else {
+      cb(null, doc);
+    }
+  });
+};
+
 module.exports = List;

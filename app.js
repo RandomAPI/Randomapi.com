@@ -21,6 +21,7 @@ var redisStore   = require('connect-redis')(session);
 var index = require('./routes/index');
 var newRoute = require('./routes/new');
 var view = require('./routes/view');
+var deleteRoute = require('./routes/delete');
 
 // view engine setup
 app.set('views', path.join(__dirname, '.viewsMin/pages'));
@@ -57,6 +58,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', index);
 app.use('/new', newRoute);
 app.use('/view', view);
+app.use('/delete', deleteRoute);
 
 // production error handler
 // no stacktraces leaked to user

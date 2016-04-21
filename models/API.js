@@ -88,4 +88,14 @@ API.getAPIs = function(id, cb) {
   });
 };
 
+API.getAPI = function(id, cb) {
+  API.findOne({id: id}, function(err, doc) {
+    if (doc === null) {
+      cb("API wasn't found", null);
+    } else {
+      cb(null, doc);
+    }
+  });
+};
+
 module.exports = API;

@@ -3,7 +3,7 @@
 
 <head>
     <title>RandomAPI :: View API</title>
-    <link rel="stylesheet" href="css/general.css">
+    <link rel="stylesheet" href="/css/general.css">
 </head>
 
 <body>
@@ -13,10 +13,33 @@
         </div>
         <h1>View Lists</h1>
         <hr width="50%">
-        <%=lists%>
         <% include ../../snippets/nav %>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Ref ID</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            <%
+            if (lists !== null) {
+                lists.forEach(function(list, index) {
+            %>
+                    <tr>
+                        <td><%=index+1%></td>
+                        <td><%=list.name%></td>
+                        <td><%=list.ref%></td>
+                        <td><a href="/delete/list/<%=list.id%>">Delete</a> <a href="/edit/list/<%=list.id%>">Edit</a></td>
+                    </tr>
+            <%  });
+            }
+            %>
+            </tbody>
+        </table>
     </div>
-    <script src="js/favicon.min.js"></script>
 </body>
 
 </html>

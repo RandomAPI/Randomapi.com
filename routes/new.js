@@ -11,7 +11,6 @@ var storage = multer.diskStorage({
     cb(null, './uploads/')
   },
   filename: function (req, file, cb) {
-    console.log(file);
     crypto.pseudoRandomBytes(16, function (err, raw) {
       // Extension:  + '.' + file.originalname.match(/.*\.(.*)/)[1]
       cb(null, raw.toString('hex') + Date.now());
@@ -73,12 +72,17 @@ router.get('/list', function(req, res, next) {
 });
 
 router.post('/list', upload.any(), function(req, res, next) {
-  List.add({name: req.body.name, owner: req.session.user.id}, function(model) {
-    fs.rename('./'+ req.files[0].path, './data/lists/' + model.id + '.list', function(err) {
-      if (err) console.log(err);
-      req.flash('info', "List " + req.body.name + " was added successfully!");
-      res.redirect(baseURL + '/view/list');
+  if (req.body.name === undefined || req.files.length === 0 || req.files[0].originalname.match(/(?:\.([^.]+))?$/)[1] !== "txt") {
+    req.flash('info', "Looks like you provided an invalid file...please try again.");
+    res.redirect(baseURL + '/new/list');
+  } else {
+    List.add({name: req.body.name, owner: req.session.user.id}, function(model) {
+      fs.rename('./'+ req.files[0].path, './data/lists/' + model.id + '.list', function(err) {
+        if (err) console.log(err);
+        req.flash('info', "List " + req.body.name + " was added successfully!");
+        res.redirect(baseURL + '/view/list');
+      });
     });
-  });
+  }
 });
 module.exports = router;
