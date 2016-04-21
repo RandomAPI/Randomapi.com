@@ -1,6 +1,6 @@
 var mongoose     = require('mongoose');
 var findOrCreate = require('mongoose-findorcreate')
-var Counters = require('./Counters');
+var Counters     = require('./Counters');
 
 var APISchema = mongoose.Schema({
   id: {
