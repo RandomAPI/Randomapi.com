@@ -53,13 +53,18 @@ router.get('/api', function(req, res, next) {
 });
 
 router.post('/api', function(req, res, next) {
-  API.add({name: req.body.name, owner: req.session.user.id}, function(model) {
-    fs.writeFile('./data/apis/' + model.id + '.api', req.body.code.replace(/\r\n/g, '\n'), 'utf8', function(err) {
-      if (err) console.log(err);
-      req.flash('info', "API " + req.body.name + " was added successfully!");
-      res.redirect(baseURL + '/view/api');
+  if (req.body.name === "") {
+    req.flash('info', "Please provide a name for your API");
+    res.redirect(baseURL + '/new/api');
+  } else {
+    API.add({name: req.body.name, owner: req.session.user.id}, function(model) {
+      fs.writeFile('./data/apis/' + model.id + '.api', req.body.code.replace(/\r\n/g, '\n'), 'utf8', function(err) {
+        if (err) console.log(err);
+        req.flash('info', "API " + req.body.name + " was added successfully!");
+        res.redirect(baseURL + '/view/api');
+      });
     });
-  });
+  }
 });
 
 // list //
