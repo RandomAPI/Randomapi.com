@@ -66,6 +66,12 @@ app.use('/api', api);
 
 // production error handler
 // no stacktraces leaked to user
+app.use(function(req, res, next) {
+  res.redirect('/');
+  //res.status(err.status || 500);
+  //res.send(err.stack);
+});
+
 app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.send(err.stack);
