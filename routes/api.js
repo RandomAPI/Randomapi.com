@@ -41,7 +41,11 @@ router.get('/:ref', function(req, res, next) {
 
       script.on('exit', function(err, output) {
         if (err) {
-          res.send("<pre>Error: " + err.message + " on line " + err.stack.split('\n')[1].match(/.*?:(\d+)/)[1] + " column " + err.stack.split('\n')[1].match(/.*:(\d+)/)[1]);
+          if (err.stack !== undefined) {
+            res.send("<pre>Error: " + err.message + " on line " + err.stack.split('\n')[1].match(/.*?:(\d+)/)[1] + " column " + err.stack.split('\n')[1].match(/.*:(\d+)/)[1]);
+          } else {
+            res.send("<pre>Error: " + err.message);
+          }
         } else {
           res.send(output);
         }

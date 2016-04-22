@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>RandomAPI :: Editing API <%=api.ref%></title>
+    <link rel="stylesheet" href="/css/general.css">
+    <link rel="stylesheet" href="/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div align="center">
+        <div id="note">
+            <%=messages%>
+        </div>
+        <h1>Editing API <%=api.ref%></h1>
+        <hr width="50%">
+        <% include ../../snippets/nav %>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <pre id="aceEditor" name="code"><%=api.code%></pre>
+        <input type="submit" id="submit" value="Save">
+      </div>
+      <div class="col-md-6">
+        preview thing
+      </div>
+    </div>
+
+    <script src="/js/ace/ace.js" type="text/javascript"></script>
+    <script src="/js/jquery.js" type="text/javascript"></script>
+    <script>
+        var editor = ace.edit("aceEditor");
+        editor.setTheme("ace/theme/twilight");
+        editor.session.setMode("ace/mode/javascript");
+        editor.focus();
+        $("#submit").click(function() {
+          $.post('', {code: editor.getValue()}, function(url) {
+            window.location.replace(url);
+          });
+        });
+    </script>
+</body>
+
+</html>

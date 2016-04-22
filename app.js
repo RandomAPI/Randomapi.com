@@ -21,6 +21,7 @@ var redisStore   = require('connect-redis')(session);
 var index = require('./routes/index');
 var newRoute = require('./routes/new');
 var view = require('./routes/view');
+var edit = require('./routes/edit');
 var deleteRoute = require('./routes/delete');
 var api = require('./routes/api');
 
@@ -59,6 +60,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', index);
 app.use('/new', newRoute);
 app.use('/view', view);
+app.use('/edit', edit);
 app.use('/delete', deleteRoute);
 app.use('/api', api);
 
