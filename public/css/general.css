@@ -18,7 +18,10 @@ h1#title {
 }
 
 #aceEditor {
-
-  width: 500px;
+  width: 100%;
   height: 500px;
+}
+
+.table th, td {
+   text-align: center;
 }

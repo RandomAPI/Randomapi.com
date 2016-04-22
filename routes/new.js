@@ -46,10 +46,10 @@ router.post('/api', function(req, res, next) {
     res.redirect(baseURL + '/new/api');
   } else {
     API.add({name: req.body.name, owner: req.session.user.id}, function(model) {
-      fs.writeFile('./data/apis/' + model.id + '.api', req.body.code.replace(/\r\n/g, '\n'), 'utf8', function(err) {
+      fs.writeFile('./data/apis/' + model.id + '.api', "// Append all fields to the api object\napi.field = \"blah\";\n\n// Access a random item from a list with the list() function\napi.blah = list('bbm3y');\n\n// list() also accepts an array of items to choose a random item from\napi.number = list([1,2,3,4,5]);\n\n// random.numeric(min, max) and random.special(mode, length)\napi.num     = random.numeric(1, 10);\napi.special = random.special(2, 10);\n\n// timestamp() returns current unix timestamp\napi.time = timestamp();\n\n// Use getVar() if you are accessing a GET variable in the URI\napi.blah = getVar('blah');\n", 'utf8', function(err) {
         if (err) console.log(err);
         req.flash('info', "API " + req.body.name + " was added successfully!");
-        res.redirect(baseURL + '/view/api');
+        res.redirect(baseURL + '/edit/api/' + model.ref);
       });
     });
   }
