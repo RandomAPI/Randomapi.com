@@ -19,18 +19,6 @@ var storage = multer.diskStorage({
 });
 var upload = multer({ storage: storage });
 
-var baseURL;
-router.all('*', function(req, res,next) {
-  if (settings.behindReverseProxy) {
-    var uri = req.headers.uri;
-    var path = req.originalUrl;
-    baseURL = uri.slice(0, uri.indexOf(path));
-  } else {
-    baseURL = "";
-  }
-  next();
-});
-
 var views;
 fs.readdir('.viewsMin/pages/new', function(err, data) {;
   views = data;

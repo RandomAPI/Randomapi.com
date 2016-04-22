@@ -57,6 +57,17 @@ app.use(bodyParser.urlencoded({ limit: '128mb', extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
+app.use('*', function(req, res, next) {
+  if (settings.behindReverseProxy) {
+    var uri = req.headers.uri;
+    var path = req.originalUrl;
+    baseURL = uri.slice(0, uri.indexOf(path));
+  } else {
+    baseURL = "";
+  }
+  next();
+});
+
 app.use('/', index);
 app.use('/new', newRoute);
 app.use('/view', view);

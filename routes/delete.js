@@ -6,18 +6,6 @@ var User     = require('../models/User.js');
 var List     = require('../models/List.js');
 var API      = require('../models/API.js');
 
-var baseURL;
-router.all('*', function(req, res,next) {
-  if (settings.behindReverseProxy) {
-    var uri = req.headers.uri;
-    var path = req.originalUrl;
-    baseURL = uri.slice(0, uri.indexOf(path));
-  } else {
-    baseURL = "";
-  }
-  next();
-});
-
 // api //
 router.get('/api/:id', function(req, res, next) {
   if (req.session.loggedin) {

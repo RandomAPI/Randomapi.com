@@ -6,18 +6,6 @@ var User     = require('../models/User.js');
 var List     = require('../models/List.js');
 var API      = require('../models/API.js');
 
-var baseURL;
-router.all('*', function(req, res,next) {
-  if (settings.behindReverseProxy) {
-    var uri = req.headers.uri;
-    var path = req.originalUrl;
-    baseURL = uri.slice(0, uri.indexOf(path));
-  } else {
-    baseURL = "";
-  }
-  next();
-});
-
 var views;
 fs.readdir('.viewsMin/pages/view', function(err, data) {;
   views = data;
