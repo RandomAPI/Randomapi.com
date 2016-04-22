@@ -38,6 +38,9 @@ var User = mongoose.model('User', userSchema);
 
 User.register = function(data, cb) {
   if (data.username.match(/^[a-zA-Z0-9]{1,20}$/)) {
+    if (data.password === "") {
+      return cb({flash: "Please provide a password!", redirect: "/register"}, null);
+    }
     User.create(data, function(err, model) {
       if (err) {
         cb({flash: "This username is already in use!", redirect: "/register"}, null);
@@ -45,9 +48,9 @@ User.register = function(data, cb) {
         cb(null, {user: model, flash: "Registered successfully! Welcome to RandomAPI!", redirect: "/"});
       }
     });
-  } else {
-    cb({flash: "Only 20 alphanumeric characters max please!", redirect: "/register"}, null);
+    return;
   }
+  cb({flash: "Only 20 alphanumeric characters max please!", redirect: "/register"}, null);
 };
 
 User.login = function(data, cb) {

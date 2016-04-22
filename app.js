@@ -79,8 +79,6 @@ app.use('/api', api);
 // no stacktraces leaked to user
 app.use(function(req, res, next) {
   res.redirect('/');
-  //res.status(err.status || 500);
-  //res.send(err.stack);
 });
 
 app.use(function(err, req, res, next) {
