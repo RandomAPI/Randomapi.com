@@ -57,17 +57,25 @@ app.use(bodyParser.urlencoded({ limit: '128mb', extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
+baseURL = "";  // For redirects
+basehref = ""; // For relative JS and CSS in pages
+
 app.use('*', function(req, res, next) {
-  if (settings.behindReverseProxy) {
-    var uri = req.headers.uri;
-    var path = req.originalUrl;
-    baseURL = uri.slice(0, uri.indexOf(path));
+  if (settings.general.behindReverseProxy) {
+    var uri = req.headers.uri.replace(/(\/)+$/,'');
+    var path = req.originalUrl.replace(/(\/)+$/,'');
+    if (path === '') {
+      baseURL = uri;
+    } else {
+      baseURL = uri.slice(0, uri.indexOf(path));
+    }
+    basehref = req.headers.hostpath + baseURL + '/';
   } else {
     baseURL = "";
+    basehref = baseURL + '/';
   }
   next();
 });
-
 app.use('/', index);
 app.use('/new', newRoute);
 app.use('/view', view);
@@ -78,7 +86,7 @@ app.use('/api', api);
 // production error handler
 // no stacktraces leaked to user
 app.use(function(req, res, next) {
-  res.redirect('/');
+  res.redirect(baseURL + '/');
 });
 
 app.use(function(err, req, res, next) {

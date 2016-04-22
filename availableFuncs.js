@@ -30,13 +30,13 @@ var funcs = {
   },
   hash: {
     md5: function(val) {
-      return crypto.createHash('md5').update(val).digest('hex');
+      return crypto.createHash('md5').update(String(val)).digest('hex');
     },
     sha1: function(val) {
-      return crypto.createHash('sha1').update(val).digest('hex');
+      return crypto.createHash('sha1').update(String(val)).digest('hex');
     },
     sha256: function(val) {
-      return crypto.createHash('sha256').update(val).digest('hex');
+      return crypto.createHash('sha256').update(String(val)).digest('hex');
     }
   },
   String: function(val) {

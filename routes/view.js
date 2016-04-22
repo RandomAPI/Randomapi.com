@@ -23,10 +23,10 @@ router.get('/api', function(req, res, next) {
   if (req.session.loggedin) {
     API.getAPIs(req.session.user.id, function(err, apis) {
       if (err) console.log(err);
-      res.render('view/api', { messages: req.flash('info'), session: req.session, apis: apis });
+      res.render('view/api', { messages: req.flash('info'), session: req.session, apis: apis, basehref});
     });
   } else {
-    res.render('index', { messages: req.flash('info'), session: req.session });
+    res.render('index', { messages: req.flash('info'), session: req.session, basehref});
   }
 });
 
@@ -36,10 +36,10 @@ router.get('/list', function(req, res, next) {
   if (req.session.loggedin) {
     List.getLists(req.session.user.id, function(err, lists) {
       if (err) console.log(err);
-      res.render('view/list', { messages: req.flash('info'), session: req.session, lists: lists });
+      res.render('view/list', { messages: req.flash('info'), session: req.session, lists: lists, basehref});
     });
   } else {
-    res.render('index', { messages: req.flash('info'), session: req.session });
+    res.render('index', { messages: req.flash('info'), session: req.session, basehref});
   }
 });
 

@@ -12,10 +12,10 @@ router.get('/api/:ref', function(req, res, next) {
     API.getAPIByRef(req.params.ref, function(err, doc) {
       doc.code = fs.readFileSync('./data/apis/' + doc.id + '.api'); // Read api src into this...
       if (err) console.log(err);
-      res.render('edit/api', { messages: req.flash('info'), session: req.session, api: doc });
+      res.render('edit/api', { messages: req.flash('info'), session: req.session, api: doc, basehref});
     });
   } else {
-    res.render('index', { messages: req.flash('info'), session: req.session });
+    res.render('index', { messages: req.flash('info'), session: req.session, basehref});
   }
 });
 
@@ -41,10 +41,10 @@ router.get('/list/:ref', function(req, res, next) {
   if (req.session.loggedin) {
     List.getListByRef(req.params.ref, function(err, doc) {
       if (err) console.log(err);
-      res.render('edit/list', { messages: req.flash('info'), session: req.session, list: doc });
+      res.render('edit/list', { messages: req.flash('info'), session: req.session, list: doc, basehref});
     });
   } else {
-    res.render('index', { messages: req.flash('info'), session: req.session });
+    res.render('index', { messages: req.flash('info'), session: req.session, basehref});
   }
 });
 
