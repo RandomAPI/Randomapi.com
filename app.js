@@ -52,6 +52,9 @@ app.use(session(sessionSettings));
 // Flash messages
 app.use(flash());
 
+// Favicon
+app.use(favicon(__dirname + '/public/img/favicon.png'));
+
 app.use(logger('dev'));
 app.use(bodyParser.json({limit: '128mb'}));
 app.use(bodyParser.urlencoded({ limit: '128mb', extended: false }));
