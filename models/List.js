@@ -17,8 +17,10 @@ var ListSchema = mongoose.Schema({
 
 ListSchema.pre('save', function(next) {
   var self = this;
-  Counters.getNextIndex("lists", true, function(data) {
+
+  Counters.getNextIndex('lists', true, function(data) {
     self.id = data.index;
+
     List.genRandomRef(function(ref) {
       self.ref = ref;
       next();
@@ -70,7 +72,6 @@ function random(mode, length) {
   for (var i = 0; i < length; i++) {
       result += chars[range(0, chars.length-1)];
   }
-
   return result;
 }
 
@@ -81,7 +82,7 @@ function range(min, max) {
 List.getLists = function(id, cb) {
   List.find({owner: id}, function(err, docs) {
     if (docs.length === 0) {
-      cb("No lists found", null);
+      cb('No lists found', null);
     } else {
       cb(null, docs);
     }
@@ -91,7 +92,7 @@ List.getLists = function(id, cb) {
 List.getList = function(id, cb) {
   List.findOne({id: id}, function(err, doc) {
     if (doc === null) {
-      cb("List wasn't found", null);
+      cb('List wasn\'t found', null);
     } else {
       cb(null, doc);
     }
@@ -101,7 +102,7 @@ List.getList = function(id, cb) {
 List.getListByRef = function(ref, cb) {
   List.findOne({ref: ref}, function(err, doc) {
     if (doc === null) {
-      cb("List wasn't found", null);
+      cb('List wasn\'t found', null);
     } else {
       cb(null, doc);
     }

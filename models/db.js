@@ -6,11 +6,11 @@ var options = {
   pass: settings.db.password
 };
 
-mongoose.connect("mongodb://" + settings.db.host + "/" + settings.db.database, options);
+mongoose.connect('mongodb://' + settings.db.host + '/' + settings.db.database, options);
 var conn = mongoose.connection;
 
 conn.on('error', console.error.bind(console, 'connection error:'));
 
 conn.once('open', function (callback) {
-  console.log("I am opened!");
+  console.log('I am opened!');
 });

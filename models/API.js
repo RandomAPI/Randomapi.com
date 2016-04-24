@@ -17,8 +17,10 @@ var APISchema = mongoose.Schema({
 
 APISchema.pre('save', function(next) {
   var self = this;
-  Counters.getNextIndex("apis", true, function(data) {
+
+  Counters.getNextIndex('apis', true, function(data) {
     self.id = data.index;
+
     API.genRandomRef(function(ref) {
       self.ref = ref;
       next();
@@ -70,7 +72,6 @@ function random(mode, length) {
   for (var i = 0; i < length; i++) {
       result += chars[range(0, chars.length-1)];
   }
-
   return result;
 }
 
@@ -81,7 +82,7 @@ function range(min, max) {
 API.getAPIs = function(id, cb) {
   API.find({owner: id}, function(err, docs) {
     if (docs.length === 0) {
-      cb("No apis found", null);
+      cb('No apis found', null);
     } else {
       cb(null, docs);
     }
@@ -91,7 +92,7 @@ API.getAPIs = function(id, cb) {
 API.getAPI = function(id, cb) {
   API.findOne({id: id}, function(err, doc) {
     if (doc === null) {
-      cb("API wasn't found", null);
+      cb('API wasn\'t found', null);
     } else {
       cb(null, doc);
     }
@@ -101,7 +102,7 @@ API.getAPI = function(id, cb) {
 API.getAPIByRef = function(ref, cb) {
   API.findOne({ref: ref}, function(err, doc) {
     if (doc === null) {
-      cb("API wasn't found", null);
+      cb('API wasn\'t found', null);
     } else {
       cb(null, doc);
     }

@@ -1,8 +1,6 @@
 var express  = require('express');
 var fs       = require('fs');
 var router   = express.Router();
-var settings = require('../settings.json');
-var User     = require('../models/User.js');
 
 var views;
 fs.readdir('.viewsMin/pages', function(err, data) {;

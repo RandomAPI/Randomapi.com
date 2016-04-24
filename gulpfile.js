@@ -4,32 +4,6 @@ var uglify     = require('gulp-uglifyjs');
 var concat     = require('gulp-concat');
 var ejsmin     = require('gulp-ejsmin');
 var through    = require('through2')
-/*
-gulp.task('default', ['testEnv'], () => {
-  return gulp.src('spec/randomuserTests.js', {read: false})
-    .pipe(mocha({require: ['mocha-clean'], reporter: 'nyan'}))
-    .pipe(exit());
-});
-
-gulp.task('spec', ['testEnv'], () => {
-  return gulp.src('spec/randomuserTests.js', {read: false})
-    .pipe(mocha({require: ['mocha-clean'], reporter: 'spec'}))
-    .pipe(exit());
-});
-
-gulp.task('compress', () => {
-  return gulp.src(['public/js/ready.min.js', 'public/js/pegasus.min.js', '!public/js/highcharts.js', 'public/js/*.js'])
-    .pipe(uglify('all.js'))
-    .pipe(gulp.dest('public/dist/'));
-});
-
-gulp.task('css', () => {
-  return gulp.src('public/css/*.css')
-    .pipe(concat('style.css'))
-    .pipe(minifyCss({compatibility: 'ie8'}))
-    .pipe(gulp.dest('public/dist/'));
-});
-*/
 
 gulp.task('minify-ejs-pages', () => {
   // Save the pre tag contents
