@@ -18,15 +18,25 @@ var funcs = {
       return random(mode, length);
     }
   },
-  list: function(obj) {
+  list: function(obj, num) {
+    if (num !== "" && num !== undefined) num = Number(num); // Convert string to num if it isn't undefined
+    if (num === "") num = undefined;
+
     if (Array.isArray(obj)) {
-      return obj[range(0, obj.length-1)];
-    } else {
-      if (obj in listResults) {
-        return randomItem(listResults[obj]);
+      if (num !== undefined) {
+        return obj[num-1];
       } else {
+        return obj[range(0, obj.length-1)];
+      }
+    } else {
+      if (!(obj in listResults)) {
         var res = lookupList(obj);
         listResults[obj] = fs.readFileSync(process.cwd() + '/data/lists/' + res.id + '.list', 'utf8').split('\n');
+      }
+
+      if (num !== undefined) {
+        return listResults[obj][num-1];
+      } else {
         return randomItem(listResults[obj]);
       }
     }
