@@ -27,9 +27,9 @@ var delRoute = require('./routes/delete');
 var api      = require('./routes/api');
 
 // global models
-API = require('./models/API.js');
+API  = require('./models/API.js');
 List = require('./models/List.js');
-User = require('./models/user.js');
+User = require('./models/User.js');
 
 // view engine setup
 app.set('views', path.join(__dirname, '.viewsMin/pages'));
