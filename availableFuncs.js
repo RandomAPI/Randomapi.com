@@ -78,6 +78,8 @@ function random(mode, length) {
     chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   } else if (mode === 5) {
     chars = 'abcdefghijklmnopqrstuvwxyz1234567890';
+  } else if (mode === 6) {
+    chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
   }
 
   for (var i = 0; i < length; i++) {
