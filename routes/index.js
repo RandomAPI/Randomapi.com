@@ -19,9 +19,9 @@ var titles = {
 // Index //
 router.get('/', function(req, res, next) {
   if (req.session.loggedin) {
-    res.render('home', { messages: req.flash('info'), session: req.session, basehref});
+    res.render('home', _.merge(defaultVars, {title: "Home"}));
   } else {
-    res.render('index', { messages: req.flash('info'), session: req.session, basehref});
+    res.render('index', defaultVars);
   }
 });
 
@@ -30,7 +30,7 @@ router.get('/login', function(req, res, next) {
     if (req.session.loggedin) {
       res.redirect(baseURL + '/');
     } else {
-      res.render('login', { messages: req.flash('info'), session: req.session, basehref});
+      res.render('login',defaultVars);
     }
 });
 
@@ -68,7 +68,7 @@ router.get('/register', function(req, res, next) {
   if (req.session.loggedin) {
     res.redirect(baseURL + '/');
   } else {
-    res.render('register', { messages: req.flash('info'), session: req.session, basehref});
+    res.render('register', defaultVars);
   }
 });
 

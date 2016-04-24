@@ -2,7 +2,6 @@ var express  = require('express');
 var fs       = require('fs');
 var router   = express.Router();
 var settings = require('../settings.json');
-var User     = require('../models/User.js');
 var API      = require('../models/API.js');
 
 var SandCastle = require('sandcastle').SandCastle;

@@ -20,6 +20,7 @@
     "express-session": "~1.11.2",
     "hiredis": "~0.4.0",
     "kerberos": "0.0.17",
+    "lodash": "^4.11.1",
     "merge": "~1.2.0",
     "mongoose": "^4.3.4",
     "mongoose-findorcreate": "^0.1.2",

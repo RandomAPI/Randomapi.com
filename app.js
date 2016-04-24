@@ -8,6 +8,7 @@ var fs           = require('fs');
 var flash        = require('connect-flash');
 var compress     = require('compression');
 var app          = express();
+_                = require('lodash');
 
 var db           = require('./models/db');
 var settings     = require('./settings.json');
@@ -59,8 +60,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Routes
 baseURL = "";  // For redirects
 basehref = ""; // For relative JS and CSS in pages
+defaultVars = {};
 
 app.use('*', function(req, res, next) {
+  defaultVars = { messages: req.flash('info'), session: req.session, basehref, title: null };
   if (settings.general.behindReverseProxy) {
     var uri = req.headers.uri.replace(/(\/)+$/,'');
     var path = req.originalUrl.replace(/(\/)+$/,'');

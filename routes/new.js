@@ -34,9 +34,9 @@ var titles = {
 // api //
 router.get('/api', function(req, res, next) {
   if (req.session.loggedin) {
-    res.render('new/api', { messages: req.flash('info'), session: req.session, basehref});
+    res.render('new/api', defaultVars);
   } else {
-    res.render('index', { messages: req.flash('info'), session: req.session, basehref});
+    res.render('index', defaultVars);
   }
 });
 
@@ -58,9 +58,9 @@ router.post('/api', function(req, res, next) {
 // list //
 router.get('/list', function(req, res, next) {
   if (req.session.loggedin) {
-    res.render('new/list', { messages: req.flash('info'), session: req.session, basehref});
+    res.render('new/list', defaultVars);
   } else {
-    res.render('index', { messages: req.flash('info'), session: req.session, basehref});
+    res.render('index', defaultVars);
   }
 });
 
