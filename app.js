@@ -91,7 +91,11 @@ app.use('*', function(req, res, next) {
   }
   if (firstRun) {
     firstRun = false;
-    res.redirect(req.originalUrl);
+    if (settings.general.behindReverseProxy) {
+      res.redirect(req.headers.uri.replace(/(\/)+$/,''));
+    } else {
+      res.redirect(req.headers.uri);
+    }
   } else {
     next();
   }
