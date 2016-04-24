@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var bcrypt   = require('bcrypt-nodejs');
+var deasync  = require('deasync');
 var Counters = require('./Counters');
 
 var userSchema = mongoose.Schema({
@@ -12,6 +13,10 @@ var userSchema = mongoose.Schema({
     unique: true
   },
   password: String,
+  key: {
+    type: String,
+    unique: true
+  },
   role: {
     type: String,
     default: 'user'
@@ -21,9 +26,14 @@ var userSchema = mongoose.Schema({
 userSchema.pre('save', function(next) {
   var self = this;
   this.password = bcrypt.hashSync(this.password);
+
   Counters.getNextIndex('users', true, function(data) {
     self.id = data.index;
+
+    User.genRandomKey(function(key) {
+      self.key = key;
     next();
+    });
   });
 });
 
@@ -69,24 +79,61 @@ User.login = function(data, cb) {
   });
 };
 
-User.getByID = function(id, cb) {
+User.getByID = deasync(function(id, cb) {
   User.findOne({id: id}, function(err, model) {
-    if (err || !model) {
-      cb('user not found', null);
-    } else {
-      cb(null, model);
-    }
+    cb(null, model);
   });
+});
+
+User.getByName = deasync(function(name, cb) {
+  User.findOne({username: name}, function(err, model) {
+    cb(null, model);
+  });
+});
+
+User.genRandomKey = function(cb) {
+  var key, dup;
+  do {
+    dup = false;
+    key = random(6, 16).match(/.{4}/g).join('-');
+
+    User.findOne({key: key}, function(err, model) {
+      if (model === null) {
+        cb(key);
+      } else {
+        dup = true;
+      }
+    });
+  } while(dup);
 };
 
-User.getByName = function(name, cb) {
-  User.findOne({username: name}, function(err, model) {
-    if (err || !model) {
-      cb('user not found', null);
-    } else {
-      cb(null, model);
-    }
-  });
-};
+function random(mode, length) {
+  var result = '';
+  var chars;
+
+  if (mode === 1) {
+    chars = 'abcdef1234567890';
+  } else if (mode === 2) {
+    chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+  } else if (mode === 3) {
+    chars = '0123456789';
+  } else if (mode === 4) {
+    chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  } else if (mode === 5) {
+    chars = 'abcdefghijklmnopqrstuvwxyz1234567890';
+  } else if (mode === 6) {
+    chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+  }
+
+  for (var i = 0; i < length; i++) {
+      result += chars[range(0, chars.length - 1)];
+  }
+
+  return result;
+}
+
+function range(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 module.exports = User;

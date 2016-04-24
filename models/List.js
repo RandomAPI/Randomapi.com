@@ -1,5 +1,6 @@
 var mongoose     = require('mongoose');
 var findOrCreate = require('mongoose-findorcreate')
+var deasync      = require('deasync');
 var Counters     = require('./Counters');
 
 var ListSchema = mongoose.Schema({
@@ -79,34 +80,22 @@ function range(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-List.getLists = function(id, cb) {
+List.getLists = deasync(function(id, cb) {
   List.find({owner: id}, function(err, docs) {
-    if (docs.length === 0) {
-      cb('No lists found', null);
-    } else {
-      cb(null, docs);
-    }
+    cb(null, docs);
   });
-};
+});
 
-List.getList = function(id, cb) {
+List.getList = deasync(function(id, cb) {
   List.findOne({id: id}, function(err, doc) {
-    if (doc === null) {
-      cb('List wasn\'t found', null);
-    } else {
-      cb(null, doc);
-    }
+    cb(null, doc);
   });
-};
+});
 
-List.getListByRef = function(ref, cb) {
+List.getListByRef = deasync(function(ref, cb) {
   List.findOne({ref: ref}, function(err, doc) {
-    if (doc === null) {
-      cb('List wasn\'t found', null);
-    } else {
-      cb(null, doc);
-    }
+    cb(null, doc);
   });
-};
+});
 
 module.exports = List;
