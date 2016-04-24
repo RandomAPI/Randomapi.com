@@ -66,11 +66,14 @@ app.use(bodyParser.urlencoded({ limit: '128mb', extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
-baseURL     = '';  // For redirects
-basehref    = '/';  // For relative JS and CSS in pages
+baseURL     = null;  // For redirects
+basehref    = null;  // For relative JS and CSS in pages
 defaultVars = {};  // Default vars to send into views
+var firstRun = false;
 
 app.use('*', function(req, res, next) {
+  if (baseURL === null && basehref === null) firstRun = true;
+
   defaultVars = { messages: req.flash('info'), session: req.session, basehref, title: null };
   if (settings.general.behindReverseProxy) {
     var uri  = req.headers.uri.replace(/(\/)+$/,'');
@@ -86,7 +89,12 @@ app.use('*', function(req, res, next) {
     baseURL  = '';
     basehref = baseURL + '/';
   }
-  next();
+  if (firstRun) {
+    firstRun = false;
+    res.redirect(req.originalUrl);
+  } else {
+    next();
+  }
 });
 
 app.use('/', index);
