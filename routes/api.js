@@ -30,7 +30,7 @@ router.get('/:ref', function(req, res, next) {
             }\
             return _APIresults;\
             function getVar(key) {\
-              return key in _APIgetVars ? _APIgetVars[key] : null;\
+              return key in _APIgetVars ? _APIgetVars[key] : undefined;\
             }\
           })());\
         }\
