@@ -14,14 +14,14 @@ var userSchema = mongoose.Schema({
   password: String,
   role: {
     type: String,
-    default: "user"
+    default: 'user'
   }
 });
 
 userSchema.pre('save', function(next) {
   var self = this;
   this.password = bcrypt.hashSync(this.password);
-  Counters.getNextIndex("users", true, function(data) {
+  Counters.getNextIndex('users', true, function(data) {
     self.id = data.index;
     next();
   });
@@ -38,31 +38,31 @@ var User = mongoose.model('User', userSchema);
 
 User.register = function(data, cb) {
   if (data.username.match(/^[a-zA-Z0-9]{1,20}$/)) {
-    if (data.password === "") {
-      return cb({flash: "Please provide a password!", redirect: "/register"}, null);
+    if (data.password === '') {
+      return cb({flash: 'Please provide a password!', redirect: '/register'}, null);
     }
     User.create(data, function(err, model) {
       if (err) {
-        cb({flash: "This username is already in use!", redirect: "/register"}, null);
+        cb({flash: 'This username is already in use!', redirect: '/register'}, null);
       } else {
-        cb(null, {user: model, flash: "Registered successfully! Welcome to RandomAPI!", redirect: "/"});
+        cb(null, {user: model, flash: 'Registered successfully! Welcome to RandomAPI!', redirect: '/'});
       }
     });
     return;
   }
-  cb({flash: "Only 20 alphanumeric characters max please!", redirect: "/register"}, null);
+  cb({flash: 'Only 20 alphanumeric characters max please!', redirect: '/register'}, null);
 };
 
 User.login = function(data, cb) {
   User.findOne({username: data.username}, function(err, model) {
     if (err || !model) {
-      cb({flash: "Invalid username or password!", redirect: "/login"}, null);
+      cb({flash: 'Invalid username or password!', redirect: '/login'}, null);
     } else {
       model.validPass(data.password, function(err, match) {
         if (match) {
-          cb(null, {user: model, flash: "Logged in successfully! Welcome to RandomAPI!", redirect: "/"});
+          cb(null, {user: model, flash: 'Logged in successfully! Welcome to RandomAPI!', redirect: '/'});
         } else {
-          cb({flash: "Invalid username of password!", redirect: "/login"}, null);
+          cb({flash: 'Invalid username of password!', redirect: '/login'}, null);
         }
       });
     }
@@ -72,7 +72,7 @@ User.login = function(data, cb) {
 User.getByID = function(id, cb) {
   User.findOne({id: id}, function(err, model) {
     if (err || !model) {
-      cb("user not found", null);
+      cb('user not found', null);
     } else {
       cb(null, model);
     }
@@ -82,7 +82,7 @@ User.getByID = function(id, cb) {
 User.getByName = function(name, cb) {
   User.findOne({username: name}, function(err, model) {
     if (err || !model) {
-      cb("user not found", null);
+      cb('user not found', null);
     } else {
       cb(null, model);
     }

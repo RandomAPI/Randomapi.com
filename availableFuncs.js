@@ -1,10 +1,13 @@
 var deasync = require('deasync');
-var fs = require('fs');
-var crypto = require('crypto');
-require('../../../models/db');
-var List    = require('../../../models/List');
-var lookupList = deasync(List.getListByRef);
-var listResults = {};
+var fs      = require('fs');
+var crypto  = require('crypto');
+
+// Connect to Mongo
+require(process.cwd() + '/models/db');
+
+var List        = require(process.cwd() + '/models/List');
+var lookupList  = deasync(List.getListByRef); // Mongo is async, so deasync it
+var listResults = {}; // Hold cache of list results
 
 var funcs = {
   random: {
@@ -68,7 +71,7 @@ function random(mode, length) {
   }
 
   for (var i = 0; i < length; i++) {
-      result += chars[range(0, chars.length-1)];
+      result += chars[range(0, chars.length - 1)];
   }
 
   return result;
