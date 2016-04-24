@@ -17,9 +17,8 @@ var titles = {
 // api //
 router.get('/api', function(req, res, next) {
   if (req.session.loggedin) {
-    API.getAPIs(req.session.user.id, function(err, apis) {
-      res.render('view/api', _.merge(defaultVars, {apis}));
-    });
+    var apis = API.getAPIs(req.session.user.id);
+    res.render('view/api', _.merge(defaultVars, {apis}));
   } else {
     res.render('index', defaultVars);
   }
@@ -29,9 +28,8 @@ router.get('/api', function(req, res, next) {
 // list //
 router.get('/list', function(req, res, next) {
   if (req.session.loggedin) {
-    List.getLists(req.session.user.id, function(err, lists) {
-      res.render('view/list', _.merge(defaultVars, {lists}));
-    });
+    var lists = List.getLists(req.session.user.id);
+    res.render('view/list', _.merge(defaultVars, {lists}));
   } else {
     res.render('index', defaultVars);
   }

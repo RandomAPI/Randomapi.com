@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var bcrypt   = require('bcrypt-nodejs');
+var deasync  = require('deasync');
 var Counters = require('./Counters');
 
 var userSchema = mongoose.Schema({
@@ -78,25 +79,17 @@ User.login = function(data, cb) {
   });
 };
 
-User.getByID = function(id, cb) {
+User.getByID = deasync(function(id, cb) {
   User.findOne({id: id}, function(err, model) {
-    if (err || !model) {
-      cb('user not found', null);
-    } else {
-      cb(null, model);
-    }
+    cb(null, model);
   });
-};
+});
 
-User.getByName = function(name, cb) {
+User.getByName = deasync(function(name, cb) {
   User.findOne({username: name}, function(err, model) {
-    if (err || !model) {
-      cb('user not found', null);
-    } else {
-      cb(null, model);
-    }
+    cb(null, model);
   });
-};
+});
 
 User.genRandomKey = function(cb) {
   var key, dup;

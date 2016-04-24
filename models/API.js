@@ -1,5 +1,6 @@
 var mongoose     = require('mongoose');
 var findOrCreate = require('mongoose-findorcreate')
+var deasync      = require('deasync');
 var Counters     = require('./Counters');
 
 var APISchema = mongoose.Schema({
@@ -79,34 +80,22 @@ function range(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-API.getAPIs = function(id, cb) {
+API.getAPIs = deasync(function(id, cb) {
   API.find({owner: id}, function(err, docs) {
-    if (docs.length === 0) {
-      cb('No apis found', null);
-    } else {
-      cb(null, docs);
-    }
+    cb(null, docs);
   });
-};
+});
 
-API.getAPI = function(id, cb) {
+API.getAPI = deasync(function(id, cb) {
   API.findOne({id: id}, function(err, doc) {
-    if (doc === null) {
-      cb('API wasn\'t found', null);
-    } else {
-      cb(null, doc);
-    }
+    cb(null, doc);
   });
-};
+});
 
-API.getAPIByRef = function(ref, cb) {
+API.getAPIByRef = deasync(function(ref, cb) {
   API.findOne({ref: ref}, function(err, doc) {
-    if (doc === null) {
-      cb('API wasn\'t found', null);
-    } else {
-      cb(null, doc);
-    }
+    cb(null, doc);
   });
-};
+});
 
 module.exports = API;
