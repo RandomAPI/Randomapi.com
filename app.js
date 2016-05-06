@@ -1,17 +1,19 @@
+settings         = require('./settings.json');
 var express      = require('express');
 var path         = require('path');
 var favicon      = require('serve-favicon');
 var logger       = require('morgan');
 var cookieParser = require('cookie-parser')();
+var cookie       = require('cookie');
 var bodyParser   = require('body-parser');
 var flash        = require('connect-flash');
 var compress     = require('compression');
 var cors         = require('cors');
-_                = require('lodash');
 var app          = express();
+_                = require('lodash');
+io               = require('socket.io')(settings.general.socket);
 
 var db           = require('./models/db');
-settings         = require('./settings.json');
 
 // Redis Session Store
 var redis        = require('redis');
@@ -52,6 +54,8 @@ var sessionSettings = {
   saveUninitialized: false
 };
 
+var sessionDB = redis.createClient();
+
 app.use(session(sessionSettings));
 
 // Flash messages
@@ -89,16 +93,27 @@ app.use('*', function(req, res, next) {
     baseURL  = '';
     basehref = baseURL + '/';
   }
+
   if (firstRun) {
     firstRun = false;
     if (settings.general.behindReverseProxy) {
       res.redirect(req.headers.uri.replace(/(\/)+$/,''));
     } else {
-      res.redirect(req.headers.uri);
+      res.redirect(req.originalUrl);
     }
   } else {
     next();
   }
+});
+
+io.use(function(socket, next) {
+  var data = socket.handshake || socket.request;
+  var sessionID = cookie.parse(data.headers.cookie)[settings.session.key].slice(2, 34);
+
+  sessionDB.get("sess:" + sessionID, function(err, session) {
+    socket.session = session;
+    next();
+  });
 });
 
 app.use('/', index);

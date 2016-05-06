@@ -7,7 +7,7 @@ router.get('/api/:ref', function(req, res, next) {
   if (req.session.loggedin) {
     var doc = API.getAPIByRef(req.params.ref);
     doc.code = fs.readFileSync('./data/apis/' + doc.id + '.api'); // Read api src into this...
-    res.render('edit/api', _.merge(defaultVars, {api: doc}));
+    res.render('edit/api', _.merge(defaultVars, {api: doc, socket: ":" + settings.general.socket}));
   } else {
     res.render('index', defaultVars);
   }
@@ -26,7 +26,6 @@ router.post('/api/:ref', function(req, res, next) {
     }
   }
 });
-
 
 // list //
 router.get('/list/:ref', function(req, res, next) {
