@@ -1,6 +1,6 @@
-var deasync = require('deasync');
-var fs      = require('fs');
-var crypto  = require('crypto');
+var deasync   = require('deasync');
+var fs        = require('fs');
+var crypto    = require('crypto');
 var mersenne  = require('mersenne');
 mersenne.seed(MERSENNE_SEED);
 
@@ -8,7 +8,7 @@ mersenne.seed(MERSENNE_SEED);
 require(process.cwd() + '/models/db');
 
 var List        = require(process.cwd() + '/models/List');
-var lookupList  = deasync(List.getListByRef); // Mongo is async, so deasync it
+var lookupList  = List.getListByRef;
 var listResults = {}; // Hold cache of list results
 
 var funcs = {
@@ -33,7 +33,12 @@ var funcs = {
     } else {
       if (!(obj in listResults)) {
         var res = lookupList(obj);
-        listResults[obj] = fs.readFileSync(process.cwd() + '/data/lists/' + res.id + '.list', 'utf8').split('\n');
+        if (res !== null) {
+          listResults[obj] = fs.readFileSync(process.cwd() + '/data/lists/' + res.id + '.list', 'utf8').split('\n');
+        } else {
+          listResults[obj] = [undefined];
+          throw 'INVALID_LIST' + String(obj + "|" + num);
+        }
       }
 
       if (num !== undefined) {

@@ -11,12 +11,12 @@ var version      = '0.1';
 var Generator = function(options) {
   var self = this;
 
-  options      = options || {};
-  this.results = Number(options.results);
-  this.seed    = options.seed || '';
-  this.format  = (options.format || options.fmt || 'json').toLowerCase();
-  this.noInfo  = typeof options.noinfo !== 'undefined' ? true : false;
-  this.page    = Number(options.page) || 1;
+  this.options = options || {};
+  this.results = Number(this.options.results);
+  this.seed    = this.options.seed || '';
+  this.format  = (this.options.format || this.options.fmt || 'json').toLowerCase();
+  this.noInfo  = typeof this.options.noinfo !== 'undefined' ? true : false;
+  this.page    = Number(this.options.page) || 1;
   this.version = version;
 
   // Sanitize values
@@ -31,11 +31,11 @@ var Generator = function(options) {
 
   this.seedRNG();
 
-  this.doc      = API.getAPIByRef(options.ref);
+  this.doc      = API.getAPIByRef(this.options.ref);
   this.keyOwner = User.getByID(this.doc.owner);
 
-  if (!this.doc || this.keyOwner.key !== options.key) {
-    return "You are not the owner boi!";
+  if (!this.doc || this.keyOwner.key !== this.options.key) {
+    throw "You are not the owner boi!";
   }
   
   // Get API src
@@ -52,7 +52,6 @@ Generator.prototype.generate = function(cb) {
   var self = this;
   this.results = this.results || 1;
   var output = [];
-
   var script = this.sandcastle.createScript(`
     exports.main = function() {
       exit((function() {
@@ -60,12 +59,20 @@ Generator.prototype.generate = function(cb) {
         var _APIresults = [];
         for (var _APIi = 0; _APIi < ${self.results}; _APIi++) {
           var api = {};
-          ${self.src}
+          try {
+${self.src}
+          } catch (e) {
+            api = {
+              API_ERROR: e.toString(),
+              API_STACK: e.stack
+            };
+          }
           _APIresults.push(api);
         }
         return _APIresults;
         function getVar(key) {
-          if (_APIgetVars === undefined) return undefined;
+
+          //if (_APIgetVars === undefined) return undefined;
           return key in _APIgetVars ? _APIgetVars[key] : undefined;
         }
       })());
@@ -89,6 +96,10 @@ Generator.prototype.generate = function(cb) {
 
   function returnResults(err, output) {
     console.log(err);
+    if (err !== null) {
+      output = [{API_ERROR: err.toString()}];
+    }
+
     var json = {
       results: output,
       info: {
@@ -98,6 +109,10 @@ Generator.prototype.generate = function(cb) {
         version: self.version
       }
     };
+
+    if (output[0].API_ERROR !== undefined) {
+      json.error = true;
+    }
 
     if (self.noInfo) delete json.info;
 
