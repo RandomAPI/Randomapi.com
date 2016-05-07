@@ -1,7 +1,6 @@
 var mongoose     = require('mongoose');
 var findOrCreate = require('mongoose-findorcreate')
 var deasync      = require('deasync');
-var Counters     = require('./Counters');
 
 var ListSchema = mongoose.Schema({
   id: {

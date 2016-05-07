@@ -1,7 +1,6 @@
 var mongoose     = require('mongoose');
 var findOrCreate = require('mongoose-findorcreate')
 var deasync      = require('deasync');
-var Counters     = require('./Counters');
 
 var APISchema = mongoose.Schema({
   id: {
@@ -13,11 +12,19 @@ var APISchema = mongoose.Schema({
     unique: true
   },
   name: String,
+  generator: {
+    type: Number,
+    default: 1
+  },
   owner: Number
 });
 
 APISchema.pre('save', function(next) {
   var self = this;
+  console.log(self.generator, Generator.getByVersion(self.generator));
+  if (Generator.getByID(self.generator) === null) {
+    self.generator = Generator.getLatestVersion().index;
+  }
 
   Counters.getNextIndex('apis', true, function(data) {
     self.id = data.index;

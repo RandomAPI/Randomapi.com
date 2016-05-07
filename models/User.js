@@ -1,7 +1,6 @@
 var mongoose = require('mongoose');
 var bcrypt   = require('bcrypt-nodejs');
 var deasync  = require('deasync');
-var Counters = require('./Counters');
 
 var userSchema = mongoose.Schema({
   id: {

@@ -31,7 +31,7 @@ var titles = {
 // api //
 router.get('/api', function(req, res, next) {
   if (req.session.loggedin) {
-    res.render('new/api', defaultVars);
+    res.render('new/api', _.merge(defaultVars, {versions: Generator.getAvailableVersions()}));
   } else {
     res.render('index', defaultVars);
   }
@@ -42,7 +42,7 @@ router.post('/api', function(req, res, next) {
     req.flash('info', "Please provide a name for your API");
     res.redirect(baseURL + '/new/api');
   } else {
-    API.add({name: req.body.name, owner: req.session.user.id}, function(model) {
+    API.add({name: req.body.name, generator: req.body.generator, owner: req.session.user.id}, function(model) {
       fs.writeFile('./data/apis/' + model.id + '.api', "// Append all fields to the api object\napi.field = \"blah\";\n\n// Access a random item from a list with the list() function\n//api.list = list('LIST_REF_HERE');\n\n// list() also accepts an array of items to choose a random item from\napi.number = list([1,2,3,4,5]);\n\n// random.numeric(min, max) and random.special(mode, length)\napi.num     = random.numeric(1, 10);\napi.special = random.special(2, 10);\n\n// timestamp() returns current unix timestamp\napi.time = timestamp();\n\n// Use getVar() if you are accessing a GET variable in the URI\napi.blah = getVar('blah');\n\n// Hashessssss\napi.md5    = hash.md5(api.time);\napi.sha1   = hash.sha1(api.time);\napi.sha256 = hash.sha256(api.time);\n", 'utf8', function(err) {
         req.flash('info', "API " + req.body.name + " was added successfully!");
         res.redirect(baseURL + '/edit/api/' + model.ref);

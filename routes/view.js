@@ -17,8 +17,14 @@ var titles = {
 // api //
 router.get('/api', function(req, res, next) {
   if (req.session.loggedin) {
+    var obs = [];
     var apis = API.getAPIs(req.session.user.id);
-    res.render('view/api', _.merge(defaultVars, {apis}));
+    for (var i = 0; i < apis.length; i++) {
+      var newobj = JSON.parse(JSON.stringify(apis[i]));
+      newobj.generator = Generator.getByID(apis[i].generator).version;
+      obs.push(newobj);
+    }
+    res.render('view/api', _.merge(defaultVars, {apis: obs}));
   } else {
     res.render('index', defaultVars);
   }

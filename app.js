@@ -6,10 +6,13 @@ var logger       = require('morgan');
 var cookieParser = require('cookie-parser')();
 var cookie       = require('cookie');
 var bodyParser   = require('body-parser');
+var http         = require('http');
 var flash        = require('connect-flash');
 var compress     = require('compression');
 var cors         = require('cors');
+var debug        = require('debug')('RandomAPI:server');
 var app          = express();
+var server       = http.createServer(app);
 _                = require('lodash');
 io               = require('socket.io')(settings.general.socket);
 
@@ -29,13 +32,16 @@ var delRoute = require('./routes/delete');
 var api      = require('./routes/api');
 
 // global models
-API  = require('./models/API.js');
-List = require('./models/List.js');
-User = require('./models/User.js');
+API       = require('./models/API');
+List      = require('./models/List');
+User      = require('./models/User');
+Generator = require('./models/Generator');
+Counters  = require('./models/Counters');
 
 // view engine setup
 app.set('views', path.join(__dirname, '.viewsMin/pages'));
 app.set('view engine', 'ejs');
+app.set('port', settings.general.port);
 
 app.use(cors());
 app.use(compress());
@@ -134,4 +140,7 @@ app.use(function(err, req, res, next) {
   res.send(err.stack);
 });
 
-module.exports = app;
+module.exports = {
+  server,
+  app
+};

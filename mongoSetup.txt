@@ -9,3 +9,4 @@ db.addUser({
     pwd: 'randomapi',
     roles: [ 'readWrite', 'dbAdmin' ]
 });
+db.generators.insert({id: 1, version: '0.1'});

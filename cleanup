@@ -1,0 +1,4 @@
+#!/bin/bash
+
+rm data/apis/*.api;
+rm data/lists/*.list;

@@ -1,6 +1,8 @@
 var deasync = require('deasync');
 var fs      = require('fs');
 var crypto  = require('crypto');
+var mersenne  = require('mersenne');
+mersenne.seed(MERSENNE_SEED);
 
 // Connect to Mongo
 require(process.cwd() + '/models/db');
@@ -60,9 +62,6 @@ var funcs = {
   }
 };
 
-function randomItem(list) {
-  return list[range(0, list.length-1)];
-}
 
 function random(mode, length) {
   var result = '';
@@ -89,8 +88,12 @@ function random(mode, length) {
   return result;
 }
 
+function randomItem(arr) {
+  return arr[range(0, arr.length-1)];
+}
+
 function range(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+  return min + mersenne.rand(max-min+1);
 }
 
 module.exports = funcs;
