@@ -16,18 +16,6 @@ var storage = multer.diskStorage({
 });
 var upload = multer({ storage: storage });
 
-var views;
-fs.readdir('.viewsMin/pages/new', function(err, data) {;
-  views = data;
-});
-
-var titles = {
-  home: 'Home',
-  index: 'Home',
-  login: 'Login',
-  register: 'Register'
-};
-
 // api //
 router.get('/api', function(req, res, next) {
   if (req.session.loggedin) {

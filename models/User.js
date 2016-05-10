@@ -19,6 +19,10 @@ var userSchema = mongoose.Schema({
   role: {
     type: String,
     default: 'user'
+  },
+  tier: {
+    type: Number,
+    default: 1
   }
 });
 
