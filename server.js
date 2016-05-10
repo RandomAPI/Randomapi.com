@@ -3,16 +3,16 @@ var async  = require('async');
 var server = require('./app').server;
 var app    = require('./app').app;
 
-Generators       = {};
+Generators      = {};
 availableFuncs  = {};
 
 // Load in all generators and datasets before starting the server
 // Scan api folder for available versions
-var versions = fs.readdirSync('./sandBox').filter(dir => ['.DS_Store', '.nextRelease'].indexOf(dir) === -1);
+var versions = fs.readdirSync('./api').filter(dir => ['.DS_Store', '.nextRelease'].indexOf(dir) === -1);
 
 async.forEachOf(versions, (value, key, callback) => {
-    Generators[value]      = require('./sandBox/' + value + '/Generator');
-    availableFuncs[value] = fs.readFileSync('./sandBox/' + value + '/availableFuncs.js', 'utf8');
+    Generators[value]     = require('./api/' + value + '/Generator');
+    availableFuncs[value] = fs.readFileSync('./api/' + value + '/availableFuncs.js', 'utf8');
     callback();
 }, function(err, results) {
     var gKeys = Object.keys(Generators);
