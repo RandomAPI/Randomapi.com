@@ -145,11 +145,12 @@ ${self.src}
       displayErrors: true,
       timeout: self.limits.execTime * 1000
     });
+    returnResults(null, this.context._APIresults);
   } catch(e) {
-    console.log(e.stack);
+    returnResults("Your script timed out", null);
+    //console.log(e.stack);
   }
 
-  returnResults(null, this.context._APIresults);
 
   function returnResults(err, output) {
     if (err !== null) {

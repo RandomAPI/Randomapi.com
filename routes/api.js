@@ -1,19 +1,26 @@
 var express = require('express');
+var async   = require('async');
 var spawn   = require('child_process').spawn;
 var router  = express.Router();
 
-router.get('/:ref?', function(req, res, next) {
+var q = async.queue(function (task, callback) {
+  console.log(q.length());
   var ref;
-  if (req.params.ref === undefined) {
-    ref = req.query.ref;
+  if (task.req.params.ref === undefined) {
+    ref = task.req.query.ref;
   } else {
-    ref = req.params.ref;
+    ref = task.req.params.ref;
   }
-  _.merge(req.query, {ref});
-  Generators.basic[0].generate(req.query, function(data) {
-    res.setHeader('Content-Type', 'application/json');
-    res.send(data);
+  _.merge(task.req.query, {ref});
+  Generators.basic[0].generate(task.req.query, function(data) {
+    task.res.setHeader('Content-Type', 'application/json');
+    task.res.send(data);
+    callback();
   });
+}, 1);
+
+router.get('/:ref?', function(req, res, next) {
+  q.push({req, res});
 
   // try {
   //   var child = spawn('node', ['./api/0.1/index', JSON.stringify(req.query)]);
@@ -54,7 +61,6 @@ router.get('/:ref?', function(req, res, next) {
   //   res.setHeader('Content-Type', 'text/plain');
   //   res.status(403).send(e);
   // }
-
 });
 
 module.exports = router;
