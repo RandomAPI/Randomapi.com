@@ -1,5 +1,6 @@
-var fork = require('child_process').fork;
-var util = require('util');
+var fork  = require('child_process').fork;
+var util  = require('util');
+var async = require('async');
 var EventEmitter = require('events').EventEmitter;
 
 var GeneratorForker = function(options) {
@@ -13,6 +14,21 @@ var GeneratorForker = function(options) {
 
   this.startTime = new Date().getTime();
   this.jobCount  = 0;
+  this.queue = async.queue(function (task, callback) {
+    console.log("Current queue length: " + self.queue.length());
+    var ref;
+    if (task.req.params.ref === undefined) {
+      ref = task.req.query.ref;
+    } else {
+      ref = task.req.params.ref;
+    }
+    _.merge(task.req.query, {ref});
+    self.generate(task.req.query, function(data) {
+      task.res.setHeader('Content-Type', 'application/json');
+      task.res.send(data);
+      callback();
+    });
+  }, 1);
 
   this.fork();
 };
@@ -51,6 +67,10 @@ GeneratorForker.prototype.generate = function(opts, cb) {
   this.once('DONE', data => {
     cb(data.data);
   });
+};
+
+GeneratorForker.prototype.queueLength = function() {
+  return this.queue.length();
 };
 
 module.exports = GeneratorForker;

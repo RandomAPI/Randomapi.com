@@ -1,26 +1,18 @@
 var express = require('express');
-var async   = require('async');
 var spawn   = require('child_process').spawn;
 var router  = express.Router();
 
-var q = async.queue(function (task, callback) {
-  console.log(q.length());
-  var ref;
-  if (task.req.params.ref === undefined) {
-    ref = task.req.query.ref;
-  } else {
-    ref = task.req.params.ref;
-  }
-  _.merge(task.req.query, {ref});
-  Generators.basic[0].generate(task.req.query, function(data) {
-    task.res.setHeader('Content-Type', 'application/json');
-    task.res.send(data);
-    callback();
-  });
-}, 1);
-
 router.get('/:ref?', function(req, res, next) {
-  q.push({req, res});
+  var shortest = null;
+  for (var i = 0; i < 5; i++) {
+    if (shortest === null || Generators.basic[i].queueLength() < Generators.basic[shortest].queueLength()) {
+      shortest = i;
+    }
+
+    console.log(`Generator ${i} is ${Generators.basic[i].queueLength()} items long`);
+  }
+
+  Generators.basic[shortest].queue.push({req, res});
 
   // try {
   //   var child = spawn('node', ['./api/0.1/index', JSON.stringify(req.query)]);

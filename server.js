@@ -5,27 +5,11 @@ var app    = require('./app').app;
 var GeneratorForker = require('./api/0.1/GeneratorForker');
 
 Generators = {
-  basic:    new Array(1).fill().map(() => new GeneratorForker({execTime: 1, memory: 5, results: 25})),
+  basic:    new Array(5).fill().map(() => new GeneratorForker({execTime: 1, memory: 5, results: 25})),
   //standard: new Array(3).fill().map(() => new GeneratorForker({execTime: 5, memory: 10, results: 250})),
   //premium:  new Array(5).fill().map(() => new GeneratorForker({execTime: 10, memory: 25, results: 2500}))
 };
 startServer();
-
-// Generators['basic'] =
-/*
-// Load in all generators and datasets before starting the server
-// Scan api folder for available versions
-var versions = fs.readdirSync('./api').filter(dir => ['.DS_Store', '.nextRelease'].indexOf(dir) === -1);
-
-async.forEachOf(versions, (value, key, callback) => {
-    Generators[value]     = require('./api/' + value + '/Generator');
-    callback();
-}, function(err, results) {
-    var gKeys = Object.keys(Generators);
-    console.log("Loaded " + gKeys.length + " generator" + (gKeys.length == 1 ? "" : "s") + ".");
-    startServer();
-});
-*/
 
 function startServer() {
   server.listen(app.get('port'));
