@@ -44,11 +44,17 @@ GeneratorForker.prototype.fork = function() {
   this.generator.on('message', m => {
     // Requesting API Lookup
     if (m.type === "API") {
-      this.generator.send({type: 'API_RESPONSE', content: API.getAPIByRef(m.ref)});
+      API.findOne({ref: m.ref}, function(err, doc) {
+        self.generator.send({type: 'API_RESPONSE', content: doc});
+      });
     } else if (m.type === "USER") {
-      this.generator.send({type: 'USER_RESPONSE', content: User.getByID(m.id)});
+      User.findOne({id: m.id}, function(err, model) {
+        self.generator.send({type: 'USER_RESPONSE', content: model});
+      });
     } else if (m.type === "LIST") {
-      this.generator.send({type: 'LIST_RESPONSE', content: List.getListByRef(m.ref)});
+      List.findOne({ref: m.ref}, function(err, doc) {
+        self.generator.send({type: 'LIST_RESPONSE', content: doc});
+      });
     } else if (m.type === "DONE") {
       self.emit('DONE', m.content);
     }
