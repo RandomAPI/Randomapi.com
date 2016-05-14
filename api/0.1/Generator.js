@@ -5,22 +5,69 @@ var js2xmlparser = require('js2xmlparser');
 var converter    = require('json-2-csv');
 var fs           = require('fs');
 var deasync      = require('deasync');
-var SandCastle   = require('sandcastle').SandCastle;
-var version      = '0.1';
+var mersenne     = require('mersenne');
+var vm           = require('vm');
+var async        = require('async');
+var util         = require('util');
+var EventEmitter = require('events').EventEmitter;
+
+var version = '0.1';
 
 var Generator = function(options) {
+  options = JSON.parse(options);
+  var self = this;
+  this.version   = version;
+  this.limits    = {
+    execTime: options.execTime,
+    memory:   options.memory,
+    results:  options.results
+  };
+
+  this.idle = true;
+
+  process.on('message', (m) => {
+    // Received API info from forker
+    // Emit for generate() to receive
+    if (m.type === 'API_RESPONSE') {
+      self.emit('API_RESPONSE', m.content);
+    } else if (m.type === 'USER_RESPONSE') {
+      self.emit('USER_RESPONSE', m.content);
+    } else if (m.type === 'LIST_RESPONSE') {
+      self.emit('LIST_RESPONSE', m.content);
+
+    // New Generate task
+    } else if (m.type === "task") {
+      self.instruct(m.options, function(err) {
+        if (err) {
+          process.send({type: 'DONE', content: {data: err, fmt: null}});
+        } else {
+          self.generate(function(data, fmt) {
+            process.send({type: 'DONE', content: {data, fmt}});
+          });
+        }
+      });
+    }
+  });
+};
+
+util.inherits(Generator, EventEmitter);
+
+// Receives the query which contains API, owner, and reqest data
+Generator.prototype.instruct = function(options, done) {
   var self = this;
 
-  this.options = options || {};
-  this.results = Number(this.options.results);
-  this.seed    = this.options.seed || '';
-  this.format  = (this.options.format || this.options.fmt || 'json').toLowerCase();
-  this.noInfo  = typeof this.options.noinfo !== 'undefined' ? true : false;
-  this.page    = Number(this.options.page) || 1;
-  this.version = version;
+  this.options     = options || {};
+  this.results     = Number(this.options.results);
+  this.seed        = this.options.seed || '';
+  this.format      = (this.options.format || this.options.fmt || 'json').toLowerCase();
+  this.noInfo      = typeof this.options.noinfo !== 'undefined';
+  this.page        = Number(this.options.page) || 1;
+
+  this.listResults = {}; // Hold cache of list results
+  this.context     = vm.createContext(this.availableFuncs());
 
   // Sanitize values
-  if (isNaN(this.results) || this.results < 0 || this.results > 5000 || this.results === '') this.results = 1;
+  if (isNaN(this.results) || this.results < 0 || this.results > this.limits.results || this.results === '') this.results = 1;
 
   if (this.seed === '') {
     this.defaultSeed();
@@ -31,71 +78,80 @@ var Generator = function(options) {
 
   this.seedRNG();
 
-  this.doc      = API.getAPIByRef(this.options.ref);
-  this.keyOwner = User.getByID(this.doc.owner);
+  async.series([
+    function(cb) {
+      process.send({type: 'API', ref: options.ref});
+      self.once('API_RESPONSE', data => {
+        self.doc = data;
 
-  if (!this.doc || this.keyOwner.key !== this.options.key) {
-    throw "You are not the owner boi!";
-  }
-  
-  // Get API src
-  this.src = fs.readFileSync('./data/apis/' + this.doc.id + '.api', 'utf8');
+        if (!self.doc) {
+          cb("This API doesn't exist boi!");
+        } else {
+          cb(null);
+        }
+      });
+    },
+    function(cb) {
+      process.send({type: 'USER', id: self.doc.owner});
+      self.once('USER_RESPONSE', data => {
+        self.keyOwner = data;
 
-  this.sandcastle = new SandCastle({
-    api: availableFuncs[version].replace('MERSENNE_SEED', self.numericSeed),
-    timeout: 5000
+        if (self.keyOwner.key !== self.options.key) {
+          cb("You are not the owner of this API boi!");
+        } else {
+          cb(null);
+        }
+      });
+    },
+    function(cb) {
+      // Get API src
+      self.src = fs.readFileSync('./data/apis/' + self.doc.id + '.api', 'utf8');
+      cb(null);
+    }
+  ], function(err, results) {
+    done(err);
   });
-
 };
 
 Generator.prototype.generate = function(cb) {
   var self = this;
+
   this.results = this.results || 1;
   var output = [];
-  var script = this.sandcastle.createScript(`
-    exports.main = function() {
-      exit((function() {
-        var _APIgetVars = ${JSON.stringify(self.options)};
-        var _APIresults = [];
-        for (var _APIi = 0; _APIi < ${self.results}; _APIi++) {
-          var api = {};
-          try {
-${self.src}
-          } catch (e) {
-            api = {
-              API_ERROR: e.toString(),
-              API_STACK: e.stack
-            };
-          }
-          _APIresults.push(api);
-        }
-        return _APIresults;
-        function getVar(key) {
 
-          //if (_APIgetVars === undefined) return undefined;
-          return key in _APIgetVars ? _APIgetVars[key] : undefined;
-        }
-      })());
+  this.sandBox = new vm.Script(`
+    var _APIgetVars = ${JSON.stringify(self.options)};
+    var _APIresults = [];
+    for (var _APIi = 0; _APIi < ${self.results}; _APIi++) {
+      var api = {};
+      try {
+${self.src}
+      } catch (e) {
+        api = {
+          API_ERROR: e.toString(),
+          API_STACK: e.stack
+        };
+      }
+      _APIresults.push(api);
+    }
+    function getVar(key) {
+      //if (_APIgetVars === undefined) return undefined;
+      return key in _APIgetVars ? _APIgetVars[key] : undefined;
     }
   `);
 
+  try {
+    this.sandBox.runInContext(this.context, {
+      displayErrors: true,
+      timeout: self.limits.execTime * 1000
+    });
+  } catch(e) {
+    console.log(e.stack);
+  }
 
-  script.run();// we can pass variables into run.
-  
-  script.on('exit', function(err, output) {
-    if (err) {
-      returnResults(err, null);
-    } else {
-      returnResults(null, output);
-    }
-  });
-
-  script.on('timeout', function() {
-    returnResults("script timed out", null);
-  });
+  returnResults(null, this.context._APIresults);
 
   function returnResults(err, output) {
-    console.log(err);
     if (err !== null) {
       output = [{API_ERROR: err.toString()}];
     }
@@ -132,7 +188,6 @@ ${self.src}
     } else {
       cb(JSON.stringify(json), "json");
     }
-    self.sandcastle.kill();
   }
 };
 
@@ -141,11 +196,68 @@ Generator.prototype.seedRNG = function() {
   seed = this.page !== 1 ? seed + String(this.page) : seed;
 
   this.numericSeed = parseInt(crypto.createHash('md5').update(seed).digest('hex').substring(0, 8), 16);
-  // mersenne.seed(seed);
+  mersenne.seed(this.numericSeed);
 };
 
 Generator.prototype.defaultSeed = function() {
   this.seed = random(1, 16);
+};
+
+Generator.prototype.availableFuncs = function() {
+  var self = this;
+  return {
+    random: {
+      numeric: function(a, b) {
+        return range(a, b);
+      },
+      special: function(mode, length) {
+        return random(mode, length);
+      }
+    },
+    list: function(obj, num) {
+      if (num !== "" && num !== undefined) num = Number(num); // Convert string to num if it isn't undefined
+      if (num === "") num = undefined;
+
+      if (Array.isArray(obj)) {
+        if (num !== undefined) {
+          return obj[num-1];
+        } else {
+          return obj[range(0, obj.length-1)];
+        }
+      } else {
+        if (!(obj in this.listResults)) {
+          var res = List.getListByRef(obj);
+          if (res !== null) {
+            this.listResults[obj] = fs.readFileSync(process.cwd() + '/data/lists/' + res.id + '.list', 'utf8').split('\n');
+          } else {
+            this.listResults[obj] = [undefined];
+            throw 'INVALID_LIST' + String(obj + "|" + num);
+          }
+        }
+
+        if (num !== undefined) {
+          return this.listResults[obj][num-1];
+        } else {
+          return randomItem(this.listResults[obj]);
+        }
+      }
+    },
+    hash: {
+      md5: function(val) {
+        return crypto.createHash('md5').update(String(val)).digest('hex');
+      },
+      sha1: function(val) {
+        return crypto.createHash('sha1').update(String(val)).digest('hex');
+      },
+      sha256: function(val) {
+        return crypto.createHash('sha256').update(String(val)).digest('hex');
+      }
+    },
+    String,
+    timestamp: function() {
+      return Math.floor(new Date().getTime()/1000);
+    }
+  };
 };
 
 random = (mode, length) => {
@@ -171,7 +283,7 @@ random = (mode, length) => {
   }
 
   return result;
-}
+};
 
 randomItem = arr => {
   return arr[range(0, arr.length-1)];
@@ -181,4 +293,4 @@ range = (min, max) => {
   return min + mersenne.rand(max-min+1);
 };
 
-module.exports = Generator;
+new Generator(process.argv[2]);
