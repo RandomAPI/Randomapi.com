@@ -226,20 +226,27 @@ Generator.prototype.availableFuncs = function() {
           return obj[range(0, obj.length-1)];
         }
       } else {
-        if (!(obj in this.listResults)) {
-          var res = List.getListByRef(obj);
-          if (res !== null) {
-            this.listResults[obj] = fs.readFileSync(process.cwd() + '/data/lists/' + res.id + '.list', 'utf8').split('\n');
-          } else {
-            this.listResults[obj] = [undefined];
-            throw 'INVALID_LIST' + String(obj + "|" + num);
-          }
+        var done = false;
+        if (!(obj in self.listResults)) {
+          process.send({type: 'LIST', ref: obj});
+          self.once('LIST_RESPONSE', data => {
+            var res = data;
+            if (res !== null) {
+              self.listResults[obj] = fs.readFileSync(process.cwd() + '/data/lists/' + res.id + '.list', 'utf8').split('\n');
+            } else {
+              self.listResults[obj] = [undefined];
+            }
+            done = true;
+          });
+        } else {
+          done = true;
         }
 
+        require('deasync').loopWhile(function(){return !done;});
         if (num !== undefined) {
-          return this.listResults[obj][num-1];
+          return self.listResults[obj][num-1];
         } else {
-          return randomItem(this.listResults[obj]);
+          return randomItem(self.listResults[obj]);
         }
       }
     },

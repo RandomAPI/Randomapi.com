@@ -47,6 +47,8 @@ GeneratorForker.prototype.fork = function() {
       this.generator.send({type: 'API_RESPONSE', content: API.getAPIByRef(m.ref)});
     } else if (m.type === "USER") {
       this.generator.send({type: 'USER_RESPONSE', content: User.getByID(m.id)});
+    } else if (m.type === "LIST") {
+      this.generator.send({type: 'LIST_RESPONSE', content: List.getListByRef(m.ref)});
     } else if (m.type === "DONE") {
       self.emit('DONE', m.content);
     }
