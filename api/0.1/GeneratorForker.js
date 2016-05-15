@@ -13,9 +13,8 @@ var GeneratorForker = function(options) {
   };
 
   this.startTime = new Date().getTime();
-  this.jobCount  = 0;
+  this.jobCount = 0;
   this.queue = async.queue(function (task, callback) {
-    console.log("Current queue length: " + self.queue.length());
     var ref;
     if (task.req.params.ref === undefined) {
       ref = task.req.query.ref;
@@ -67,6 +66,8 @@ GeneratorForker.prototype.send = function(msg) {
 
 GeneratorForker.prototype.generate = function(opts, cb) {
   var self = this;
+
+  this.jobCount++;
   this.generator.send({
     type: "task",
     options: opts
@@ -79,6 +80,14 @@ GeneratorForker.prototype.generate = function(opts, cb) {
 
 GeneratorForker.prototype.queueLength = function() {
   return this.queue.length();
+};
+
+GeneratorForker.prototype.totalJobs = function() {
+  return this.jobCount;
+};
+
+GeneratorForker.prototype.memUsage = function() {
+  return Math.floor(process.memoryUsage().heapTotal/1024/1024);
 };
 
 module.exports = GeneratorForker;

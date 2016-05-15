@@ -3,13 +3,13 @@ var spawn   = require('child_process').spawn;
 var router  = express.Router();
 
 router.get('/:ref?', function(req, res, next) {
-  var shortest = null;
+  var shortest = Math.floor(Math.random() * 5);
   for (var i = 0; i < 5; i++) {
-    if (shortest === null || Generators.basic[i].queueLength() < Generators.basic[shortest].queueLength()) {
+    if (Generators.basic[i].queueLength() < Generators.basic[shortest].queueLength()) {
       shortest = i;
     }
 
-    console.log(`Generator ${i} is ${Generators.basic[i].queueLength()} items long`);
+    //log.log(`Generator ${i} is ${Generators.basic[i].queueLength()} items long`);
   }
 
   Generators.basic[shortest].queue.push({req, res});
