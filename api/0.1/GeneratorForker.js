@@ -56,6 +56,10 @@ GeneratorForker.prototype.fork = function() {
       });
     } else if (m.type === "DONE") {
       self.emit('DONE', m.content);
+    } else if (m.type === "getMemory") {
+      self.emit('getMemory', m.content);
+    } else if (m.type === "logger") {
+      log.log(m.content);
     }
   });
 };
@@ -67,7 +71,14 @@ GeneratorForker.prototype.send = function(msg) {
 GeneratorForker.prototype.generate = function(opts, cb) {
   var self = this;
 
-  this.jobCount++;
+  if (this.jobCount++ % 100 === 0) {
+    log.log("Executing garbage collection");
+    this.generator.send({
+      type: "command",
+      content: "gc"
+    });
+  }
+
   this.generator.send({
     type: "task",
     options: opts
@@ -87,7 +98,18 @@ GeneratorForker.prototype.totalJobs = function() {
 };
 
 GeneratorForker.prototype.memUsage = function() {
-  return Math.floor(process.memoryUsage().heapTotal/1024/1024);
+  this.generator.send({
+    type: "command",
+    content: "getMemory"
+  });
+  var memory, done = false;
+  this.once('getMemory', data => {
+    memory = data;
+    done = true;
+  });
+
+  require('deasync').loopWhile(function(){return !done;});
+  return Math.floor(memory/1024/1024);
 };
 
 module.exports = GeneratorForker;

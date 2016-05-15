@@ -46,6 +46,13 @@ var Generator = function(options) {
           });
         }
       });
+    } else if (m.type === "command") {
+      if (m.content === "gc") {
+        log("Collecting Garbase")
+        global.gc();
+      } else if (m.content === "getMemory") {
+        process.send({type: "getMemory", content: process.memoryUsage().heapTotal})
+      }
     }
   });
 };
@@ -300,5 +307,9 @@ randomItem = arr => {
 range = (min, max) => {
   return min + mersenne.rand(max-min+1);
 };
+
+log = msg => {
+  process.send({type: "logger", content: msg});
+}
 
 new Generator(process.argv[2]);

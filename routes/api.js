@@ -3,16 +3,26 @@ var spawn   = require('child_process').spawn;
 var router  = express.Router();
 
 router.get('/:ref?', function(req, res, next) {
-  var shortest = Math.floor(Math.random() * 5);
-  for (var i = 0; i < 5; i++) {
-    if (Generators.basic[i].queueLength() < Generators.basic[shortest].queueLength()) {
+  var type = Math.floor(Math.random() * 100);
+
+  if (type < 20) {
+    type = "premium";
+  } else if (type < 50) {
+    type = "standard";
+  } else {
+    type = "basic";
+  }
+
+  var shortest = Math.floor(Math.random() * Generators[type].length);
+  for (var i = 0; i < Generators[type].length; i++) {
+    if (Generators[type][i].queueLength() < Generators[type][shortest].queueLength()) {
       shortest = i;
     }
 
     //log.log(`Generator ${i} is ${Generators.basic[i].queueLength()} items long`);
   }
 
-  Generators.basic[shortest].queue.push({req, res});
+  Generators[type][shortest].queue.push({req, res});
 
   // try {
   //   var child = spawn('node', ['./api/0.1/index', JSON.stringify(req.query)]);

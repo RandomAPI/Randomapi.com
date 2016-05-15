@@ -23,106 +23,66 @@ Generators = {
 //   console.log(gen.queueLength());
 // });
 
+var queueStats = {
 
+};
 
 var basicBar = grid.set(0, 0, 2, 2, contrib.bar, {
   label: 'Basic Generators Queue Length',
-  barWidth: 4,
-  barSpacing: 6,
+  barWidth: 3,
+  barSpacing: 1,
   xOffset: 0,
   maxHeight: 50,
-  color: 'red'
+  barBgColor: 'red'
 });
 screen.append(basicBar) //must append before setting data
-basicBar.setData({
-  titles: ['#0', '#1', '#2', '#3', '#4'],
-  data: [
-    Generators.basic[0].queueLength(),
-    Generators.basic[1].queueLength(),
-    Generators.basic[2].queueLength(),
-    Generators.basic[3].queueLength(),
-    Generators.basic[4].queueLength()
-  ]
-});
 setInterval(function() {
+  queueStats.basic = new Array(Generators.basic.length).fill().map((v, k) => Generators.basic[k].queueLength());
+
   basicBar.setData({
-    titles: ['#0', '#1', '#2', '#3', '#4'],
-    data: [
-      Generators.basic[0].queueLength(),
-      Generators.basic[1].queueLength(),
-      Generators.basic[2].queueLength(),
-      Generators.basic[3].queueLength(),
-      Generators.basic[4].queueLength()
-    ]
+    titles: new Array(Generators.basic.length).fill().map((v, k) => "#" + k),
+    data: queueStats.basic
   });
-  screen.render()
-}, 10);
+  screen.render();
+}, 100);
 
 var standardBar = grid.set(0, 2, 2, 2, contrib.bar, {
   label: 'Standard Generators Queue Length',
-  barWidth: 4,
-  barSpacing: 6,
+  barWidth: 3,
+  barSpacing: 1,
   xOffset: 0,
   maxHeight: 50,
-  color: 'green'
+  barBgColor: 'green'
 });
 screen.append(standardBar) //must append before setting data
-standardBar.setData({
-  titles: ['#0', '#1', '#2', '#3', '#4'],
-  data: [
-    Generators.standard[0].queueLength(),
-    Generators.standard[1].queueLength(),
-    Generators.standard[2].queueLength(),
-    Generators.standard[3].queueLength(),
-    Generators.standard[4].queueLength()
-  ]
-});
 setInterval(function() {
+  queueStats.standard = new Array(Generators.standard.length).fill().map((v, k) => Generators.standard[k].queueLength());
+
   standardBar.setData({
-    titles: ['#0', '#1', '#2', '#3', '#4'],
-    data: [
-      Generators.standard[0].queueLength(),
-      Generators.standard[1].queueLength(),
-      Generators.standard[2].queueLength(),
-      Generators.standard[3].queueLength(),
-      Generators.standard[4].queueLength()
-    ]
+    titles: new Array(Generators.standard.length).fill().map((v, k) => "#" + k),
+    data: queueStats.standard
   });
   screen.render()
-}, 10);
+}, 100);
 
 var premiumBar = grid.set(0, 4, 2, 2, contrib.bar, {
   label: 'Premium Generators Queue Length',
-  barWidth: 4,
-  barSpacing: 6,
+  barWidth: 3,
+  barSpacing: 1,
   xOffset: 0,
   maxHeight: 50,
-  color: 'cyan'
+  barBgColor: 'cyan'
 });
 screen.append(premiumBar) //must append before setting data
-premiumBar.setData({
-  titles: ['#0', '#1', '#2', '#3', '#4'],
-  data: [
-    Generators.premium[0].queueLength(),
-    Generators.premium[1].queueLength(),
-    Generators.premium[2].queueLength(),
-    Generators.premium[3].queueLength(),
-    Generators.premium[4].queueLength()
-  ]
-});
 setInterval(function() {
+  queueStats.premium = new Array(Generators.premium.length).fill().map((v, k) => Generators.premium[k].queueLength());
+
   premiumBar.setData({
-    titles: ['#0', '#1', '#2', '#3', '#4'],
-    data: [
-      Generators.premium[0].queueLength(),
-      Generators.premium[1].queueLength(),
-      Generators.premium[2].queueLength(),
-      Generators.premium[3].queueLength(),
-      Generators.premium[4].queueLength()
-    ]
+    titles: new Array(Generators.premium.length).fill().map((v, k) => "#" + k),
+    data: queueStats.premium
   });
   screen.render()
-}, 10);
+}, 100);
 
 var basicTable =  grid.set(0, 6, 2, 2, contrib.table, {
   fg: 'red',
@@ -158,7 +118,7 @@ function generateTable() {
   };
 
   for (var j = 0; j < 3; j++) {
-    for (var i = 0; i < 5; i++) {
+    for (var i = 0; i < Generators[types[j]].length; i++) {
       var row = []
       row.push(i);
       row.push(Generators[types[j]][i].totalJobs());
@@ -173,46 +133,57 @@ function generateTable() {
    premiumTable.setData({headers: ['#', 'Jobs', 'Memory'], data: data.premium})
 }
 
-generateTable()
+generateTable();
 setInterval(generateTable, 1000)
 
 
-// var basicGenLine = grid.set(0, 0, 4, 6, contrib.line, {
-//   showNthLabel: 5,
-//   label: 'Basic Generators',
-//   showLegend: true,
-//   legend: {width: 20}
-// });
+var totalQueues = grid.set(4, 0, 4, 12, contrib.line, {
+  showNthLabel: 5,
+  label: 'Total Queues',
+  showLegend: false,
+  legend: {width: 20},
+  wholeNumbersOnly: true,
+  style: {
+    line: 'white',
+    text: 'white'
+  }
+});
 
-// var series1 = {
-//   title: '#1',
-//   style: {line: 'red'},
-//   x: [],
-//   y: []
-//  }
+var basicStats = { title: 'Basic', style: {line: 'red'}, y: [] };
+var standardStats = { title: 'Standard', style: {line: 'green'}, y: [] };
+var premiumStats = { title: 'Premium', style: {line: 'cyan'}, y: [] };
+var botline = { title: 'botline', style: {line: 'white'}, x:[], y: [] };
 
-// basicGenLine.setData([series1]);
-// var blah = 0;
-// setInterval(function() {
-//   blah += 1;
-//   var fmt = moment.duration(blah, 'seconds');
-//   var min = Math.floor(fmt.asMinutes());
-//   var sec = fmt.asSeconds() - Math.floor(fmt.asMinutes()) * 60;
-//   series1.x.push(pad(min, 2) + ":" + pad(sec, 2));
-//   series1.y.push(Generators.basic[0].queueLength());
-//   if (series1.x.length > 25) {
-//     series1.x.shift();
-//     series1.y.shift();
-//   }
-//   basicGenLine.setData([series1]);
-//   screen.render()
-// }, 1000)
+totalQueues.setData([botline, basicStats, standardStats, premiumStats]);
 
-log = grid.set(2, 6, 2, 6, contrib.log, 
-  { fg: "white"
-  , label: 'Server Log'})
+var time = Math.floor(new Date().getTime()/1000);
+setInterval(function() {
+  var fmt = moment.duration(Math.floor(new Date().getTime()/1000) - time, 'seconds');
+  var min = Math.floor(fmt.asMinutes());
+  var sec = fmt.asSeconds() - Math.floor(fmt.asMinutes()) * 60;
 
+  botline.x.push(pad(min, 2) + ":" + pad(sec, 2));
+  botline.y.push(0);
 
+  basicStats.y.push(_.sum(queueStats.basic));
+  standardStats.y.push(_.sum(queueStats.standard));
+  premiumStats.y.push(_.sum(queueStats.premium));
+
+  if (botline.x.length > 25) {
+    botline.x.shift();
+    botline.y.shift();
+    basicStats.y.shift();
+    standardStats.y.shift();
+    premiumStats.y.shift();
+  }
+  totalQueues.setData([botline, basicStats, standardStats, premiumStats]);
+  screen.render()
+}, 1000)
+
+log = grid.set(2, 6, 2, 6, contrib.log, {
+  fg: "white",
+  label: 'Server Log'
+});
 
 var load1 = grid.set(2, 0, 2, 2, contrib.donut, 
   {
