@@ -48,7 +48,6 @@ var Generator = function(options) {
       });
     } else if (m.type === "command") {
       if (m.content === "gc") {
-        log("Collecting Garbase")
         global.gc();
       } else if (m.content === "getMemory") {
         process.send({type: "getMemory", content: process.memoryUsage().heapTotal})

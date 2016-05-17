@@ -44,7 +44,7 @@ setInterval(function() {
     data: queueStats.basic
   });
   screen.render();
-}, 100);
+}, 250);
 
 var standardBar = grid.set(0, 2, 2, 2, contrib.bar, {
   label: 'Standard Generators Queue Length',
@@ -185,43 +185,44 @@ log = grid.set(2, 6, 2, 6, contrib.log, {
   label: 'Server Log'
 });
 
-var load1 = grid.set(2, 0, 2, 2, contrib.donut, 
+var loadBasic = grid.set(2, 0, 2, 2, contrib.donut,
   {
-  label: 'Load 1',
+  label: 'Basic Load',
   radius: 10,
   arcWidth: 4,
   yPadding: 2,
-  data: [{label: 'Load 1', percent: os.loadavg()[0]*100}]
+  data: [{label: 'Basic Load', percent: _.sum(queueStats.basic)/(Generators.basic.length * 50) * 100}]
 });
 
-var load5 = grid.set(2, 2, 2, 2, contrib.donut, 
+var loadStandard = grid.set(2, 2, 2, 2, contrib.donut,
   {
-  label: 'Load 5',
+  label: 'Standard Load',
   radius: 10,
   arcWidth: 4,
   yPadding: 2,
-  data: [{label: 'Load 5', percent: os.loadavg()[1]*100}]
+  data: [{label: 'Standard Load', percent: _.sum(queueStats.standard)/(Generators.standard.length * 50) * 100}]
 });
 
-var load15 = grid.set(2, 4, 2, 2, contrib.donut, 
+var loadPremium = grid.set(2, 4, 2, 2, contrib.donut,
   {
-  label: 'Load 15',
+  label: 'Premium Load',
   radius: 10,
   arcWidth: 4,
   yPadding: 2,
-  data: [{label: 'Load 15', percent: os.loadavg()[2]*100}]
+  data: [{label: 'Premium Load', percent: _.sum(queueStats.premium)/(Generators.premium.length * 50) * 100}]
 });
 
 function updateDonut() {
-  var donuts = [load1, load5, load15];
-  _.each(os.loadavg(), (load, num) => {
-    load *= 100;
+  var donuts = [loadBasic, loadStandard, loadPremium];
+  var types = ['basic', 'standard', 'premium'];
+  _.each(types, (load, num) => {
+    var percent = _.sum(queueStats[load])/(Generators[load].length * 50) * 100 || 0;
     var color = "green";
-    if (load >= 200) color = "cyan";
-    if (load >= 300) color = "yellow";
-    if (load >= 400) color = "red";  
+    if (percent >= 25) color = "cyan";
+    if (percent >= 50) color = "yellow";
+    if (percent >= 90) color = "red";
     donuts[num].setData([
-       {percent: load, label: 'blah', 'color': color}
+       {percent: percent, label: 'blah', 'color': color}
      ]);
   });
 }
@@ -229,7 +230,7 @@ function updateDonut() {
 setInterval(function() {   
    updateDonut();
    screen.render()
-}, 3000)
+}, 250)
 
 screen.key(['escape', 'q', 'C-c'], function(ch, key) {
   return process.exit(0);

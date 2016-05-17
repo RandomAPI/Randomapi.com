@@ -72,7 +72,6 @@ GeneratorForker.prototype.generate = function(opts, cb) {
   var self = this;
 
   if (this.jobCount++ % 100 === 0) {
-    log.log("Executing garbage collection");
     this.generator.send({
       type: "command",
       content: "gc"
