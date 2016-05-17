@@ -180,7 +180,7 @@ setInterval(function() {
   screen.render()
 }, 1000)
 
-log = grid.set(2, 6, 2, 6, contrib.log, {
+log = grid.set(2, 8, 2, 4, contrib.log, {
   fg: "white",
   label: 'Server Log'
 });
@@ -191,7 +191,7 @@ var loadBasic = grid.set(2, 0, 2, 2, contrib.donut,
   radius: 10,
   arcWidth: 4,
   yPadding: 2,
-  data: [{label: 'Basic Load', percent: _.sum(queueStats.basic)/(Generators.basic.length * 50) * 100}]
+  data: [{label: 'Basic Load', percent: 0}]
 });
 
 var loadStandard = grid.set(2, 2, 2, 2, contrib.donut,
@@ -200,7 +200,7 @@ var loadStandard = grid.set(2, 2, 2, 2, contrib.donut,
   radius: 10,
   arcWidth: 4,
   yPadding: 2,
-  data: [{label: 'Standard Load', percent: _.sum(queueStats.standard)/(Generators.standard.length * 50) * 100}]
+  data: [{label: 'Standard Load', percent: 0}]
 });
 
 var loadPremium = grid.set(2, 4, 2, 2, contrib.donut,
@@ -209,22 +209,43 @@ var loadPremium = grid.set(2, 4, 2, 2, contrib.donut,
   radius: 10,
   arcWidth: 4,
   yPadding: 2,
-  data: [{label: 'Premium Load', percent: _.sum(queueStats.premium)/(Generators.premium.length * 50) * 100}]
+  data: [{label: 'Premium Load', percent: 0}]
+});
+
+var overallLoad = grid.set(2, 6, 2, 2, contrib.donut,
+  {
+  label: 'Overall Load',
+  radius: 10,
+  arcWidth: 4,
+  yPadding: 2,
+  data: [{label: 'Overall Load', percent: 0}]
 });
 
 function updateDonut() {
+  var overallPerc = 0;
   var donuts = [loadBasic, loadStandard, loadPremium];
   var types = ['basic', 'standard', 'premium'];
   _.each(types, (load, num) => {
     var percent = _.sum(queueStats[load])/(Generators[load].length * 50) * 100 || 0;
     var color = "green";
-    if (percent >= 25) color = "cyan";
-    if (percent >= 50) color = "yellow";
+    if (percent >= 50) color = "cyan";
+    if (percent >= 75) color = "yellow";
     if (percent >= 90) color = "red";
     donuts[num].setData([
        {percent: percent, label: 'blah', 'color': color}
-     ]);
+    ]);
+    overallPerc += percent;
   });
+
+  overallPerc /= 3;
+  var color = "green";
+  if (overallPerc >= 50) color = "cyan";
+  if (overallPerc >= 75) color = "yellow";
+  if (overallPerc >= 90) color = "red";
+
+  overallLoad.setData([
+    {percent: Math.floor(overallPerc), label: 'Overall Load', 'color': color}
+  ]);
 }
 
 setInterval(function() {   
