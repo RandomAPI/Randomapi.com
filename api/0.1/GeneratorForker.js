@@ -71,7 +71,7 @@ GeneratorForker.prototype.send = function(msg) {
 GeneratorForker.prototype.generate = function(opts, cb) {
   var self = this;
 
-  if (this.jobCount++ % 100 === 0) {
+  if (this.jobCount++ % 100 === 0 && this.jobCount > 0) {
     this.generator.send({
       type: "command",
       content: "gc"

@@ -22,8 +22,7 @@ var Generator = function(options) {
     memory:   options.memory,
     results:  options.results
   };
-
-  this.idle = true;
+  this.context = vm.createContext(this.availableFuncs());
 
   process.on('message', (m) => {
     // Received API info from forker
@@ -48,7 +47,9 @@ var Generator = function(options) {
       });
     } else if (m.type === "command") {
       if (m.content === "gc") {
-        global.gc();
+        log("Collecting Garbage")
+        fs.writeFileSync('asdfdfdf', Object.keys(global));
+        //global.gc();
       } else if (m.content === "getMemory") {
         process.send({type: "getMemory", content: process.memoryUsage().heapTotal})
       }
@@ -70,7 +71,6 @@ Generator.prototype.instruct = function(options, done) {
   this.page        = Number(this.options.page) || 1;
 
   this.listResults = {}; // Hold cache of list results
-  this.context     = vm.createContext(this.availableFuncs());
 
   // Sanitize values
   if (isNaN(this.results) || this.results < 0 || this.results > this.limits.results || this.results === '') this.results = 1;
@@ -274,7 +274,7 @@ Generator.prototype.availableFuncs = function() {
   };
 };
 
-random = (mode, length) => {
+var random = (mode, length) => {
   var result = '';
   var chars;
 
@@ -299,15 +299,15 @@ random = (mode, length) => {
   return result;
 };
 
-randomItem = arr => {
+var randomItem = arr => {
   return arr[range(0, arr.length-1)];
 };
 
-range = (min, max) => {
+var range = (min, max) => {
   return min + mersenne.rand(max-min+1);
 };
 
-log = msg => {
+var log = msg => {
   process.send({type: "logger", content: msg});
 }
 
