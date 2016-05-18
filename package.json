@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node --expose-gc server"
+    "start": "node server"
   },
   "dependencies": {
     "async": "^2.0.0-rc.4",

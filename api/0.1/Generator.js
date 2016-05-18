@@ -23,6 +23,7 @@ var Generator = function(options) {
     results:  options.results
   };
   this.context = vm.createContext(this.availableFuncs());
+  this.originalContext = Object.keys(this.context);
 
   process.on('message', (m) => {
     // Received API info from forker
@@ -47,8 +48,6 @@ var Generator = function(options) {
       });
     } else if (m.type === "command") {
       if (m.content === "gc") {
-        log("Collecting Garbage")
-        fs.writeFileSync('asdfdfdf', Object.keys(global));
         //global.gc();
       } else if (m.content === "getMemory") {
         process.send({type: "getMemory", content: process.memoryUsage().heapTotal})
@@ -126,6 +125,7 @@ Generator.prototype.generate = function(cb) {
   var output = [];
 
   this.sandBox = new vm.Script(`
+    'use strict'
     var _APIgetVars = ${JSON.stringify(self.options)};
     var _APIresults = [];
     (function() {
@@ -159,6 +159,9 @@ Generator.prototype.generate = function(cb) {
     //console.log(e.stack);
   }
 
+  // Remove accidental user defined globals. Pretty hacky, should probably look into improving this...
+  var diff = Object.keys(this.context);
+  diff.filter(each => this.originalContext.indexOf(each) === -1).forEach(each => delete self.context[each]);
 
   function returnResults(err, output) {
     if (err !== null) {
@@ -272,7 +275,10 @@ Generator.prototype.availableFuncs = function() {
     String,
     timestamp: function() {
       return Math.floor(new Date().getTime()/1000);
-    }
+    },
+    _APIgetVars: null,
+    _APIresults: null,
+    getVar: null
   };
 };
 

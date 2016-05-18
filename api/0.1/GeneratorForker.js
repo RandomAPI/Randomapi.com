@@ -1,3 +1,4 @@
+'use strict'
 var fork  = require('child_process').fork;
 var util  = require('util');
 var async = require('async');
