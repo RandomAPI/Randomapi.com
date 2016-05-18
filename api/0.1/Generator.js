@@ -128,18 +128,20 @@ Generator.prototype.generate = function(cb) {
   this.sandBox = new vm.Script(`
     var _APIgetVars = ${JSON.stringify(self.options)};
     var _APIresults = [];
-    for (var _APIi = 0; _APIi < ${self.results}; _APIi++) {
-      var api = {};
-      try {
-${self.src}
-      } catch (e) {
-        api = {
-          API_ERROR: e.toString(),
-          API_STACK: e.stack
-        };
+    (function() {
+      for (var _APIi = 0; _APIi < ${self.results}; _APIi++) {
+        var api = {};
+        try {
+  ${self.src}
+        } catch (e) {
+          api = {
+            API_ERROR: e.toString(),
+            API_STACK: e.stack
+          };
+        }
+        _APIresults.push(api);
       }
-      _APIresults.push(api);
-    }
+    })();
     function getVar(key) {
       //if (_APIgetVars === undefined) return undefined;
       return key in _APIgetVars ? _APIgetVars[key] : undefined;
