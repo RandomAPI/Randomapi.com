@@ -23,7 +23,9 @@ var Generator = function(options) {
     results:  options.results
   };
   this.context = vm.createContext(this.availableFuncs());
-  this.originalContext = Object.keys(this.context);
+  this.originalContext = ["random","list","hash","String","timestamp","_APIgetVars","_APIresults","getVar"];
+  this.listResults = {}; // Hold cache of list results
+  this.apiSrc = {}; // Hold cache of API src
 
   process.on('message', (m) => {
     // Received API info from forker
@@ -69,8 +71,6 @@ Generator.prototype.instruct = function(options, done) {
   this.noInfo      = typeof this.options.noinfo !== 'undefined';
   this.page        = Number(this.options.page) || 1;
 
-  this.listResults = {}; // Hold cache of list results
-
   // Sanitize values
   if (isNaN(this.results) || this.results < 0 || this.results > this.limits.results || this.results === '') this.results = 1;
 
@@ -110,7 +110,11 @@ Generator.prototype.instruct = function(options, done) {
     },
     function(cb) {
       // Get API src
-      self.src = fs.readFileSync('./data/apis/' + self.doc.id + '.api', 'utf8');
+      if (!(self.doc.id in self.apiSrc)) {
+        self.apiSrc[self.doc.id] = fs.readFileSync('./data/apis/' + self.doc.id + '.api', 'utf8');
+      }
+
+      self.src = self.apiSrc[self.doc.id];
       cb(null);
     }
   ], function(err, results) {
@@ -124,38 +128,39 @@ Generator.prototype.generate = function(cb) {
   this.results = this.results || 1;
   var output = [];
 
-  this.sandBox = new vm.Script(`
-    'use strict'
-    var _APIgetVars = ${JSON.stringify(self.options)};
-    var _APIresults = [];
-    (function() {
-      for (var _APIi = 0; _APIi < ${self.results}; _APIi++) {
-        var api = {};
-        try {
-  ${self.src}
-        } catch (e) {
-          api = {
-            API_ERROR: e.toString(),
-            API_STACK: e.stack
-          };
-        }
-        _APIresults.push(api);
-      }
-    })();
-    function getVar(key) {
-      //if (_APIgetVars === undefined) return undefined;
-      return key in _APIgetVars ? _APIgetVars[key] : undefined;
-    }
-  `);
-
   try {
+
+    this.sandBox = new vm.Script(`
+      'use strict'
+      var _APIgetVars = ${JSON.stringify(self.options)};
+      var _APIresults = [];
+      (function() {
+        for (var _APIi = 0; _APIi < ${self.results}; _APIi++) {
+          var api = {};
+          try {
+    ${self.src}
+          } catch (e) {
+            api = {
+              API_ERROR: e.toString(),
+              API_STACK: e.stack
+            };
+          }
+          _APIresults.push(api);
+        }
+      })();
+      function getVar(key) {
+        //if (_APIgetVars === undefined) return undefined;
+        return key in _APIgetVars ? _APIgetVars[key] : undefined;
+      }
+    `);
+
     this.sandBox.runInContext(this.context, {
       displayErrors: true,
       timeout: self.limits.execTime * 1000
     });
     returnResults(null, this.context._APIresults);
   } catch(e) {
-    returnResults("Your script timed out", null);
+    returnResults("Something went wrong", null);
     //console.log(e.stack);
   }
 
@@ -275,10 +280,7 @@ Generator.prototype.availableFuncs = function() {
     String,
     timestamp: function() {
       return Math.floor(new Date().getTime()/1000);
-    },
-    _APIgetVars: null,
-    _APIresults: null,
-    getVar: null
+    }
   };
 };
 
