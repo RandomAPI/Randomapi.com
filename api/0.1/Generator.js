@@ -25,7 +25,6 @@ var Generator = function(options) {
   this.context = vm.createContext(this.availableFuncs());
   this.originalContext = ["random","list","hash","String","timestamp","_APIgetVars","_APIresults","getVar"];
   this.listResults = {}; // Hold cache of list results
-  this.apiSrc = {}; // Hold cache of API src
 
   process.on('message', (m) => {
     // Received API info from forker
@@ -122,11 +121,7 @@ Generator.prototype.instruct = function(options, done) {
     },
     function(cb) {
       // Get API src
-      if (!(self.doc.id in self.apiSrc)) {
-        self.apiSrc[self.doc.id] = fs.readFileSync('./data/apis/' + self.doc.id + '.api', 'utf8');
-      }
-
-      self.src = self.apiSrc[self.doc.id];
+      self.src = fs.readFileSync('./data/apis/' + self.doc.id + '.api', 'utf8');
       cb(null);
     }
   ], function(err, results) {
@@ -153,8 +148,8 @@ Generator.prototype.generate = function(cb) {
     ${self.src}
           } catch (e) {
             api = {
-              API_ERROR: e.toString(),
-              API_STACK: e.stack
+              API_ERROR: "Something went wrong"//e.toString(),
+              //API_STACK: e.stack
             };
           }
           _APIresults.push(api);
@@ -282,6 +277,7 @@ Generator.prototype.availableFuncs = function() {
         return range(a, b);
       },
       special: function(mode, length) {
+        if (length >= 65535) length = 1;
         return random(mode, length);
       }
     },
