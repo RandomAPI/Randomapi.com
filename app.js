@@ -82,33 +82,37 @@ defaultVars = {};  // Default vars to send into views
 var firstRun = false;
 
 app.use('*', function(req, res, next) {
-  if (baseURL === null && basehref === null) firstRun = true;
+  // Skip if user is accessing api
+  if (req.params[0].slice(0, 5) === '/api/') next();
+  else {
+    if (baseURL === null && basehref === null) firstRun = true;
 
-  defaultVars = { messages: req.flash('info'), session: req.session, basehref, title: null };
-  if (settings.general.behindReverseProxy) {
-    var uri  = req.headers.uri.replace(/(\/)+$/,'');
-    var path = req.originalUrl.replace(/(\/)+$/,'');
-
-    if (path === '') {
-      baseURL = uri;
-    } else {
-      baseURL = uri.slice(0, uri.indexOf(path));
-    }
-    basehref = req.headers.hostpath + baseURL + '/';
-  } else {
-    baseURL  = '';
-    basehref = baseURL + '/';
-  }
-
-  if (firstRun) {
-    firstRun = false;
+    defaultVars = { messages: req.flash('info'), session: req.session, basehref, title: null };
     if (settings.general.behindReverseProxy) {
-      res.redirect(req.headers.uri.replace(/(\/)+$/,''));
+      var uri  = req.headers.uri.replace(/(\/)+$/,'');
+      var path = req.originalUrl.replace(/(\/)+$/,'');
+
+      if (path === '') {
+        baseURL = uri;
+      } else {
+        baseURL = uri.slice(0, uri.indexOf(path));
+      }
+      basehref = req.headers.hostpath + baseURL + '/';
     } else {
-      res.redirect(req.originalUrl);
+      baseURL  = '';
+      basehref = baseURL + '/';
     }
-  } else {
-    next();
+
+    if (firstRun) {
+      firstRun = false;
+      if (settings.general.behindReverseProxy) {
+        res.redirect(req.headers.uri.replace(/(\/)+$/,''));
+      } else {
+        res.redirect(req.originalUrl);
+      }
+    } else {
+      next();
+    }
   }
 });
 
