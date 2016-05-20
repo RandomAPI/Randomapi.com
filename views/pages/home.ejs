@@ -9,6 +9,17 @@
         <% include ../snippets/nav %>
         Your api key is <input style="color: green" onClick="this.select();" value="<%= session.user.key %>" readonly size="23"><br>
         Your tier is <%= session.user.tier %>
+        <h3>Super short documentation for calling APIs</h3>
+        <p>
+        API URL: http://beta.randomapi.com/api/{API_ID}?key={API_KEY}{OPTIONAL_ARGUMENTS}<br>
+        Example: http://beta.randomapi.com/api/123456?key=ABCD-EFGH-IJKL-MNOZ&results=25&fmt=csv&blah=123&page=3<br>
+        Available arguments:<br>
+        - results (default to 1, max is 5000)<br>
+        - fmt (defaults to json, accepts csv, xml, yaml, pretty)<br>
+        - page (defaults to 1)<br>
+        - optional get vars that can be accessed in APIs with getVar()<br>
+
+        </p>
     </div>
 </body>
 

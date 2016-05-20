@@ -21,7 +21,6 @@ var APISchema = mongoose.Schema({
 
 APISchema.pre('save', function(next) {
   var self = this;
-  console.log(self.generator, Generator.getByVersion(self.generator));
   if (Generator.getByID(self.generator) === null) {
     self.generator = Generator.getLatestVersion().index;
   }
