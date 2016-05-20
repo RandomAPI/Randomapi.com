@@ -89,6 +89,20 @@ GeneratorForker.prototype.generate = function(opts, cb) {
   });
 };
 
+GeneratorForker.prototype.speedTest = function(opts, num, cb) {
+  _.merge(opts, {time: num});
+  var self = this;
+
+  this.generator.send({
+    type: "speedtest",
+    options: opts
+  });
+
+  this.once('DONE', data => {
+    cb(data.data);
+  });
+};
+
 GeneratorForker.prototype.queueLength = function() {
   return this.queue.length();
 };

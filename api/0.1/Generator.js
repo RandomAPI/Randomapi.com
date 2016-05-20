@@ -54,6 +54,18 @@ var Generator = function(options) {
       } else if (m.content === "getMemory") {
         process.send({type: "getMemory", content: process.memoryUsage().heapTotal})
       }
+
+    // Speedtest
+    } else if (m.type === "speedtest") {
+      self.instruct(m.options, function(err) {
+        if (err) {
+          process.send({type: 'DONE', content: {data: err, fmt: null}});
+        } else {
+          self.speedTest(m.options.time, function(num) {
+            process.send({type: 'DONE', content: {data: num}});
+          });
+        }
+      });
     }
   });
 };
@@ -205,6 +217,48 @@ Generator.prototype.generate = function(cb) {
     } else {
       cb(JSON.stringify(json), "json");
     }
+  }
+};
+
+Generator.prototype.speedTest = function(limit, cb) {
+  var self = this;
+  var output = [];
+
+  try {
+
+    this.sandBox = new vm.Script(`
+      'use strict'
+      var _APIgetVars = ${JSON.stringify(self.options)};
+      var _APIresults = [];
+      var start = new Date().getTime();
+      (function() {
+        while(true) {
+          var api = {};
+          try {
+${self.src}
+          } catch (e) {
+            api = {
+              API_ERROR: e.toString(),
+              API_STACK: e.stack
+            };
+          }
+          _APIresults.push(api);
+          if (new Date().getTime() - start >= ${limit}*1000) break;
+        }
+      })();
+      function getVar(key) {
+        //if (_APIgetVars === undefined) return undefined;
+        return key in _APIgetVars ? _APIgetVars[key] : undefined;
+      }
+    `);
+    this.sandBox.runInContext(this.context, {
+      displayErrors: true,
+      timeout: self.limits.execTime * 1000
+    });
+
+    cb(this.context._APIresults.length);
+  } catch(e) {
+    cb(-1);
   }
 };
 
