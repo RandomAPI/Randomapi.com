@@ -122,7 +122,7 @@ var loads = {
 };
 
 var instructions = grid.set(11, 0, 1, 12, contrib.markdown, {
-  markdown: "**^G** Manual Garbage Collection\n**^Q** Quit"
+  markdown: "**^G** Manual GC\t**^V** Rebuild views\n**^Q** Quit\t\t **^C** Clear log"
 });
 
 function updateDonut() {
@@ -164,6 +164,18 @@ screen.key(['C-g'], function(ch, key) {
   Generators.basic.forEach(gen => gen.gc());
   Generators.standard.forEach(gen => gen.gc());
   Generators.premium.forEach(gen => gen.gc());
+});
+
+screen.key(['C-v'], function(ch, key) {
+  logger("Regenerating views");
+  var gulp = require('child_process').spawn('gulp');
+  gulp.on('close', (code) => {
+    logger("Finished rebuilding views");
+  });
+});
+
+screen.key(['C-c'], function(ch, key) {
+  logger(true);
 });
 
 //////////
@@ -279,5 +291,13 @@ function pad(n, width, z) {
 }
 
 function logger(msg) {
-  log.log(moment().format('LTS') + " - " + msg);
+  // Clear log
+  if (msg === true) {
+    for (var i = 0; i < 10; i++) {
+      log.log('');
+    }
+    log.logLines = [];
+  } else {
+    log.log(moment().format('LTS') + " - " + msg);
+  }
 }
