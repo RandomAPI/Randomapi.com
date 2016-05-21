@@ -27,8 +27,8 @@ var queueStats = {
 
 };
 
-var basicBar = grid.set(0, 0, 2, 2, contrib.bar, {
-  label: 'Basic Generators Queue Length',
+var basicBar = grid.set(0, 0, 2, 1, contrib.bar, {
+  label: 'Basic Queue',
   barWidth: 3,
   barSpacing: 1,
   xOffset: 0,
@@ -37,17 +37,17 @@ var basicBar = grid.set(0, 0, 2, 2, contrib.bar, {
 });
 screen.append(basicBar) //must append before setting data
 setInterval(function() {
-  queueStats.basic = new Array(Generators.basic.length).fill().map((v, k) => Generators.basic[k].queueLength());
+  queueStats.basic = new Array(Generators.basic.length).fill().slice(0, 3).map((v, k) => Generators.basic[k].queueLength());
 
   basicBar.setData({
-    titles: new Array(Generators.basic.length).fill().map((v, k) => "#" + k),
+    titles: new Array(Generators.basic.length).fill().slice(0, 3).map((v, k) => "#" + k),
     data: queueStats.basic
   });
   screen.render();
 }, 250);
 
-var standardBar = grid.set(0, 2, 2, 2, contrib.bar, {
-  label: 'Standard Generators Queue Length',
+var standardBar = grid.set(0, 1, 2, 1, contrib.bar, {
+  label: 'Standard Queue',
   barWidth: 3,
   barSpacing: 1,
   xOffset: 0,
@@ -56,17 +56,17 @@ var standardBar = grid.set(0, 2, 2, 2, contrib.bar, {
 });
 screen.append(standardBar) //must append before setting data
 setInterval(function() {
-  queueStats.standard = new Array(Generators.standard.length).fill().map((v, k) => Generators.standard[k].queueLength());
+  queueStats.standard = new Array(Generators.standard.length).fill().slice(0, 3).map((v, k) => Generators.standard[k].queueLength());
 
   standardBar.setData({
-    titles: new Array(Generators.standard.length).fill().map((v, k) => "#" + k),
+    titles: new Array(Generators.standard.length).fill().slice(0, 3).map((v, k) => "#" + k),
     data: queueStats.standard
   });
   screen.render()
 }, 100);
 
-var premiumBar = grid.set(0, 4, 2, 2, contrib.bar, {
-  label: 'Premium Generators Queue Length',
+var premiumBar = grid.set(0, 2, 2, 1, contrib.bar, {
+  label: 'Premium Queue',
   barWidth: 3,
   barSpacing: 1,
   xOffset: 0,
@@ -75,37 +75,37 @@ var premiumBar = grid.set(0, 4, 2, 2, contrib.bar, {
 });
 screen.append(premiumBar) //must append before setting data
 setInterval(function() {
-  queueStats.premium = new Array(Generators.premium.length).fill().map((v, k) => Generators.premium[k].queueLength());
+  queueStats.premium = new Array(Generators.premium.length).fill().slice(0, 3).map((v, k) => Generators.premium[k].queueLength());
 
   premiumBar.setData({
-    titles: new Array(Generators.premium.length).fill().map((v, k) => "#" + k),
+    titles: new Array(Generators.premium.length).fill().slice(0, 3).map((v, k) => "#" + k),
     data: queueStats.premium
   });
   screen.render()
 }, 100);
 
-var basicTable =  grid.set(0, 6, 2, 2, contrib.table, {
+var basicTable =  grid.set(0, 3, 2, 1, contrib.table, {
   fg: 'red',
   label: 'Basic Generators',
   columnSpacing: 1,
   interactive: false,
-  columnWidth: [10, 6, 10],
+  columnWidth: [4, 8, 3],
 });
 
-var standardTable =  grid.set(0, 8, 2, 2, contrib.table, {
+var standardTable =  grid.set(0, 4, 2, 1, contrib.table, {
   fg: 'green',
   label: 'Standard Generators',
   columnSpacing: 1,
   interactive: false,
-  columnWidth: [10, 6, 10]
+  columnWidth: [4, 8, 3]
 });
 
-var premiumTable =  grid.set(0, 10, 2, 2, contrib.table, {
+var premiumTable =  grid.set(0, 5, 2, 1, contrib.table, {
   fg: 'cyan',
   label: 'Premium Generators',
   columnSpacing: 1,
   interactive: false,
-  columnWidth: [10, 6, 10]
+  columnWidth: [4, 8, 3]
 });
 
 //set dummy data for table
@@ -128,9 +128,9 @@ function generateTable() {
     }
   }
 
-   basicTable.setData({headers: ['#', 'Jobs', 'Memory'], data: data.basic})
-   standardTable.setData({headers: ['#', 'Jobs', 'Memory'], data: data.standard})
-   premiumTable.setData({headers: ['#', 'Jobs', 'Memory'], data: data.premium})
+   basicTable.setData({headers: ['#', 'Jobs', 'Mem'], data: data.basic})
+   standardTable.setData({headers: ['#', 'Jobs', 'Mem'], data: data.standard})
+   premiumTable.setData({headers: ['#', 'Jobs', 'Mem'], data: data.premium})
 }
 
 generateTable();
@@ -158,11 +158,12 @@ totalQueues.setData([botline, basicStats, standardStats, premiumStats]);
 
 var time = Math.floor(new Date().getTime()/1000);
 setInterval(function() {
-  var fmt = moment.duration(Math.floor(new Date().getTime()/1000) - time, 'seconds');
-  var min = Math.floor(fmt.asMinutes());
-  var sec = fmt.asSeconds() - Math.floor(fmt.asMinutes()) * 60;
+  var fmt   = moment.duration(Math.floor(new Date().getTime()/1000) - time, 'seconds');
+  var hours = Math.floor(fmt.asHours());
+  var min   = Math.floor(fmt.asMinutes());
+  var sec   = fmt.asSeconds() - Math.floor(fmt.asMinutes()) * 60;
 
-  botline.x.push(pad(min, 2) + ":" + pad(sec, 2));
+  botline.x.push(pad(hours, 2) + ":" + pad(min, 2) + ":" + pad(sec, 2));
   botline.y.push(0);
 
   basicStats.y.push(_.sum(queueStats.basic));
@@ -180,12 +181,12 @@ setInterval(function() {
   screen.render()
 }, 1000)
 
-log = grid.set(2, 8, 2, 4, contrib.log, {
+log = grid.set(2, 4, 2, 2, contrib.log, {
   fg: "white",
   label: 'Server Log'
 });
 
-var loadBasic = grid.set(2, 0, 2, 2, contrib.donut,
+var loadBasic = grid.set(2, 0, 2, 1, contrib.donut,
   {
   label: 'Basic Load',
   radius: 10,
@@ -194,7 +195,7 @@ var loadBasic = grid.set(2, 0, 2, 2, contrib.donut,
   data: [{label: 'Basic Load', percent: 0}]
 });
 
-var loadStandard = grid.set(2, 2, 2, 2, contrib.donut,
+var loadStandard = grid.set(2, 1, 2, 1, contrib.donut,
   {
   label: 'Standard Load',
   radius: 10,
@@ -203,7 +204,7 @@ var loadStandard = grid.set(2, 2, 2, 2, contrib.donut,
   data: [{label: 'Standard Load', percent: 0}]
 });
 
-var loadPremium = grid.set(2, 4, 2, 2, contrib.donut,
+var loadPremium = grid.set(2, 2, 2, 1, contrib.donut,
   {
   label: 'Premium Load',
   radius: 10,
@@ -212,7 +213,7 @@ var loadPremium = grid.set(2, 4, 2, 2, contrib.donut,
   data: [{label: 'Premium Load', percent: 0}]
 });
 
-var overallLoad = grid.set(2, 6, 2, 2, contrib.donut,
+var overallLoad = grid.set(2, 3, 2, 1, contrib.donut,
   {
   label: 'Overall Load',
   radius: 10,
@@ -232,7 +233,7 @@ function updateDonut() {
     if (percent >= 75) color = "yellow";
     if (percent >= 90) color = "red";
     donuts[num].setData([
-       {percent: percent, label: 'blah', 'color': color}
+       {percent: percent, label: '', 'color': color}
     ]);
     overallPerc += percent;
   });
