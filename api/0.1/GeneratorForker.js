@@ -73,10 +73,10 @@ GeneratorForker.prototype.generate = function(opts, cb) {
   var self = this;
 
   if (this.jobCount++ % 100 === 0 && this.jobCount > 0) {
-    this.generator.send({
-      type: "command",
-      content: "gc"
-    });
+    // this.generator.send({
+    //   type: "command",
+    //   content: "gc"
+    // });
   }
 
   this.generator.send({
@@ -100,6 +100,13 @@ GeneratorForker.prototype.speedTest = function(opts, num, cb) {
 
   this.once('DONE', data => {
     cb(data.data);
+  });
+};
+
+GeneratorForker.prototype.gc = function() {
+  this.generator.send({
+    type: "command",
+    content: "gc"
   });
 };
 

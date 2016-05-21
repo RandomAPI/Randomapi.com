@@ -14,8 +14,8 @@ var EventEmitter = require('events').EventEmitter;
 var version = '0.1';
 
 var Generator = function(options) {
-  options = JSON.parse(options);
   var self = this;
+  options = JSON.parse(options);
   this.version   = version;
   this.limits    = {
     execTime: options.execTime,
@@ -23,7 +23,7 @@ var Generator = function(options) {
     results:  options.results
   };
   this.context = vm.createContext(this.availableFuncs());
-  this.originalContext = ["random","list","hash","String","timestamp","_APIgetVars","_APIresults","getVar"];
+  this.originalContext = ["random", "list", "hash", "String", "timestamp", "_APIgetVars", "_APIresults", "getVar"];
   this.listResults = {}; // Hold cache of list results
 
   process.on('message', (m) => {
@@ -49,7 +49,7 @@ var Generator = function(options) {
       });
     } else if (m.type === "command") {
       if (m.content === "gc") {
-        //global.gc();
+        global.gc();
       } else if (m.content === "getMemory") {
         process.send({type: "getMemory", content: process.memoryUsage().heapTotal})
       }
