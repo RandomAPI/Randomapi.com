@@ -193,10 +193,10 @@ setInterval(function() {
   elapsed = Math.floor(new Date().getTime()/1000) - time;
   var fmt   = moment.duration(elapsed, 'seconds');
   var hours = Math.floor(fmt.asHours());
-  var min   = Math.floor(fmt.asMinutes());
+  var min   = Math.floor(Math.floor(fmt.asMinutes()) - (Math.floor(fmt.asHours()) * 60));
   var sec   = fmt.asSeconds() - Math.floor(fmt.asMinutes()) * 60;
 
-  botline.x.push(pad(hours, 2) + ":" + pad(min, 2) + ":" + pad(sec, 2));
+  botline.x.push(Math.floor(fmt.asDays()) + ":" + pad(hours, 2) + ":" + pad(min, 2) + ":" + pad(sec, 2));
   botline.y.push(0);
 
   basicStats.y.push(_.sum(queueStats.basic));
@@ -230,9 +230,6 @@ setInterval(function() {
 
 ////////////
 
-
-
-
 startServer();
 function startServer() {
   server.listen(app.get('port'));
@@ -260,7 +257,6 @@ function startServer() {
     logger('Listening on ' + bind);
   });
   
-
   // // Client limit reset
   // setInterval(() => {
   //   var offenders = {};
