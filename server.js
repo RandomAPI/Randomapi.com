@@ -300,7 +300,7 @@ setInterval(function() {
 
   oldEventTime = tmp;
 
-  if (botline.x.length > 25) {
+  if (botline.x.length > 60) {
     botline.x.shift();
     botline.y.shift();
 
