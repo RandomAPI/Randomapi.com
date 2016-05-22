@@ -54,7 +54,11 @@ var Generator = function(name, options) {
       if (m.content === "gc") {
         global.gc();
       } else if (m.content === "getMemory") {
-        process.send({type: "getMemory", content: process.memoryUsage().heapUsed})
+        process.send({type: "getMemory", content: process.memoryUsage().heapUsed});
+      } else if (m.content === "getLists") {
+        process.send({type: "getLists", content: String(Object.keys(self.listResults))});
+      } else if (m.content === "clearLists") {
+        self.listResults = {};
       }
 
     // Speedtest

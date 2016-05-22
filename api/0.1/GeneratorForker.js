@@ -60,6 +60,10 @@ GeneratorForker.prototype.fork = function() {
       self.emit('DONE', m.content);
     } else if (m.type === "getMemory") {
       self.emit('getMemory', m.content);
+    } else if (m.type === "getLists") {
+      self.emit('getLists', m.content);
+    } else if (m.type === "clearLists") {
+      self.emit('clearLists', m.content);
     } else if (m.type === "logger") {
       log.log(m.content);
     }
@@ -132,6 +136,28 @@ GeneratorForker.prototype.memUsage = function() {
 
   require('deasync').loopWhile(function(){return !done;});
   return Math.floor(memory/1024/1024);
+};
+
+GeneratorForker.prototype.getLists = function() {
+  this.generator.send({
+    type: "command",
+    content: "getLists"
+  });
+  var lists, done = false;
+  this.once('getLists', data => {
+    lists = data;
+    done = true;
+  });
+
+  require('deasync').loopWhile(function(){return !done;});
+  return lists;
+};
+
+GeneratorForker.prototype.clearLists = function() {
+  this.generator.send({
+    type: "command",
+    content: "clearLists"
+  });
 };
 
 module.exports = GeneratorForker;

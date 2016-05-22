@@ -210,6 +210,17 @@ screen.key(['C-c'], function(ch, key) {
   logger(true);
 });
 
+screen.key(['C-l'], function(ch, key) {
+  logger(Generators.basic[0].getLists());
+});
+
+screen.key(['C-k'], function(ch, key) {
+  Generators.basic[0].clearLists();
+  Generators.basic[0].gc();
+  logger("Lists cleared!");
+});
+
+
 //////////
 
 screen.render();
