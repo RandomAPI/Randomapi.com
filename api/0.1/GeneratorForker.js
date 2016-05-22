@@ -17,18 +17,25 @@ var GeneratorForker = function(options) {
   this.startTime = new Date().getTime();
   this.jobCount = 0;
   this.queue = async.queue(function (task, callback) {
-    var ref;
-    if (task.req.params.ref === undefined) {
-      ref = task.req.query.ref;
+    if (task.speedtest) {
+      self.speedTest({ref: task.ref}, task.time, function(data) {
+        task.cb(data)
+        callback();
+      });
     } else {
-      ref = task.req.params.ref;
+      var ref;
+      if (task.req.params.ref === undefined) {
+        ref = task.req.query.ref;
+      } else {
+        ref = task.req.params.ref;
+      }
+      _.merge(task.req.query, {ref});
+      self.generate(task.req.query, function(data) {
+        task.res.setHeader('Content-Type', 'application/json');
+        task.res.send(data);
+        callback();
+      });
     }
-    _.merge(task.req.query, {ref});
-    self.generate(task.req.query, function(data) {
-      task.res.setHeader('Content-Type', 'application/json');
-      task.res.send(data);
-      callback();
-    });
   }, 1);
 
   this.fork();
@@ -95,6 +102,7 @@ GeneratorForker.prototype.generate = function(opts, cb) {
 };
 
 GeneratorForker.prototype.speedTest = function(opts, num, cb) {
+  this.jobCount++;
   _.merge(opts, {time: num});
   var self = this;
 
@@ -138,7 +146,7 @@ GeneratorForker.prototype.memUsage = function() {
   return Math.floor(memory/1024/1024);
 };
 
-GeneratorForker.prototype.getLists = function() {
+GeneratorForker.prototype.getCacheSize = function() {
   this.generator.send({
     type: "command",
     content: "getLists"

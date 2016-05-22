@@ -20,10 +20,10 @@ Generators = {
   standard:  new Array(2).fill().map((k, v) => new GeneratorForker({name: "standard_" + v, execTime: 5, memory: 10, results: 250})),
   premium:   new Array(3).fill().map((k, v) => new GeneratorForker({name: "premium_" + v, execTime: 10, memory: 25, results: 2500})),
   realtime:  new Array(3).fill().map((k, v) => new GeneratorForker({name: "realtime_" + v, execTime: 1, memory: 1, results: 1})),
-  speedtest: new Array(1).fill().map((k, v) => new GeneratorForker({name: "speedtest_" + v, execTime: 5, memory: 5, results: 1000000}))
+  speedtest: new Array(1).fill().map((k, v) => new GeneratorForker({name: "speedtest_" + v, execTime: 5, memory: 5, results: 0}))
 };
 
-var types = ['basic', 'standard', 'premium'];
+var types = ['basic', 'standard', 'premium', 'realtime', 'speedtest'];
 
 // For graphing stats
 var queueStats = {};
@@ -210,16 +210,38 @@ screen.key(['C-c'], function(ch, key) {
   logger(true);
 });
 
-screen.key(['C-l'], function(ch, key) {
-  logger(Generators.basic[0].getLists());
-});
-
 screen.key(['C-k'], function(ch, key) {
-  Generators.basic[0].clearLists();
-  Generators.basic[0].gc();
+  Generators.basic.forEach(gen => (gen.clearLists(), gen.gc()));
+  Generators.standard.forEach(gen => (gen.clearLists(), gen.gc()));
+  Generators.premium.forEach(gen => (gen.clearLists(), gen.gc()));
+  Generators.realtime.forEach(gen => (gen.clearLists(), gen.gc()));
+  Generators.speedtest.forEach(gen => (gen.clearLists(), gen.gc()));
   logger("Lists cleared!");
 });
 
+screen.key(['C-l'], function(ch, key) {
+  Generators.basic.forEach(gen => logger(gen.getCacheSize()));
+  Generators.standard.forEach(gen => logger(gen.getCacheSize()));
+  Generators.premium.forEach(gen => logger(gen.getCacheSize()));
+  Generators.realtime.forEach(gen => logger(gen.getCacheSize()));
+  Generators.speedtest.forEach(gen => logger(gen.getCacheSize()));
+});
+
+screen.key(['a'], function(ch, key) {
+  logger("Running speedtest");
+  Generators.speedtest[0].queue.push({
+    speedtest: true,
+    ref: 'ba77x',
+    time: 1,
+    cb: function(amt) {
+      logger(amt);
+    }
+  });
+});
+
+screen.key(['s'], function(ch, key) {
+  logger(queueStats['speedtest'] + " | " + memStats['speedtest'] + " | " + jobStats['speedtest']);
+})
 
 //////////
 
@@ -233,6 +255,8 @@ setInterval(function() {
     queueStats[type] = new Array(Generators[type].length).fill().slice(0, 3).map((v, k) => Generators[type][k].queueLength());
     memStats[type] = new Array(Generators[type].length).fill().slice(0, 3).map((v, k) => Generators[type][k].memUsage());
     jobStats[type] = new Array(Generators[type].length).fill().slice(0, 3).map((v, k) => Generators[type][k].totalJobs());
+
+    if (type === "speedtest" || type === "realtime") return;
     bars[type].setData({
       titles: new Array(Generators[type].length).fill().slice(0, 3).map((v, k) => "#" + k),
       data: queueStats[type]

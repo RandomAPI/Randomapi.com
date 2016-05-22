@@ -41,7 +41,7 @@ var Generator = function(name, options) {
 
     // New Generate task
     } else if (m.type === "task") {
-      self.instruct(m.options, function(err) {
+      self.instruct(m.options, false, function(err) {
         if (err) {
           process.send({type: 'DONE', content: {data: err, fmt: null}});
         } else {
@@ -63,7 +63,7 @@ var Generator = function(name, options) {
 
     // Speedtest
     } else if (m.type === "speedtest") {
-      self.instruct(m.options, function(err) {
+      self.instruct(m.options, true, function(err) {
         if (err) {
           process.send({type: 'DONE', content: {data: err, fmt: null}});
         } else {
@@ -79,7 +79,7 @@ var Generator = function(name, options) {
 util.inherits(Generator, EventEmitter);
 
 // Receives the query which contains API, owner, and reqest data
-Generator.prototype.instruct = function(options, done) {
+Generator.prototype.instruct = function(options, speedtest, done) {
   var self = this;
 
   this.options     = options || {};
@@ -88,6 +88,7 @@ Generator.prototype.instruct = function(options, done) {
   this.format      = (this.options.format || this.options.fmt || 'json').toLowerCase();
   this.noInfo      = typeof this.options.noinfo !== 'undefined';
   this.page        = Number(this.options.page) || 1;
+  this.speedtest   = speedtest;
 
   // Sanitize values
   if (isNaN(this.results) || this.results < 0 || this.results > this.limits.results || this.results === '') this.results = 1;
@@ -119,8 +120,8 @@ Generator.prototype.instruct = function(options, done) {
       self.once('USER_RESPONSE', data => {
         self.keyOwner = data;
 
-        if (self.keyOwner.key !== self.options.key) {
-          cb("You are not the owner of this API boi!");
+        if (self.keyOwner.key !== self.options.key && !self.speedtest) {
+          cb("You are not the owner of this API boi!" + self.speedtest);
         } else {
           cb(null);
         }
@@ -258,6 +259,7 @@ ${self.src}
       timeout: self.limits.execTime * 1000
     });
 
+    self.listResults = {}; // Clear lists everytime for speedtest runs
     cb(this.context._APIresults.length);
   } catch(e) {
     cb(-1);
