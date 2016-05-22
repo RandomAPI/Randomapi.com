@@ -13,7 +13,10 @@ var EventEmitter = require('events').EventEmitter;
 
 var version = '0.1';
 
-var Generator = function(options) {
+var Generator = function(name, options) {
+  name = name || "generator";
+  process.title = "RandomAPI Generator " + name + " - " + options;
+
   var self = this;
   options = JSON.parse(options);
   this.version   = version;
@@ -51,7 +54,7 @@ var Generator = function(options) {
       if (m.content === "gc") {
         global.gc();
       } else if (m.content === "getMemory") {
-        process.send({type: "getMemory", content: process.memoryUsage().heapTotal})
+        process.send({type: "getMemory", content: process.memoryUsage().heapUsed})
       }
 
     // Speedtest
@@ -371,4 +374,4 @@ var log = msg => {
   process.send({type: "logger", content: msg});
 }
 
-new Generator(process.argv[2]);
+new Generator(process.argv[2], process.argv[3]);

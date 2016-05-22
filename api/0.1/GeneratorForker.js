@@ -13,6 +13,7 @@ var GeneratorForker = function(options) {
     results:  options.results
   };
 
+  this.name = options.name;
   this.startTime = new Date().getTime();
   this.jobCount = 0;
   this.queue = async.queue(function (task, callback) {
@@ -39,7 +40,7 @@ GeneratorForker.prototype.fork = function() {
   var self = this;
 
   // Fork new Generator with provided limits
-  this.generator = fork(__dirname + '/Generator', [JSON.stringify(this.limits)]);
+  this.generator = fork(__dirname + '/Generator', [this.name, JSON.stringify(this.limits)]);
 
   this.generator.on('message', m => {
     // Requesting API Lookup
