@@ -14,20 +14,28 @@ var EventEmitter = require('events').EventEmitter;
 var version = '0.1';
 
 var Generator = function(name, options) {
+  var self = this;
+
   name = name || "generator";
   process.title = "RandomAPI Generator " + name + " - " + options;
 
-  var self = this;
   options = JSON.parse(options);
   this.version   = version;
   this.limits    = {
     execTime: options.execTime,
-    memory:   options.memory,
+    memory:   options.memory*1024*1024,
     results:  options.results
   };
   this.context = vm.createContext(this.availableFuncs());
   this.originalContext = ["random", "list", "hash", "String", "timestamp", "_APIgetVars", "_APIresults", "getVar"];
-  this.listResults = {}; // Hold cache of list results
+  this.listsResults = {}; // Hold cache of list results
+
+  // Lists that were added to cache within last minute.
+  // Structure: {Key: list.length}
+  // Every 60 seconds, perform a check for any lists that
+  // are greater than 1/4 the size of the memory limit and remove
+  // them if they are.
+  this.listsAdded = {};
 
   process.on('message', (m) => {
     // Received API info from forker
@@ -56,9 +64,9 @@ var Generator = function(name, options) {
       } else if (m.content === "getMemory") {
         process.send({type: "getMemory", content: process.memoryUsage().heapUsed});
       } else if (m.content === "getLists") {
-        process.send({type: "getLists", content: String(Object.keys(self.listResults))});
+        process.send({type: "getLists", content: String(Object.keys(self.listsResults))});
       } else if (m.content === "clearLists") {
-        self.listResults = {};
+        self.listsResults = {};
       }
 
     // Speedtest
@@ -74,6 +82,11 @@ var Generator = function(name, options) {
       });
     }
   });
+
+  // Remove lists that shouldn't be cached
+  setInterval(function() {
+    self.checkLists();
+  }, 60000);
 };
 
 util.inherits(Generator, EventEmitter);
@@ -204,9 +217,6 @@ Generator.prototype.generate = function(cb) {
 
     if (self.noInfo) delete json.info;
 
-    self.defaultSeed();
-    self.seedRNG();
-
     if (self.format === 'yaml') {
       cb(YAML.stringify(json, 4), "yaml");
     } else if (self.format === 'xml') {
@@ -259,7 +269,7 @@ ${self.src}
       timeout: self.limits.execTime * 1000
     });
 
-    self.listResults = {}; // Clear lists everytime for speedtest runs
+    self.listsResults = {}; // Clear lists everytime for speedtest runs
     cb(this.context._APIresults.length);
   } catch(e) {
     cb(-1);
@@ -302,14 +312,21 @@ Generator.prototype.availableFuncs = function() {
         }
       } else {
         var done = false;
-        if (!(obj in self.listResults)) {
+        if (!(obj in self.listsResults)) {
           process.send({type: 'LIST', ref: obj});
           self.once('LIST_RESPONSE', data => {
             var res = data;
+            var file = fs.readFileSync(process.cwd() + '/data/lists/' + res.id + '.list', 'utf8');
+
+            // Add filesize to listAdded object to check later
+            self.listsAdded[obj] = file.length;
+            self.listsResults[obj] = {
+              added: new Date().getTime()
+            };
             if (res !== null) {
-              self.listResults[obj] = fs.readFileSync(process.cwd() + '/data/lists/' + res.id + '.list', 'utf8').split('\n');
+              self.listsResults[obj].content = file.split('\n');
             } else {
-              self.listResults[obj] = [undefined];
+              self.listsResults[obj].content = [undefined];
             }
             done = true;
           });
@@ -318,10 +335,11 @@ Generator.prototype.availableFuncs = function() {
         }
 
         require('deasync').loopWhile(function(){return !done;});
+        self.listsResults[obj].lastUsed = new Date().getTime();
         if (num !== undefined) {
-          return self.listResults[obj][num-1];
+          return self.listsResults[obj].content[num-1];
         } else {
-          return randomItem(self.listResults[obj]);
+          return randomItem(self.listsResults[obj].content);
         }
       }
     },
@@ -342,6 +360,56 @@ Generator.prototype.availableFuncs = function() {
     }
   };
 };
+
+Generator.prototype.checkLists = function() {
+  var self = this;
+  var keys = Object.keys(this.listsAdded);
+  var listsDeleted = false;
+
+  // Remove list from cache if it is bigger than 1/4 the cache
+  for (var i = 0; i < keys.length; i++) {
+    if (this.listsAdded[keys[i]] > ~~(this.limits.memory/4)) {
+      delete this.listsResults[keys[i]];
+      listsDeleted = true;
+    }
+  }
+
+  // Keep removing oldest lists until cache size is back to default
+  while (this.getCacheSize > this.limits.memory) {
+    delete this.listResults[this.getOldestList().ref];
+  }
+
+  this.listsAdded = {};
+  global.gc();
+};
+
+Generator.prototype.getOldestList = function() {
+  var self = this;
+  var keys = Object.keys(this.listsAdded);
+  var listsDeleted = false;
+  var oldest = {
+    ref: null,
+    lastUsed: Infinity
+  };
+  for (var i = 0; i < keys.length; i++) {
+    if (this.listsResults[keys[i]].lastUsed < oldest.lastUsed) {
+      oldest.ref = keys[i];
+      oldest.lastUsed = this.listsResults[keys[i]].lastUsed;
+    }
+  }
+
+  return oldest;
+}
+
+Generator.prototype.getCacheSize = function() {
+  var size = 0;
+
+  for (var i = 0; i < keys.length; i++) {
+    size += this.listResults[keys[i]].content.length;
+  }
+
+  return size;
+}
 
 var random = (mode, length) => {
   var result = '';
@@ -377,7 +445,7 @@ var range = (min, max) => {
 };
 
 var log = msg => {
-  process.send({type: "logger", content: msg});
+  process.send({type: "logger", content: String(msg)});
 }
 
 new Generator(process.argv[2], process.argv[3]);
