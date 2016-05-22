@@ -16,11 +16,11 @@ var GeneratorForker = require('./api/0.1/GeneratorForker');
 
 // Global Generators
 Generators = {
-  basic:     new Array(1).fill().map(() => new GeneratorForker({execTime: 1, memory: 5, results: 25})),
-  standard:  new Array(2).fill().map(() => new GeneratorForker({execTime: 5, memory: 10, results: 250})),
-  premium:   new Array(3).fill().map(() => new GeneratorForker({execTime: 10, memory: 25, results: 2500})),
-  realtime:  new Array(3).fill().map(() => new GeneratorForker({execTime: 1, memory: 1, results: 1})),
-  speedtest: new Array(1).fill().map(() => new GeneratorForker({execTime: 5, memory: 5, results: 1000000}))
+  basic:     new Array(1).fill().map((k, v) => new GeneratorForker({name: "basic_" + v, execTime: 1, memory: 5, results: 25})),
+  standard:  new Array(2).fill().map((k, v) => new GeneratorForker({name: "standard_" + v, execTime: 5, memory: 10, results: 250})),
+  premium:   new Array(3).fill().map((k, v) => new GeneratorForker({name: "premium_" + v, execTime: 10, memory: 25, results: 2500})),
+  realtime:  new Array(3).fill().map((k, v) => new GeneratorForker({name: "realtime_" + v, execTime: 1, memory: 1, results: 1})),
+  speedtest: new Array(1).fill().map((k, v) => new GeneratorForker({name: "speedtest_" + v, execTime: 5, memory: 5, results: 1000000}))
 };
 
 var types = ['basic', 'standard', 'premium'];
@@ -28,6 +28,7 @@ var types = ['basic', 'standard', 'premium'];
 // For graphing stats
 var queueStats = {};
 var memStats = {};
+var jobStats = {};
 
 // Shared bar options
 var barOpts = {
@@ -52,9 +53,9 @@ var tableOpts = {
 };
 
 var tables = {
-  basic: grid.set(0, 3, 2, 1, contrib.table, _.merge(tableOpts, {fg: 'red', label: 'Basic Generators'})),
-  standard: grid.set(0, 4, 2, 1, contrib.table, _.merge(tableOpts, {fg: 'green', label: 'Standard Generators'})),
-  premium: grid.set(0, 5, 2, 1, contrib.table, _.merge(tableOpts, {fg: 'cyan', label: 'Premium Generators'})),
+  basic: grid.set(0, 3, 2, 1, contrib.table, _.merge(tableOpts, {fg: 'red', label: 'Basic Gens'})),
+  standard: grid.set(0, 4, 2, 1, contrib.table, _.merge(tableOpts, {fg: 'green', label: 'Standard Gens'})),
+  premium: grid.set(0, 5, 2, 1, contrib.table, _.merge(tableOpts, {fg: 'cyan', label: 'Premium Gens'})),
 };
 
 function generateTables() {
@@ -84,8 +85,8 @@ generateTables();
 var totalQueues = grid.set(4, 0, 3, 6, contrib.line, {
   showNthLabel: 5,
   label: 'Total Queues',
-  showLegend: false,
-  legend: {width: 20},
+  showLegend: true,
+  legend: {width: 10},
   wholeNumbersOnly: true,
   style: {
     line: 'white',
@@ -93,12 +94,41 @@ var totalQueues = grid.set(4, 0, 3, 6, contrib.line, {
   }
 });
 
-var basicStats = { title: 'Basic', style: {line: 'red'}, y: [] };
-var standardStats = { title: 'Standard', style: {line: 'green'}, y: [] };
-var premiumStats = { title: 'Premium', style: {line: 'cyan'}, y: [] };
-var botline = { title: 'botline', style: {line: 'white'}, x:[], y: [] };
+var totalMemory = grid.set(4, 6, 3, 6, contrib.line, {
+  showNthLabel: 5,
+  label: 'Total Memory Usage',
+  showLegend: true,
+  legend: {width: 10},
+  wholeNumbersOnly: true,
+  style: {
+    line: 'white',
+    text: 'white'
+  }
+});
+
+var eventLoopResponseAvg = grid.set(7, 0, 3, 6, contrib.line, {
+  showNthLabel: 5,
+  label: 'Event Loop Response Average',
+  showLegend: true,
+  legend: {width: 10},
+  wholeNumbersOnly: true,
+  style: {
+    line: 'white',
+    text: 'white'
+  }
+});
+
+var basicStats = { title: '', style: {line: 'red'}, y: [] };
+var standardStats = { title: '', style: {line: 'green'}, y: [] };
+var premiumStats = { title: '', style: {line: 'cyan'}, y: [] };
+var botline = { title: '', style: {line: 'white'}, x:[], y: [] };
+
+var memoryLine = { title: '', style: {line: 'green'}, x:[], y: [] };
+
+var eventLine = { title: 'eventLine', style: {line: 'green'}, x:[], y: [] };
 
 totalQueues.setData([botline, basicStats, standardStats, premiumStats]);
+totalMemory.setData([botline, memoryLine]);
 
 var time = Math.floor(new Date().getTime()/1000);
 var elapsed;
@@ -164,10 +194,12 @@ screen.key(['C-g'], function(ch, key) {
   Generators.basic.forEach(gen => gen.gc());
   Generators.standard.forEach(gen => gen.gc());
   Generators.premium.forEach(gen => gen.gc());
+  Generators.realtime.forEach(gen => gen.gc());
+  Generators.speedtest.forEach(gen => gen.gc());
 });
 
 screen.key(['C-v'], function(ch, key) {
-  logger("Regenerating views");
+  logger("Rebuilding views");
   var gulp = require('child_process').spawn('gulp');
   gulp.on('close', (code) => {
     logger("Finished rebuilding views");
@@ -188,6 +220,8 @@ screen.render();
 setInterval(function() {
   types.forEach(type => {
     queueStats[type] = new Array(Generators[type].length).fill().slice(0, 3).map((v, k) => Generators[type][k].queueLength());
+    memStats[type] = new Array(Generators[type].length).fill().slice(0, 3).map((v, k) => Generators[type][k].memUsage());
+    jobStats[type] = new Array(Generators[type].length).fill().slice(0, 3).map((v, k) => Generators[type][k].totalJobs());
     bars[type].setData({
       titles: new Array(Generators[type].length).fill().slice(0, 3).map((v, k) => "#" + k),
       data: queueStats[type]
@@ -200,8 +234,10 @@ setInterval(function() {
 // Generator Tables
 setInterval(generateTables, 1000)
 
-// Queue Chart
+// Queue, Memory, and Event Chart
+var oldEventTime = Math.floor(new Date().getTime());
 setInterval(function() {
+  var tmp = Math.floor(new Date().getTime());
   elapsed = Math.floor(new Date().getTime()/1000) - time;
   var fmt   = moment.duration(elapsed, 'seconds');
   var hours = Math.floor(fmt.asHours());
@@ -212,8 +248,22 @@ setInterval(function() {
   botline.y.push(0);
 
   basicStats.y.push(_.sum(queueStats.basic));
+  basicStats.title = String(_.sum(queueStats.basic));
+
   standardStats.y.push(_.sum(queueStats.standard));
+  standardStats.title = String(_.sum(queueStats.standard));
+
   premiumStats.y.push(_.sum(queueStats.premium));
+  premiumStats.title = String(_.sum(queueStats.premium));
+
+  var memSum = _.sum([_.sum(memStats.basic), _.sum(memStats.standard), _.sum(memStats.premium)]);
+  memoryLine.y.push(memSum);
+  memoryLine.title = String(memSum + " MB");
+
+  eventLine.y.push(tmp - oldEventTime);
+  eventLine.title = String(tmp - oldEventTime + " ms");
+
+  oldEventTime = tmp;
 
   if (botline.x.length > 25) {
     botline.x.shift();
@@ -222,8 +272,13 @@ setInterval(function() {
     basicStats.y.shift();
     standardStats.y.shift();
     premiumStats.y.shift();
+    memoryLine.y.shift();
+    eventLine.y.shift();
   }
   totalQueues.setData([botline, basicStats, standardStats, premiumStats]);
+  totalMemory.setData([botline, memoryLine]);
+  eventLoopResponseAvg.setData([botline, eventLine]);
+  oldEventTime = tmp;
   screen.render();
 
   if (elapsed % 3600 === 0) {
