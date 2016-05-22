@@ -26,18 +26,18 @@ router.get('/api', function(req, res, next) {
 });
 
 router.post('/api', function(req, res, next) {
-  if (req.body.name === "") {
-    req.flash('info', "Please provide a name for your API");
+  if (req.body.name === '') {
+    req.flash('info', 'Please provide a name for your API');
     res.redirect(baseURL + '/new/api');
   } else {
     API.add({name: req.body.name, generator: req.body.generator, owner: req.session.user.id}, function(model) {
       fs.writeFile('./data/apis/' + model.id + '.api', `
 // APIs are coded with Vanilla Javascript and are executed in a sandboxed environment
 // Append all fields to the api object that you want to have returned
-api.field = "blah";
+api.field = 'blah';
 
 // If you want to use a variable but don't want it to be outputted in the API, use var like a normal variable.
-var data = "123";
+var data = '123';
 api.data = data; // This will attach data to the api object that is returned
 
 // Access a random item from a list with the list() function
@@ -84,7 +84,7 @@ api.results = {
     mod: api.num1 % api.num2
 };
 `, 'utf8', function(err) {
-        req.flash('info', "API " + req.body.name + " was added successfully!");
+        req.flash('info', 'API ' + req.body.name + ' was added successfully!');
         res.redirect(baseURL + '/edit/api/' + model.ref);
       });
     });
@@ -101,13 +101,13 @@ router.get('/list', function(req, res, next) {
 });
 
 router.post('/list', upload.any(), function(req, res, next) {
-  if (req.body.name === undefined || req.files.length === 0 || req.files[0].originalname.match(/(?:\.([^.]+))?$/)[1] !== "txt") {
-    req.flash('info', "Looks like you provided an invalid file...please try again.");
+  if (req.body.name === undefined || req.files.length === 0 || req.files[0].originalname.match(/(?:\.([^.]+))?$/)[1] !== 'txt') {
+    req.flash('info', 'Looks like you provided an invalid file...please try again.');
     res.redirect(baseURL + '/new/list');
   } else {
     List.add({name: req.body.name, owner: req.session.user.id}, function(model) {
       fs.rename('./'+ req.files[0].path, './data/lists/' + model.id + '.list', function(err) {
-        req.flash('info', "List " + req.body.name + " was added successfully!");
+        req.flash('info', 'List ' + req.body.name + ' was added successfully!');
         res.redirect(baseURL + '/view/list');
       });
     });

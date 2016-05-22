@@ -11,7 +11,7 @@ router.get('/api/:id', function(req, res, next) {
     } else {
       API.remove({id: req.params.id}, function(err) {
         fs.unlink('./data/apis/' + req.params.id + '.api', function(err) {
-          req.flash('info', "API " + doc.name + " was deleted successfully!");
+          req.flash('info', 'API ' + doc.name + ' was deleted successfully!');
           res.redirect(baseURL + '/view/api');
         });
       });
@@ -30,7 +30,7 @@ router.get('/list/:id', function(req, res, next) {
     } else {
       List.remove({id: req.params.id}, function(err) {
         fs.unlink('./data/lists/' + req.params.id + '.list', function(err) {
-          req.flash('info', "List " + doc.name + " was deleted successfully!");
+          req.flash('info', 'List ' + doc.name + ' was deleted successfully!');
           res.redirect(baseURL + '/view/list');
         });
       });

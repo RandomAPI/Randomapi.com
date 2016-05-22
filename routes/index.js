@@ -5,7 +5,7 @@ var router   = express.Router();
 // Index //
 router.get('/', function(req, res, next) {
   if (req.session.loggedin) {
-    res.render('home', _.merge(defaultVars, {title: "Home"}));
+    res.render('home', _.merge(defaultVars, {title: 'Home'}));
   } else {
     res.render('index', defaultVars);
   }
@@ -42,7 +42,7 @@ router.post('/login', function(req, res, next) {
 router.get('/logout', function(req, res, next) {
   if (req.session.loggedin) {
     delete req.session.loggedin;
-    req.flash('info', "Logged out successfully!");
+    req.flash('info', 'Logged out successfully!');
     res.redirect(baseURL + '/');
   } else {
     res.redirect(baseURL + '/');

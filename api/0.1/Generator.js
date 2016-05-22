@@ -11,23 +11,20 @@ var async        = require('async');
 var util         = require('util');
 var EventEmitter = require('events').EventEmitter;
 
-var version = '0.1';
-
 var Generator = function(name, options) {
   var self = this;
-
-  name = name || "generator";
-  process.title = "RandomAPI Generator " + name + " - " + options;
+  name = name || 'generator';
+  process.title = 'RandomAPI Generator ' + name + ' - ' + options;
 
   options = JSON.parse(options);
-  this.version   = version;
+  this.version   = '0.1';
   this.limits    = {
     execTime: options.execTime,
-    memory:   options.memory*1024*1024,
+    memory:   options.memory * 1024 * 1024,
     results:  options.results
   };
   this.context = vm.createContext(this.availableFuncs());
-  this.originalContext = ["random", "list", "hash", "String", "timestamp", "_APIgetVars", "_APIresults", "getVar"];
+  this.originalContext = ['random', 'list', 'hash', 'String', 'timestamp', '_APIgetVars', '_APIresults', 'getVar'];
   this.listsResults = {}; // Hold cache of list results
 
   // Lists that were added to cache within last minute.
@@ -48,7 +45,7 @@ var Generator = function(name, options) {
       self.emit('LIST_RESPONSE', m.content);
 
     // New Generate task
-    } else if (m.type === "task") {
+    } else if (m.type === 'task') {
       self.instruct(m.options, false, function(err) {
         if (err) {
           process.send({type: 'DONE', content: {data: err, fmt: null}});
@@ -58,19 +55,19 @@ var Generator = function(name, options) {
           });
         }
       });
-    } else if (m.type === "command") {
-      if (m.content === "gc") {
+    } else if (m.type === 'command') {
+      if (m.content === 'gc') {
         global.gc();
-      } else if (m.content === "getMemory") {
-        process.send({type: "getMemory", content: process.memoryUsage().heapUsed});
-      } else if (m.content === "getLists") {
-        process.send({type: "getLists", content: String(Object.keys(self.listsResults))});
-      } else if (m.content === "clearLists") {
+      } else if (m.content === 'getMemory') {
+        process.send({type: 'getMemory', content: process.memoryUsage().heapUsed});
+      } else if (m.content === 'getLists') {
+        process.send({type: 'getLists', content: String(Object.keys(self.listsResults))});
+      } else if (m.content === 'clearLists') {
         self.listsResults = {};
       }
 
     // Speedtest
-    } else if (m.type === "speedtest") {
+    } else if (m.type === 'speedtest') {
       self.instruct(m.options, true, function(err) {
         if (err) {
           process.send({type: 'DONE', content: {data: err, fmt: null}});
@@ -122,7 +119,7 @@ Generator.prototype.instruct = function(options, speedtest, done) {
         self.doc = data;
 
         if (!self.doc) {
-          cb("This API doesn't exist boi!");
+          cb('This API doesn\'t exist boi!');
         } else {
           cb(null);
         }
@@ -134,7 +131,7 @@ Generator.prototype.instruct = function(options, speedtest, done) {
         self.keyOwner = data;
 
         if (self.keyOwner.key !== self.options.key && !self.speedtest) {
-          cb("You are not the owner of this API boi!" + self.speedtest);
+          cb('You are not the owner of this API boi!' + self.speedtest);
         } else {
           cb(null);
         }
@@ -169,7 +166,7 @@ Generator.prototype.generate = function(cb) {
     ${self.src}
           } catch (e) {
             api = {
-              API_ERROR: "Something went wrong"//e.toString(),
+              API_ERROR: 'Something went wrong'//e.toString(),
               //API_STACK: e.stack
             };
           }
@@ -188,7 +185,7 @@ Generator.prototype.generate = function(cb) {
     });
     returnResults(null, this.context._APIresults);
   } catch(e) {
-    returnResults("Something went wrong", null);
+    returnResults('Something went wrong', null);
     //console.log(e.stack);
   }
 
@@ -218,17 +215,17 @@ Generator.prototype.generate = function(cb) {
     if (self.noInfo) delete json.info;
 
     if (self.format === 'yaml') {
-      cb(YAML.stringify(json, 4), "yaml");
+      cb(YAML.stringify(json, 4), 'yaml');
     } else if (self.format === 'xml') {
-      cb(js2xmlparser('user', json), "xml");
+      cb(js2xmlparser('user', json), 'xml');
     } else if (self.format === 'prettyjson' || self.format === 'pretty') {
-      cb(JSON.stringify(json, null, 2), "json");
+      cb(JSON.stringify(json, null, 2), 'json');
     } else if (self.format === 'csv') {
       converter.json2csv(json.results, (err, csv) => {
-        cb(csv, "csv");
+        cb(csv, 'csv');
       });
     } else {
-      cb(JSON.stringify(json), "json");
+      cb(JSON.stringify(json), 'json');
     }
   }
 };
@@ -301,8 +298,8 @@ Generator.prototype.availableFuncs = function() {
       }
     },
     list: function(obj, num) {
-      if (num !== "" && num !== undefined) num = Number(num); // Convert string to num if it isn't undefined
-      if (num === "") num = undefined;
+      if (num !== '' && num !== undefined) num = Number(num); // Convert string to num if it isn't undefined
+      if (num === '') num = undefined;
 
       if (Array.isArray(obj)) {
         if (num !== undefined) {
@@ -445,7 +442,7 @@ var range = (min, max) => {
 };
 
 var log = msg => {
-  process.send({type: "logger", content: String(msg)});
+  process.send({type: 'logger', content: String(msg)});
 }
 
 new Generator(process.argv[2], process.argv[3]);

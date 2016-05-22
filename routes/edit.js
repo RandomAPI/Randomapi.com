@@ -7,7 +7,7 @@ router.get('/api/:ref', function(req, res, next) {
   if (req.session.loggedin) {
     var doc = API.getAPIByRef(req.params.ref);
     doc.code = fs.readFileSync('./data/apis/' + doc.id + '.api'); // Read api src into this...
-    res.render('edit/api', _.merge(defaultVars, {api: doc, socket: ":" + settings.general.socket}));
+    res.render('edit/api', _.merge(defaultVars, {api: doc, socket: ':' + settings.general.socket}));
   } else {
     res.render('index', defaultVars);
   }
@@ -20,7 +20,7 @@ router.post('/api/:ref', function(req, res, next) {
       res.redirect(baseURL + '/view/api');
     } else {
       fs.writeFile('./data/apis/' + doc.id + '.api', req.body.code.replace(/\r\n/g, '\n'), 'utf8', function(err) {
-        req.flash('info', "API " + doc.name + " was updated successfully!");
+        req.flash('info', 'API ' + doc.name + ' was updated successfully!');
         res.send(baseURL + '/view/api');
       });
     }

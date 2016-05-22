@@ -51,27 +51,27 @@ GeneratorForker.prototype.fork = function() {
 
   this.generator.on('message', m => {
     // Requesting API Lookup
-    if (m.type === "API") {
+    if (m.type === 'API') {
       API.findOne({ref: m.ref}, function(err, doc) {
         self.generator.send({type: 'API_RESPONSE', content: doc});
       });
-    } else if (m.type === "USER") {
+    } else if (m.type === 'USER') {
       User.findOne({id: m.id}, function(err, model) {
         self.generator.send({type: 'USER_RESPONSE', content: model});
       });
-    } else if (m.type === "LIST") {
+    } else if (m.type === 'LIST') {
       List.findOne({ref: m.ref}, function(err, doc) {
         self.generator.send({type: 'LIST_RESPONSE', content: doc});
       });
-    } else if (m.type === "DONE") {
+    } else if (m.type === 'DONE') {
       self.emit('DONE', m.content);
-    } else if (m.type === "getMemory") {
+    } else if (m.type === 'getMemory') {
       self.emit('getMemory', m.content);
-    } else if (m.type === "getLists") {
+    } else if (m.type === 'getLists') {
       self.emit('getLists', m.content);
-    } else if (m.type === "clearLists") {
+    } else if (m.type === 'clearLists') {
       self.emit('clearLists', m.content);
-    } else if (m.type === "logger") {
+    } else if (m.type === 'logger') {
       log.log(m.content);
     }
   });
@@ -86,13 +86,13 @@ GeneratorForker.prototype.generate = function(opts, cb) {
 
   if (this.jobCount++ % 100 === 0 && this.jobCount > 0) {
     // this.generator.send({
-    //   type: "command",
-    //   content: "gc"
+    //   type: 'command',
+    //   content: 'gc'
     // });
   }
 
   this.generator.send({
-    type: "task",
+    type: 'task',
     options: opts
   });
 
@@ -107,7 +107,7 @@ GeneratorForker.prototype.speedTest = function(opts, num, cb) {
   var self = this;
 
   this.generator.send({
-    type: "speedtest",
+    type: 'speedtest',
     options: opts
   });
 
@@ -118,8 +118,8 @@ GeneratorForker.prototype.speedTest = function(opts, num, cb) {
 
 GeneratorForker.prototype.gc = function() {
   this.generator.send({
-    type: "command",
-    content: "gc"
+    type: 'command',
+    content: 'gc'
   });
 };
 
@@ -133,8 +133,8 @@ GeneratorForker.prototype.totalJobs = function() {
 
 GeneratorForker.prototype.memUsage = function() {
   this.generator.send({
-    type: "command",
-    content: "getMemory"
+    type: 'command',
+    content: 'getMemory'
   });
   var memory, done = false;
   this.once('getMemory', data => {
@@ -148,8 +148,8 @@ GeneratorForker.prototype.memUsage = function() {
 
 GeneratorForker.prototype.getCacheSize = function() {
   this.generator.send({
-    type: "command",
-    content: "getLists"
+    type: 'command',
+    content: 'getLists'
   });
   var lists, done = false;
   this.once('getLists', data => {
@@ -163,8 +163,8 @@ GeneratorForker.prototype.getCacheSize = function() {
 
 GeneratorForker.prototype.clearLists = function() {
   this.generator.send({
-    type: "command",
-    content: "clearLists"
+    type: 'command',
+    content: 'clearLists'
   });
 };
 

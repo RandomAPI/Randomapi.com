@@ -120,7 +120,7 @@ io.use(function(socket, next) {
   var data = socket.handshake || socket.request;
   var sessionID = cookie.parse(data.headers.cookie)[settings.session.key].slice(2, 34);
 
-  sessionDB.get("sess:" + sessionID, function(err, session) {
+  sessionDB.get('sess:' + sessionID, function(err, session) {
     socket.session = session;
     next();
   });

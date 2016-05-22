@@ -16,11 +16,11 @@ var GeneratorForker = require('./api/0.1/GeneratorForker');
 
 // Global Generators
 Generators = {
-  basic:     new Array(1).fill().map((k, v) => new GeneratorForker({name: "basic_" + v, execTime: 1, memory: 5, results: 25})),
-  standard:  new Array(2).fill().map((k, v) => new GeneratorForker({name: "standard_" + v, execTime: 5, memory: 10, results: 250})),
-  premium:   new Array(3).fill().map((k, v) => new GeneratorForker({name: "premium_" + v, execTime: 10, memory: 25, results: 2500})),
-  realtime:  new Array(3).fill().map((k, v) => new GeneratorForker({name: "realtime_" + v, execTime: 1, memory: 1, results: 1})),
-  speedtest: new Array(1).fill().map((k, v) => new GeneratorForker({name: "speedtest_" + v, execTime: 5, memory: 5, results: 0}))
+  basic:     new Array(1).fill().map((k, v) => new GeneratorForker({name: 'basic_' + v, execTime: 1, memory: 5, results: 25})),
+  standard:  new Array(2).fill().map((k, v) => new GeneratorForker({name: 'standard_' + v, execTime: 5, memory: 10, results: 250})),
+  premium:   new Array(3).fill().map((k, v) => new GeneratorForker({name: 'premium_' + v, execTime: 10, memory: 25, results: 2500})),
+  realtime:  new Array(3).fill().map((k, v) => new GeneratorForker({name: 'realtime_' + v, execTime: 1, memory: 1, results: 1})),
+  speedtest: new Array(1).fill().map((k, v) => new GeneratorForker({name: 'speedtest_' + v, execTime: 5, memory: 5, results: 0}))
 };
 
 var types = ['basic', 'standard', 'premium', 'realtime', 'speedtest'];
@@ -134,7 +134,7 @@ var time = Math.floor(new Date().getTime()/1000);
 var elapsed;
 
 log = grid.set(0, 6, 2, 6, contrib.log, {
-  fg: "white",
+  fg: 'white',
   label: 'Server Log'
 });
 
@@ -152,7 +152,7 @@ var loads = {
 };
 
 var instructions = grid.set(11, 0, 1, 12, contrib.markdown, {
-  markdown: "**^G** Manual GC\t**^V** Rebuild views\n**^Q** Quit\t\t **^C** Clear log"
+  markdown: '**^G** Manual GC\t**^V** Rebuild views\n**^Q** Quit\t\t **^C** Clear log'
 });
 
 function updateDonut() {
@@ -162,10 +162,10 @@ function updateDonut() {
     if (name === 'overall') return;
 
     var percent = _.sum(queueStats[name])/(Generators[name].length * 50) * 100 || 0;
-    var color = "green";
-    if (percent >= 50) color = "cyan";
-    if (percent >= 75) color = "yellow";
-    if (percent >= 90) color = "red";
+    var color = 'green';
+    if (percent >= 50) color = 'cyan';
+    if (percent >= 75) color = 'yellow';
+    if (percent >= 90) color = 'red';
     load.setData([
        {percent: percent, label: '', 'color': color}
     ]);
@@ -173,10 +173,10 @@ function updateDonut() {
   });
 
   overallPerc /= 3;
-  var color = "green";
-  if (overallPerc >= 50) color = "cyan";
-  if (overallPerc >= 75) color = "yellow";
-  if (overallPerc >= 90) color = "red";
+  var color = 'green';
+  if (overallPerc >= 50) color = 'cyan';
+  if (overallPerc >= 75) color = 'yellow';
+  if (overallPerc >= 90) color = 'red';
 
   loads.overall.setData([
     {percent: Math.floor(overallPerc), label: 'Overall Load', 'color': color}
@@ -190,7 +190,7 @@ screen.key(['C-q'], function(ch, key) {
 });
 
 screen.key(['C-g'], function(ch, key) {
-  logger("Emitting Manual Garbage Collection Event");
+  logger('Emitting Manual Garbage Collection Event');
   Generators.basic.forEach(gen => gen.gc());
   Generators.standard.forEach(gen => gen.gc());
   Generators.premium.forEach(gen => gen.gc());
@@ -199,10 +199,10 @@ screen.key(['C-g'], function(ch, key) {
 });
 
 screen.key(['C-v'], function(ch, key) {
-  logger("Rebuilding views");
+  logger('Rebuilding views');
   var gulp = require('child_process').spawn('gulp');
   gulp.on('close', (code) => {
-    logger("Finished rebuilding views");
+    logger('Finished rebuilding views');
   });
 });
 
@@ -216,7 +216,7 @@ screen.key(['C-k'], function(ch, key) {
   Generators.premium.forEach(gen => (gen.clearLists(), gen.gc()));
   Generators.realtime.forEach(gen => (gen.clearLists(), gen.gc()));
   Generators.speedtest.forEach(gen => (gen.clearLists(), gen.gc()));
-  logger("Lists cleared!");
+  logger('Lists cleared!');
 });
 
 screen.key(['C-l'], function(ch, key) {
@@ -228,7 +228,7 @@ screen.key(['C-l'], function(ch, key) {
 });
 
 screen.key(['a'], function(ch, key) {
-  logger("Running speedtest");
+  logger('Running speedtest');
   Generators.speedtest[0].queue.push({
     speedtest: true,
     ref: 'ba77x',
@@ -240,7 +240,7 @@ screen.key(['a'], function(ch, key) {
 });
 
 screen.key(['s'], function(ch, key) {
-  logger(queueStats['speedtest'] + " | " + memStats['speedtest'] + " | " + jobStats['speedtest']);
+  logger(queueStats['speedtest'] + ' | ' + memStats['speedtest'] + ' | ' + jobStats['speedtest']);
 })
 
 //////////
@@ -256,9 +256,9 @@ setInterval(function() {
     memStats[type] = new Array(Generators[type].length).fill().slice(0, 3).map((v, k) => Generators[type][k].memUsage());
     jobStats[type] = new Array(Generators[type].length).fill().slice(0, 3).map((v, k) => Generators[type][k].totalJobs());
 
-    if (type === "speedtest" || type === "realtime") return;
+    if (type === 'speedtest' || type === 'realtime') return;
     bars[type].setData({
-      titles: new Array(Generators[type].length).fill().slice(0, 3).map((v, k) => "#" + k),
+      titles: new Array(Generators[type].length).fill().slice(0, 3).map((v, k) => '#' + k),
       data: queueStats[type]
     });
   });
@@ -279,7 +279,7 @@ setInterval(function() {
   var min   = Math.floor(Math.floor(fmt.asMinutes()) - (Math.floor(fmt.asHours()) * 60));
   var sec   = fmt.asSeconds() - Math.floor(fmt.asMinutes()) * 60;
 
-  botline.x.push(Math.floor(fmt.asDays()) + ":" + pad(hours, 2) + ":" + pad(min, 2) + ":" + pad(sec, 2));
+  botline.x.push(Math.floor(fmt.asDays()) + ':' + pad(hours, 2) + ':' + pad(min, 2) + ':' + pad(sec, 2));
   botline.y.push(0);
 
   basicStats.y.push(_.sum(queueStats.basic));
@@ -293,10 +293,10 @@ setInterval(function() {
 
   var memSum = _.sum([_.sum(memStats.basic), _.sum(memStats.standard), _.sum(memStats.premium)]);
   memoryLine.y.push(memSum);
-  memoryLine.title = String(memSum + " MB");
+  memoryLine.title = String(memSum + ' MB');
 
   eventLine.y.push(tmp - oldEventTime);
-  eventLine.title = String(tmp - oldEventTime + " ms");
+  eventLine.title = String(tmp - oldEventTime + ' ms');
 
   oldEventTime = tmp;
 
@@ -317,7 +317,7 @@ setInterval(function() {
   screen.render();
 
   if (elapsed % 3600 === 0) {
-    logger("Emitting Hourly Garbage Collection Event");
+    logger('Emitting Hourly Garbage Collection Event');
     Generators.basic.forEach(gen => gen.gc());
     Generators.standard.forEach(gen => gen.gc());
     Generators.premium.forEach(gen => gen.gc());
@@ -388,6 +388,6 @@ function logger(msg) {
     }
     log.logLines = [];
   } else {
-    log.log(moment().format('LTS') + " - " + msg);
+    log.log(moment().format('LTS') + ' - ' + msg);
   }
 }
