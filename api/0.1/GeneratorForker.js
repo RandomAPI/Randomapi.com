@@ -116,6 +116,19 @@ GeneratorForker.prototype.speedTest = function(opts, num, cb) {
   });
 };
 
+GeneratorForker.prototype.lint = function(code, user, cb) {
+  this.jobCount++;
+  this.generator.send({
+    type: 'lint',
+    code,
+    user
+  });
+
+  this.once('DONE', data => {
+    cb(data.data);
+  });
+};
+
 GeneratorForker.prototype.gc = function() {
   this.generator.send({
     type: 'command',

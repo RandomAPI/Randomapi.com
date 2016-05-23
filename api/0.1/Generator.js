@@ -77,6 +77,12 @@ var Generator = function(name, options) {
           });
         }
       });
+
+    // Linter
+    } else if (m.type === 'lint') {
+      self.lint(m.code, m.user, function(results) {
+        process.send({type: 'DONE', content: {data: {results}}});
+      });
     }
   });
 
@@ -273,6 +279,115 @@ ${self.src}
   }
 };
 
+
+
+
+//self.lint(m.code, m.user, function(err, results) {
+Generator.prototype.lint = function(code, user, cb) {
+  var self = this;
+  this.results   = 1;
+  this.seed      = String('linter' + ~~(Math.random() * 100));
+  this.format    = 'json';
+  this.noInfo    = true;
+  this.page      = 1;
+  this.speedtest = false;
+  this.src       = code;
+
+  this.page = 1;
+  ///////////////////
+
+  this.seedRNG();
+
+  async.series([
+    function(cb) {
+      process.send({type: 'USER', id: user.id});
+      self.once('USER_RESPONSE', data => {
+        self.keyOwner = data;
+        cb(null);
+      });
+    },
+  ], function(err, results) {
+
+  });
+
+  var output = [];
+
+  try {
+    this.sandBox = new vm.Script(`
+      'use strict'
+      var _APIgetVars = ${JSON.stringify(self.options)};
+      var _APIresults = [];
+      (function() {
+        for (var _APIi = 0; _APIi < ${self.results}; _APIi++) {
+          var api = {};
+          try {
+${self.src}
+          } catch (e) {
+            api = {
+              API_ERROR: e.toString(),
+              API_STACK: e.stack
+            };
+          }
+          _APIresults.push(api);
+        }
+      })();
+      function getVar(key) {
+        //if (_APIgetVars === undefined) return undefined;
+        return key in _APIgetVars ? _APIgetVars[key] : undefined;
+      }
+    `);
+
+    this.sandBox.runInContext(this.context, {
+      displayErrors: true,
+      timeout: self.limits.execTime * 1000
+    });
+    returnResults(null, this.context._APIresults);
+  } catch(e) {
+    returnResults(e.toString(), null);
+  }
+
+  // Remove accidental user defined globals. Pretty hacky, should probably look into improving this...
+  var diff = Object.keys(this.context);
+  diff.filter(each => this.originalContext.indexOf(each) === -1).forEach(each => delete self.context[each]);
+
+  function returnResults(err, output) {
+    if (err !== null) {
+      output = [{API_ERROR: err.toString()}];
+    }
+
+    var json = {
+      results: output,
+      info: {
+        seed: String(self.seed),
+        results: self.results,
+        page: self.page,
+        version: self.version
+      }
+    };
+
+    if (output[0].API_ERROR !== undefined) {
+      json.error = true;
+    }
+
+    if (self.noInfo) delete json.info;
+
+    if (self.format === 'yaml') {
+      cb(YAML.stringify(json, 4), 'yaml');
+    } else if (self.format === 'xml') {
+      cb(js2xmlparser('user', json), 'xml');
+    } else if (self.format === 'prettyjson' || self.format === 'pretty') {
+      cb(JSON.stringify(json, null, 2), 'json');
+    } else if (self.format === 'csv') {
+      converter.json2csv(json.results, (err, csv) => {
+        cb(csv, 'csv');
+      });
+    } else {
+      cb(JSON.stringify(json), 'json');
+    }
+  }
+};
+
+
 Generator.prototype.seedRNG = function() {
   var seed = this.seed;
   seed = this.page !== 1 ? seed + String(this.page) : seed;
@@ -374,10 +489,11 @@ Generator.prototype.checkLists = function() {
   // Keep removing oldest lists until cache size is back to default
   while (this.getCacheSize > this.limits.memory) {
     delete this.listResults[this.getOldestList().ref];
+    listsDeleted = true;
   }
 
   this.listsAdded = {};
-  global.gc();
+  if (listsDeleted) global.gc();
 };
 
 Generator.prototype.getOldestList = function() {

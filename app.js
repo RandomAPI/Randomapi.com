@@ -4,7 +4,6 @@ var path         = require('path');
 var favicon      = require('serve-favicon');
 var logger       = require('morgan');
 var cookieParser = require('cookie-parser')();
-var cookie       = require('cookie');
 var bodyParser   = require('body-parser');
 var http         = require('http');
 var flash        = require('connect-flash');
@@ -19,7 +18,6 @@ io               = require('socket.io')(settings.general.socket);
 var db           = require('./models/db');
 
 // Redis Session Store
-var redis        = require('redis');
 var session      = require('express-session');
 var redisStore   = require('connect-redis')(session);
 
@@ -59,8 +57,6 @@ var sessionSettings = {
   resave: false,
   saveUninitialized: false
 };
-
-var sessionDB = redis.createClient();
 
 app.use(session(sessionSettings));
 
@@ -114,16 +110,6 @@ app.use('*', function(req, res, next) {
       next();
     }
   }
-});
-
-io.use(function(socket, next) {
-  var data = socket.handshake || socket.request;
-  var sessionID = cookie.parse(data.headers.cookie)[settings.session.key].slice(2, 34);
-
-  sessionDB.get('sess:' + sessionID, function(err, session) {
-    socket.session = session;
-    next();
-  });
 });
 
 app.use('/', index);
