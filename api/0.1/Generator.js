@@ -298,18 +298,6 @@ Generator.prototype.lint = function(code, user, cb) {
 
   this.seedRNG();
 
-  async.series([
-    function(cb) {
-      process.send({type: 'USER', id: user.id});
-      self.once('USER_RESPONSE', data => {
-        self.keyOwner = data;
-        cb(null);
-      });
-    },
-  ], function(err, results) {
-
-  });
-
   var output = [];
 
   try {

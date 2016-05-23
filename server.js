@@ -44,40 +44,7 @@ logger = function(msg) {
 // GUI - can be commented out if not required or too much overhead
 require('./console.js');
 
-require('./sockets.js');
-
-io.use(function(socket, next) {
-  var data = socket.handshake || socket.request;
-  var sessionID = cookie.parse(data.headers.cookie)[settings.session.key].slice(2, 34);
-  sessionDB.get('sess:' + sessionID, function(err, session) {
-    socket.session = session;
-    next();
-  });
-});
-
-io.on('connection', function(socket) {
-  socket.on('lintCode', function(msg){
-    Generators.realtime[0].lint(msg, {user: socket.session.user}, function(data) {
-      socket.emit('codeLinted', data);
-    });
-  });
-});
-
-// io.use(function(socket, next) {
-//   logger("CONNECTED");
-//   var data = socket.handshake || socket.request;
-//   var sessionID = cookie.parse(data.headers.cookie)[settings.session.key].slice(2, 34);
-//   sessionDB.get('sess:' + sessionID, function(err, session) {
-//     socket.session = session;
-//     next();
-//   });
-
-//   io.on('blah', function(socket) {
-//     logger("BLAH");
-//     console.log(socket);
-//     socket.emit('blahback', {a: 123});
-//   });
-// });
+require('./sockets.js')(cookie, sessionDB);
 
 server.listen(app.get('port'));
 server.on('error', error => {
