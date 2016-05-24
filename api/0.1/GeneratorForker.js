@@ -16,7 +16,9 @@ var GeneratorForker = function(options) {
   this.name = options.name;
   this.startTime = new Date().getTime();
   this.jobCount = 0;
-  this.queue = async.queue(function (task, callback) {
+
+  // Queue to push generate requests into
+  this.queue = async.queue(function(task, callback) {
     if (task.speedtest) {
       self.speedTest({ref: task.ref}, task.time, function(data) {
         task.cb(data)
@@ -30,8 +32,18 @@ var GeneratorForker = function(options) {
         ref = task.req.params.ref;
       }
       _.merge(task.req.query, {ref});
-      self.generate(task.req.query, function(data) {
-        task.res.setHeader('Content-Type', 'application/json');
+      self.generate(task.req.query, function(data, fmt) {
+        if (fmt === 'json') {
+          task.res.setHeader('Content-Type', 'application/json');
+        } else if (fmt === 'xml') {
+          task.res.setHeader('Content-Type', 'text/xml');
+        } else if (fmt === 'yaml') {
+          task.res.setHeader('Content-Type', 'text/x-yaml');
+        } else if (fmt === 'csv') {
+          task.res.setHeader('Content-Type', 'text/csv');
+        } else {
+          task.res.setHeader('Content-Type', 'text/plain');
+        }
         task.res.send(data);
         callback();
       });
@@ -64,7 +76,7 @@ GeneratorForker.prototype.fork = function() {
         self.generator.send({type: 'LIST_RESPONSE', content: doc});
       });
     } else if (m.type === 'DONE') {
-      self.emit('DONE', m.content);
+      self.emit('DONE', {content: m.content.data, fmt: m.content.fmt});
     } else if (m.type === 'getMemory') {
       self.emit('getMemory', m.content);
     } else if (m.type === 'getLists') {
@@ -97,7 +109,7 @@ GeneratorForker.prototype.generate = function(opts, cb) {
   });
 
   this.once('DONE', data => {
-    cb(data.data);
+    cb(data.content, data.fmt);
   });
 };
 

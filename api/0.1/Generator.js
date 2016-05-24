@@ -481,7 +481,7 @@ Generator.prototype.checkLists = function() {
   }
 
   this.listsAdded = {};
-  if (listsDeleted) global.gc();
+  //if (listsDeleted) global.gc();
 };
 
 Generator.prototype.getOldestList = function() {
