@@ -210,22 +210,6 @@ module.exports = (function() {
     Generators.speedtest.forEach(gen => logger(gen.getCacheSize()));
   });
 
-  screen.key(['a'], function(ch, key) {
-    logger('Running speedtest');
-    Generators.speedtest[0].queue.push({
-      speedtest: true,
-      ref: 'ba77x',
-      time: 1,
-      cb: function(amt) {
-        logger(amt);
-      }
-    });
-  });
-
-  screen.key(['s'], function(ch, key) {
-    logger(queueStats['speedtest'] + ' | ' + memStats['speedtest'] + ' | ' + jobStats['speedtest']);
-  })
-
   //////////
 
   screen.render();
@@ -258,7 +242,7 @@ module.exports = (function() {
     var tmp = Math.floor(new Date().getTime());
     elapsed = Math.floor(new Date().getTime()/1000) - time;
     var fmt   = moment.duration(elapsed, 'seconds');
-    var hours = Math.floor(fmt.asDays()) * 24 - Math.floor(fmt.asHours());
+    var hours = Math.floor(fmt.asHours()) - Math.floor(fmt.asDays()) * 24;
     var min   = Math.floor(Math.floor(fmt.asMinutes()) - (Math.floor(fmt.asHours()) * 60));
     var sec   = fmt.asSeconds() - Math.floor(fmt.asMinutes()) * 60;
 
