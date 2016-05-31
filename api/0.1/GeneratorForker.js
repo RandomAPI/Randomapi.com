@@ -13,15 +13,16 @@ var GeneratorForker = function(options) {
     results:  options.results
   };
 
-  this.name = options.name;
+  this.name      = options.name;
   this.startTime = new Date().getTime();
-  this.jobCount = 0;
+  this.jobCount  = 0;
 
   // Queue to push generate requests into
   this.queue = async.queue(function(task, callback) {
-    if (task.speedtest) {
-      self.speedTest({ref: task.ref}, task.time, function(data) {
-        task.cb(data)
+    // Realtime or Speedtest
+    if (task.socket !== undefined) {
+      self.generate({mode: 'lint', options: {key: task.data.key, src: task.data.src}}, function(err, results, fmt) {
+        task.socket.emit('codeLinted', results);
         callback();
       });
     } else {
@@ -32,7 +33,8 @@ var GeneratorForker = function(options) {
         ref = task.req.params.ref;
       }
       _.merge(task.req.query, {ref});
-      self.generate(task.req.query, function(data, fmt) {
+
+      self.generate({mode: 'generate', options: task.req.query}, function(err, results, fmt) {
         if (fmt === 'json') {
           task.res.setHeader('Content-Type', 'application/json');
         } else if (fmt === 'xml') {
@@ -44,7 +46,7 @@ var GeneratorForker = function(options) {
         } else {
           task.res.setHeader('Content-Type', 'text/plain');
         }
-        task.res.send(data);
+        task.res.send(results);
         callback();
       });
     }
@@ -61,93 +63,48 @@ GeneratorForker.prototype.fork = function() {
   // Fork new Generator with provided limits
   this.generator = fork(__dirname + '/Generator', [this.name, JSON.stringify(this.limits)]);
 
-  this.generator.on('message', m => {
-    // Requesting API Lookup
-    if (m.type === 'API') {
-      API.findOne({ref: m.ref}, function(err, doc) {
-        self.generator.send({type: 'API_RESPONSE', content: doc});
-      });
-    } else if (m.type === 'USER') {
-      User.findOne({id: m.id}, function(err, model) {
-        self.generator.send({type: 'USER_RESPONSE', content: model});
-      });
-    } else if (m.type === 'LIST') {
-      List.findOne({ref: m.ref}, function(err, doc) {
-        self.generator.send({type: 'LIST_RESPONSE', content: doc});
-      });
-    } else if (m.type === 'DONE') {
-      self.emit('DONE', {content: m.content.data, fmt: m.content.fmt});
-    } else if (m.type === 'getMemory') {
-      self.emit('getMemory', m.content);
-    } else if (m.type === 'getLists') {
-      self.emit('getLists', m.content);
-    } else if (m.type === 'clearLists') {
-      self.emit('clearLists', m.content);
-    } else if (m.type === 'logger') {
-      log.log(m.content);
+  // Handle all events
+  // {type, mode, data}
+  this.generator.on('message', msg => {
+    if (msg.type === 'lookup') {
+      if (msg.mode === 'api') {
+        API.findOne({ref: msg.data}, function(err, doc) {
+          self.generator.send({type: 'response', mode: 'api', data: doc});
+        });
+      } else if (msg.mode === 'user') {
+        User.findOne({id: msg.data}, function(err, doc) {
+          self.generator.send({type: 'response', mode: 'user', data: doc});
+        });
+      } else if (msg.mode === 'list') {
+        List.findOne({ref: msg.data}, function(err, doc) {
+          self.generator.send({type: 'response', mode: 'list', data: doc});
+        });
+      }
+    } else if (msg.type === 'done') {
+      self.emit('taskFinished', {err: msg.data.err, data: msg.data.data, fmt: msg.data.fmt});
     }
   });
 };
 
-GeneratorForker.prototype.send = function(msg) {
-  this.generator.send(msg);
-};
-
+// Opts contains options and mode
+// cb(err, results, fmt)
 GeneratorForker.prototype.generate = function(opts, cb) {
   var self = this;
 
-  if (this.jobCount++ % 100 === 0 && this.jobCount > 0) {
-    // this.generator.send({
-    //   type: 'command',
-    //   content: 'gc'
-    // });
-  }
-
+  // Send generator a new task using the given mode and options
   this.generator.send({
     type: 'task',
-    options: opts
+    mode: opts.mode,
+    data: opts.options
   });
 
-  this.once('DONE', data => {
-    cb(data.content, data.fmt);
-  });
-};
-
-GeneratorForker.prototype.speedTest = function(opts, num, cb) {
-  this.jobCount++;
-  _.merge(opts, {time: num});
-  var self = this;
-
-  this.generator.send({
-    type: 'speedtest',
-    options: opts
-  });
-
-  this.once('DONE', data => {
-    cb(data.data);
+  // Wait for the task to finish and then send err, results, and fmt to cb.
+  this.once('taskFinished', data => {
+    cb(data.err, data.data, data.fmt);
   });
 };
 
-GeneratorForker.prototype.lint = function(code, user, cb) {
-  this.jobCount++;
-  this.generator.send({
-    type: 'lint',
-    code,
-    user
-  });
-
-  this.once('DONE', data => {
-    cb(data.data);
-  });
-};
-
-GeneratorForker.prototype.gc = function() {
-  this.generator.send({
-    type: 'command',
-    content: 'gc'
-  });
-};
-
+// Get current task queue length
 GeneratorForker.prototype.queueLength = function() {
   return this.queue.length();
 };
@@ -158,28 +115,36 @@ GeneratorForker.prototype.totalJobs = function() {
 
 GeneratorForker.prototype.memUsage = function() {
   this.generator.send({
-    type: 'command',
-    content: 'getMemory'
+    type: 'cmd',
+    data: 'getMemory'
   });
+
   var memory, done = false;
-  this.once('getMemory', data => {
+  this.once('cmdComplete', data => {
     memory = data;
-    done = true;
+    done   = true;
   });
 
   require('deasync').loopWhile(function(){return !done;});
   return Math.floor(memory/1024/1024);
 };
 
+GeneratorForker.prototype.gc = function() {
+  this.generator.send({
+    type: 'cmd',
+    data: 'gc'
+  });
+};
+
 GeneratorForker.prototype.getCacheSize = function() {
   this.generator.send({
-    type: 'command',
-    content: 'getLists'
+    type: 'cmd',
+    data: 'getLists'
   });
   var lists, done = false;
   this.once('getLists', data => {
     lists = data;
-    done = true;
+    done  = true;
   });
 
   require('deasync').loopWhile(function(){return !done;});
@@ -188,8 +153,8 @@ GeneratorForker.prototype.getCacheSize = function() {
 
 GeneratorForker.prototype.clearLists = function() {
   this.generator.send({
-    type: 'command',
-    content: 'clearLists'
+    type: 'cmd',
+    data: 'clearLists'
   });
 };
 
