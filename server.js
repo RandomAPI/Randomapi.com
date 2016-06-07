@@ -44,7 +44,7 @@ logger = function(msg) {
 };
 
 // GUI - can be commented out if not required or too much overhead
-//require('./console.js');
+require('./console.js');
 require('./sockets.js')(cookie, sessionDB);
 
 server.listen(app.get('port'));

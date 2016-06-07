@@ -19,6 +19,7 @@ var GeneratorForker = function(options) {
 
   // Queue to push generate requests into
   this.queue = async.queue(function(task, callback) {
+    self.jobCount++;
     // Realtime or Speedtest
     if (task.socket !== undefined) {
       self.generate({mode: 'lint', options: {key: task.data.key, src: task.data.src}}, function(err, results, fmt) {
@@ -82,6 +83,12 @@ GeneratorForker.prototype.fork = function() {
       }
     } else if (msg.type === 'done') {
       self.emit('taskFinished', {err: msg.data.err, data: msg.data.data, fmt: msg.data.fmt});
+    } else if (msg.type === 'cmdComplete') {
+      if (msg.mode === 'memory') {
+        self.emit('memComplete', msg.content);
+      } else if (msg.mode === 'lists') {
+        self.emit('listsComplete', msg.content);
+      }
     }
   });
 };
@@ -120,7 +127,7 @@ GeneratorForker.prototype.memUsage = function() {
   });
 
   var memory, done = false;
-  this.once('cmdComplete', data => {
+  this.once('memComplete', data => {
     memory = data;
     done   = true;
   });
@@ -142,7 +149,7 @@ GeneratorForker.prototype.getCacheSize = function() {
     data: 'getLists'
   });
   var lists, done = false;
-  this.once('getLists', data => {
+  this.once('listsComplete', data => {
     lists = data;
     done  = true;
   });

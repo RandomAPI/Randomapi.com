@@ -8,7 +8,7 @@
         <hr width="50%">
         <% include ../../snippets/nav %>
         <form action="" method="POST">
-        <input type="text" name="name" placeholder="API Name" autofocus required><br>
+        <input type="text" name="name" placeholder="API Name" autofocus required autocomplete="off"><br>
         Generator version: <select name="generator">
         <% versions.forEach(function(generator) { %>
           <option value="<%= generator.id %>"><%= generator.version %></option>

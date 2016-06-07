@@ -73,42 +73,15 @@ var Generator = function(name, options) {
       }
     } else if (msg.type === 'cmd') {
       if (msg.data === 'getMemory') {
-        process.send({type: 'cmdComplete', content: process.memoryUsage().heapUsed});
+        process.send({type: 'cmdComplete', mode: 'memory', content: process.memoryUsage().heapUsed});
       } else if (msg.data === 'getLists') {
-
+        process.send({type: 'cmdComplete', mode: 'lists', content: String(Object.keys(self.listsResults))});
       } else if (msg.data === 'gc') {
         global.gc();
       } else if (msg.data === 'clearLists') {
-
+        self.listsResults = {};
       }
     }
-
-    //   } else if (m.content === 'getMemory') {
-    //     process.send({type: 'getMemory', content: process.memoryUsage().heapUsed});
-    //   } else if (m.content === 'getLists') {
-    //     process.send({type: 'getLists', content: String(Object.keys(self.listsResults))});
-    //   } else if (m.content === 'clearLists') {
-    //     self.listsResults = {};
-    //   }
-
-    // // Speedtest
-    // } else if (m.type === 'speedtest') {
-    //   self.instruct(m.options, true, function(err) {
-    //     if (err) {
-    //       process.send({type: 'DONE', content: {data: err, fmt: null}});
-    //     } else {
-    //       self.speedTest(m.options.time, function(num) {
-    //         process.send({type: 'DONE', content: {data: num}});
-    //       });
-    //     }
-    //   });
-
-    // // Linter
-    // } else if (m.type === 'lint') {
-    //   self.lint(m.code, m.user, function(results) {
-    //     process.send({type: 'DONE', content: {data: {results}}});
-    //   });
-    // }
   });
 
   // Remove lists that shouldn't be cached
