@@ -9,6 +9,7 @@ var mersenne     = require('mersenne');
 var vm           = require('vm');
 var async        = require('async');
 var util         = require('util');
+var _            = require('lodash');
 var EventEmitter = require('events').EventEmitter;
 
 var Generator = function(name, options) {
@@ -34,55 +35,52 @@ var Generator = function(name, options) {
   // them if they are.
   this.listsAdded = {};
 
-  process.on('message', (m) => {
-    // Received API info from forker
-    // Emit for generate() to receive
-    if (m.type === 'API_RESPONSE') {
-      self.emit('API_RESPONSE', m.content);
-    } else if (m.type === 'USER_RESPONSE') {
-      self.emit('USER_RESPONSE', m.content);
-    } else if (m.type === 'LIST_RESPONSE') {
-      self.emit('LIST_RESPONSE', m.content);
-
-    // New Generate task
-    } else if (m.type === 'task') {
-      self.instruct(m.options, false, function(err) {
-        if (err) {
-          process.send({type: 'DONE', content: {data: err, fmt: null}});
-        } else {
+  process.on('message', msg => {
+    if (msg.type === 'task') {
+      if (msg.mode === 'generate') {
+        self.instruct(msg.data, function(err) {
+          if (err) {
+            process.send({type: 'taskFinished', data: {data: err, results: null, fmt: null}});
+          } else {
+            self.generate(function(data, fmt) {
+              process.send({type: 'done', data: {data, fmt}});
+            });
+          }
+        });
+      } else if (msg.mode === 'lint') {
+        var a = _.merge({
+          seed: String('linter' + ~~(Math.random() * 100)),
+          format: 'json',
+          noinfo: true,
+          page: 1,
+          mode: 'lint'
+        }, msg.data);
+        self.instruct(a, function(err) {
           self.generate(function(data, fmt) {
-            process.send({type: 'DONE', content: {data, fmt}});
+            process.send({type: 'done', data: {data, fmt}});
           });
-        }
-      });
-    } else if (m.type === 'command') {
-      if (m.content === 'gc') {
+        });
+      } else if (msg.mode === 'speedtest') {
+
+      }
+    } else if (msg.type === 'response') {
+      if (msg.mode === 'api') {
+        self.emit('apiResponse', msg.data);
+      } else if (msg.mode === 'user') {
+        self.emit('userResponse', msg.data);
+      } else if (msg.mode === 'list') {
+        self.emit('listResponse', msg.data);
+      }
+    } else if (msg.type === 'cmd') {
+      if (msg.data === 'getMemory') {
+        process.send({type: 'cmdComplete', mode: 'memory', content: process.memoryUsage().heapUsed});
+      } else if (msg.data === 'getLists') {
+        process.send({type: 'cmdComplete', mode: 'lists', content: String(Object.keys(self.listsResults))});
+      } else if (msg.data === 'gc') {
         global.gc();
-      } else if (m.content === 'getMemory') {
-        process.send({type: 'getMemory', content: process.memoryUsage().heapUsed});
-      } else if (m.content === 'getLists') {
-        process.send({type: 'getLists', content: String(Object.keys(self.listsResults))});
-      } else if (m.content === 'clearLists') {
+      } else if (msg.data === 'clearLists') {
         self.listsResults = {};
       }
-
-    // Speedtest
-    } else if (m.type === 'speedtest') {
-      self.instruct(m.options, true, function(err) {
-        if (err) {
-          process.send({type: 'DONE', content: {data: err, fmt: null}});
-        } else {
-          self.speedTest(m.options.time, function(num) {
-            process.send({type: 'DONE', content: {data: num}});
-          });
-        }
-      });
-
-    // Linter
-    } else if (m.type === 'lint') {
-      self.lint(m.code, m.user, function(results) {
-        process.send({type: 'DONE', content: {data: {results}}});
-      });
     }
   });
 
@@ -95,7 +93,7 @@ var Generator = function(name, options) {
 util.inherits(Generator, EventEmitter);
 
 // Receives the query which contains API, owner, and reqest data
-Generator.prototype.instruct = function(options, speedtest, done) {
+Generator.prototype.instruct = function(options, done) {
   var self = this;
 
   this.options     = options || {};
@@ -104,7 +102,8 @@ Generator.prototype.instruct = function(options, speedtest, done) {
   this.format      = (this.options.format || this.options.fmt || 'json').toLowerCase();
   this.noInfo      = typeof this.options.noinfo !== 'undefined';
   this.page        = Number(this.options.page) || 1;
-  this.speedtest   = speedtest;
+  this.mode        = options.mode;
+  this.src         = options.src;
 
   // Sanitize values
   if (isNaN(this.results) || this.results < 0 || this.results > this.limits.results || this.results === '') this.results = 1;
@@ -120,8 +119,8 @@ Generator.prototype.instruct = function(options, speedtest, done) {
 
   async.series([
     function(cb) {
-      process.send({type: 'API', ref: options.ref});
-      self.once('API_RESPONSE', data => {
+      process.send({type: 'lookup', mode: 'api', data: options.ref});
+      self.once('apiResponse', data => {
         self.doc = data;
 
         if (!self.doc) {
@@ -132,20 +131,25 @@ Generator.prototype.instruct = function(options, speedtest, done) {
       });
     },
     function(cb) {
-      process.send({type: 'USER', id: self.doc.owner});
-      self.once('USER_RESPONSE', data => {
+      process.send({type: 'lookup', mode: 'user', data: self.doc.owner});
+      self.once('userResponse', data => {
         self.keyOwner = data;
 
-        if (self.keyOwner.key !== self.options.key && !self.speedtest) {
-          cb('You are not the owner of this API boi!' + self.speedtest);
+        if (self.keyOwner.key !== self.options.key) {
+          cb('You are not the owner of this API boi!');
         } else {
           cb(null);
         }
       });
     },
     function(cb) {
-      // Get API src
-      self.src = fs.readFileSync('./data/apis/' + self.doc.id + '.api', 'utf8');
+      if (self.mode === "lint") {
+        self.src = options.src;
+      } else {
+        // Get API src
+        self.src = fs.readFileSync('./data/apis/' + self.doc.id + '.api', 'utf8');
+      }
+
       cb(null);
     }
   ], function(err, results) {
@@ -413,22 +417,28 @@ Generator.prototype.availableFuncs = function() {
       } else {
         var done = false;
         if (!(obj in self.listsResults)) {
-          process.send({type: 'LIST', ref: obj});
-          self.once('LIST_RESPONSE', data => {
-            var res = data;
-            var file = fs.readFileSync(process.cwd() + '/data/lists/' + res.id + '.list', 'utf8');
-
-            // Add filesize to listAdded object to check later
-            self.listsAdded[obj] = file.length;
-            self.listsResults[obj] = {
-              added: new Date().getTime()
-            };
-            if (res !== null) {
-              self.listsResults[obj].content = file.split('\n');
+          process.send({type: 'lookup', mode: 'list', data: obj});
+          self.once('listResponse', data => {
+            if (data === null) {
+              self.listsAdded[obj] = 0;
+              self.listsResults[obj] = {
+                added: new Date().getTime()
+              };
+              self.listsResults[obj].content = [null];
+              done = true;
             } else {
-              self.listsResults[obj].content = [undefined];
+              var res = data;
+              var file = fs.readFileSync(process.cwd() + '/data/lists/' + res.id + '.list', 'utf8');
+
+              // Add filesize to listAdded object to check later
+              self.listsAdded[obj] = file.length;
+              self.listsResults[obj] = {
+                added: new Date().getTime()
+              };
+
+              self.listsResults[obj].content = file.split('\n').slice(0, -1);
+              done = true;
             }
-            done = true;
           });
         } else {
           done = true;

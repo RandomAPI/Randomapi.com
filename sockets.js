@@ -1,3 +1,5 @@
+var _ = require('lodash');
+
 module.exports = function(cookie, sessionDB) {
   io.use(function(socket, next) {
     var data = socket.handshake || socket.request;
@@ -9,10 +11,8 @@ module.exports = function(cookie, sessionDB) {
   });
 
   io.on('connection', function(socket) {
-    socket.on('lintCode', function(msg){
-      Generators.realtime[0].lint(msg, {user: socket.session.user}, function(data) {
-        socket.emit('codeLinted', data);
-      });
+    socket.on('lintCode', function(msg) {
+      Generators.realtime[0].queue.push({socket, data: {src: msg.code, key: JSON.parse(socket.session).user.key}});
     });
   });
 };

@@ -25,22 +25,23 @@ codeArea.keydown(function(){
 });
 
 socket.on('codeLinted', function(msg) {
-  var result = JSON.parse(msg.results);
-  console.dir(JSON.parse(msg.results));
-  if (JSON.parse(msg.results).error) {
-    var stack
-    if (result.results[0].API_STACK !== undefined) {
-      stack = result.results[0].API_STACK.replace(/\\n/g, '<br>')
-    } else {
-      stack = "";
-    }
-    $('#results').html(result.results[0].API_ERROR + "<br><br>" + stack);
-  } else {
-    $('#results').html(JSON.stringify(result.results));
-  }
+  // var result = JSON.parse(msg.results);
+  // console.dir(JSON.parse(msg.results));
+  // if (JSON.parse(msg.results).error) {
+  //   var stack
+  //   if (result.results[0].API_STACK !== undefined) {
+  //     stack = result.results[0].API_STACK.replace(/\\n/g, '<br>')
+  //   } else {
+  //     stack = "";
+  //   }
+  //   $('#results').html(result.results[0].API_ERROR + "<br><br>" + stack);
+  // } else {
+  //   $('#results').html(JSON.stringify(result.results));
+  // }
+  $('#results').html(msg);
 });
 
 function lintCode() {
   console.log("Sending code to lint");
-  socket.emit('lintCode', editor.getValue());
+  socket.emit('lintCode', {code: editor.getValue()});
 };

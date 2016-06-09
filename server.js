@@ -1,15 +1,17 @@
-var fs      = require('fs');
-var os      = require('os');
-var moment  = require('moment');
-var cookie       = require('cookie');
-var redis        = require('redis');
+var fs        = require('fs');
+var os        = require('os');
+var moment    = require('moment');
+var cookie    = require('cookie');
+var redis     = require('redis');
 var sessionDB = redis.createClient();
-var server  = require('./app').server;
-var app     = require('./app').app;
+var server    = require('./app').server;
+var app       = require('./app').app;
 
 var GeneratorForker = require('./api/0.1/GeneratorForker');
 
-// Global Generators
+// Global Generators and caches
+listCache  = {};
+apiCache   = {};
 Generators = {
   basic:     new Array(1).fill().map((k, v) => new GeneratorForker({name: 'basic_' + v, execTime: 1, memory: 5, results: 25})),
   standard:  new Array(2).fill().map((k, v) => new GeneratorForker({name: 'standard_' + v, execTime: 5, memory: 10, results: 250})),
@@ -43,7 +45,6 @@ logger = function(msg) {
 
 // GUI - can be commented out if not required or too much overhead
 require('./console.js');
-
 require('./sockets.js')(cookie, sessionDB);
 
 server.listen(app.get('port'));
