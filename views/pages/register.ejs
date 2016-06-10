@@ -2,8 +2,8 @@
 <body>
   <% include ../snippets/navbar %>
   <div class="container main">
-    <section class="login">
-      <h4>Login</h4>
+    <section class="register">
+      <h4>Sign Up</h4>
       <div class="flash">
         <%=messages%>
       </div>
@@ -11,9 +11,7 @@
         <input type="text" name="username" placeholder="username" autofocus required>
         <br>
         <input type="password" name="password" placeholder="password" required>
-        <br>
-        <input type="submit" id="loginButton" value="Login">
-        <input type="button" id="forgotButton" value="Forgot Password">
+        <input type="submit" id="registerButton" value="Submit">
       </form>
     </section>
   </div>

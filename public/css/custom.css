@@ -26,8 +26,8 @@ html {
 
 #navbar ul li {
   display: inline;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
 @media screen and (max-width: 760px) {
@@ -49,7 +49,7 @@ html {
   -moz-transition: all 0.2s ease-in-out;
   -ms-transition: all 0.2s ease-in-out;
   -o-transition: all 0.2s ease-in-out;
-  transition: all 0.2s ease-in-out
+  transition: all 0.2s ease-in-out;
 }
 
 a {
@@ -63,7 +63,6 @@ a {
 }
 
 .main {
-  height: 1200px;
   margin-top: 50px;
   clear: both;
   max-width: 1100px;
@@ -73,10 +72,6 @@ section.hero {
   text-align: center;
 }
 
-section.hero #title {
-
-}
-
 section.hero #subtitle {
   margin: auto;
   width: 640px;
@@ -84,7 +79,8 @@ section.hero #subtitle {
 }
 
 section.login {
-  width: 250px;
+  margin: auto;
+  width: 300px;
 }
 section.login input[type='text'],
 section.login input[type='password'] {
@@ -93,14 +89,79 @@ section.login input[type='password'] {
 }
 
 section.login #loginButton {
-  width: 150px;
+  float: left;
+  width: 140px;
+  padding: 0px;
+  background-color: #0CB863;
+  color: white;
+}
+
+section.login #loginButton:hover {
+  background-color: #09A459;
+  -webkit-transition: background-color 0.2s ease-in-out;
+  -moz-transition: background-color 0.2s ease-in-out;
+  -ms-transition: background-color 0.2s ease-in-out;
+  -o-transition: background-color 0.2s ease-in-out;
+  transition: background-color 0.2s ease-in-out;
 }
 
 section.login #forgotButton {
-  width: 150px;
+  float: left;
+  margin-left: 10px;
+  width: 140px;
+  padding: 0px;
 }
 
 section.login h4 {
   float: left;
-  margin-left: 31px;
+  margin-left: 0px;
+}
+
+section.login .flash {
+  clear: both;
+  color: red;
+}
+
+
+
+section.register {
+  margin: auto;
+  width: 300px;
+}
+section.register input[type='text'],
+section.register input[type='password'] {
+  border: 1px solid;
+  width: 300px;
+}
+
+section.register #registerButton {
+  display: block;
+  margin : 0 auto;
+  width: 140px;
+  padding: 0px;
+  background-color: #0CB863;
+  color: white;
+}
+
+section.register #registerButton:hover {
+  background-color: #09A459;
+  -webkit-transition: background-color 0.2s ease-in-out;
+  -moz-transition: background-color 0.2s ease-in-out;
+  -ms-transition: background-color 0.2s ease-in-out;
+  -o-transition: background-color 0.2s ease-in-out;
+  transition: background-color 0.2s ease-in-out;
+}
+
+section.login h4 {
+  float: left;
+  margin-left: 0px;
+}
+
+section.login .flash {
+  clear: both;
+  color: red;
+}
+
+.green {
+  color: #0CB863;
 }

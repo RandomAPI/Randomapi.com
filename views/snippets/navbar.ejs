@@ -2,11 +2,19 @@
   <a href="/"><h3>RandomAPI</h3></a>
   <div class="nav">
     <ul>
-      <a href="pricing">Pricing</a>
-      <a href="documentation"><li>Documentation</li></a>
-      <a href="about"><li>About</li></a>
-      <a href="login"><li>Login</li></a>
-      <a href="register"><li class='signupBadge'>Sign Up</li></a>
+      <% if (session.loggedin === true) { %>
+        <a class="green" href="upgrade"><li>Upgrade</li></a>
+        <a href="documentation"><li>Documentation</li></a>
+        <a href="settings"><li>Settings</li></a>
+        <a href="about"><li>About</li></a>
+        <a href="logout"><li>Logout</li></a>
+      <% } else { %>
+        <a href="pricing">Pricing</a>
+        <a href="documentation"><li>Documentation</li></a>
+        <a href="about"><li>About</li></a>
+        <a href="login"><li>Login</li></a>
+        <a href="register"><li class='signupBadge'>Sign Up</li></a>
+      <% } %>
     </ul>
   </div>
 </div>

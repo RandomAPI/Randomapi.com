@@ -1,0 +1,18 @@
+<% include ../../snippets/header %>
+<body>
+  <% include ../../snippets/navbar %>
+  <div class="container main">
+    <div id="note">
+      <%=messages%>
+    </div>
+    <h2>New List</h2>
+    <a href="home">Home</a> | <a href="new/api">New API</a> | <a href="view/api">View APIs</a> | <a href="new/list">New List</a> | <a href="view/list">View Lists</a> | <a href="logout">Logout</a><br><br>
+    <form enctype="multipart/form-data" action="" method="POST">
+    <input type="text" name="name" placeholder="List Name" autofocus required autocomplete="off"><br><br>
+    Choose a file to upload: <input name="file" type="file" required><br />
+    <input type="submit" value="Upload File" />
+    </form>
+  </div>
+</body>
+
+</html>

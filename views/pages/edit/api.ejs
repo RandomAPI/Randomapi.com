@@ -1,0 +1,28 @@
+<% include ../../snippets/header %>
+<body>
+  <% include ../../snippets/navbar %>
+  <div class="container main">
+    <div id="note">
+      <%=messages%>
+    </div>
+    <h2>Editing API <%=api.ref%></h2>
+  <div class="row" style="margin: auto; width: 70%; margin-top: 50px;">
+    <div class="col-md-6">
+      <pre id="aceEditor" name="code"><%=api.code%></pre>
+      <input type="submit" id="submit" value="Save">
+    </div>
+    <div class="col-md-6">
+      <button onClick="lintCode()">Lint Code</button>
+      <pre id="results" style="white-space: pre-wrap;">
+preview thing
+      </pre>
+    </div>
+  </div>
+
+  <script src="js/socket.io.min.js"></script>
+  <script src="js/ace/ace.js" type="text/javascript"></script>
+  <script src="js/jquery.js" type="text/javascript"></script>
+  <script src="js/realtimeEditor.js"></script>
+</body>
+
+</html>
