@@ -1,0 +1,106 @@
+html {
+  height: 100%;
+  width: 100%;
+}
+
+#navbar {
+  display: block;
+  margin: 15px auto 0px auto;
+  padding: 0px 25px 50px 25px;
+  max-width: 1200px;
+}
+
+#navbar h3 {
+  float: left;
+  font-size: 24pt;
+}
+
+#navbar ul {
+  overflow: hidden;
+  float: right;
+  list-style-type: none;
+  margin-top: 7px;
+  padding: 0;
+  font-size: 16pt;
+}
+
+#navbar ul li {
+  display: inline;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+@media screen and (max-width: 760px) {
+  #navbar {
+    display: none;
+  }
+}
+
+.signupBadge {
+  border: 1px solid;
+  border-radius: 20px;
+  border-color: #0CB863;
+}
+
+.signupBadge:hover {
+  background-color: #0CB863;
+  color: white;
+  -webkit-transition: all 0.2s ease-in-out;
+  -moz-transition: all 0.2s ease-in-out;
+  -ms-transition: all 0.2s ease-in-out;
+  -o-transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.main {
+  height: 1200px;
+  margin-top: 50px;
+  clear: both;
+  max-width: 1100px;
+}
+
+section.hero {
+  text-align: center;
+}
+
+section.hero #title {
+
+}
+
+section.hero #subtitle {
+  margin: auto;
+  width: 640px;
+  font-size: 16pt;
+}
+
+section.login {
+  width: 250px;
+}
+section.login input[type='text'],
+section.login input[type='password'] {
+  border: 1px solid;
+  width: 300px;
+}
+
+section.login #loginButton {
+  width: 150px;
+}
+
+section.login #forgotButton {
+  width: 150px;
+}
+
+section.login h4 {
+  float: left;
+  margin-left: 31px;
+}

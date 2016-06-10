@@ -1,11 +1,27 @@
 <% include ../snippets/header %>
 <body>
-    <div align="center">
-        <div id="note"></div>
-        <h1>RandomAPI</h1>
-        <hr width="50%">
-        <% include ../snippets/nav %>
-    </div>
-</body>
+  <% include ../snippets/navbar %>
 
+  <!-- Primary Page Layout
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <div class="container main">
+    <section class="hero">
+      <h3 id="title">Simplify your testing</h3>
+      <h5 id="subtitle">Easily generate mock data for testing your application</h5>
+    </section>
+  </div>
+
+
+<!-- End Document
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <script src="js/slideout.min.js"></script>
+  <script>
+    var slideout = new Slideout({
+      'panel': document.getElementById('panel'),
+      'menu': document.getElementById('menu'),
+      'padding': 256,
+      'tolerance': 70
+    });
+  </script>
+</body>
 </html>
