@@ -2,39 +2,44 @@
 <body>
   <% include ../../snippets/navbar %>
   <div class="container main">
-    <div id="note">
-      <%=messages%>
+    <div class="row">
+      <div class="two columns">
+        <% include ../../snippets/subnav %>
+      </div>
+      <div class="ten columns">
+        <div id="note">
+          <%=messages%>
+        </div>
+        <h3>View APIs</h3>
+        <table class="table table-striped" style="width: 75%">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Ref ID</th>
+              <th>Generator Version</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+          <%
+          if (apis !== null) {
+            apis.forEach(function(api, index) {
+          %>
+            <tr>
+              <td><%=index+1%></td>
+              <td><%=api.name%></td>
+              <td><%=api.ref%></td>
+              <td><%=api.generator%></td>
+              <td><a href="delete/api/<%=api.id%>">Delete</a> <a href="edit/api/<%=api.ref%>">Edit</a> <a href="api/<%=api.ref%>?key=<%=session.user.key%>" target="_blank">Run API</a></td>
+            </tr>
+          <%  });
+          }
+          %>
+          </tbody>
+        </table>
+      </div>
     </div>
-    <h2>View APIs</h2>
-    <a href="home">Home</a> | <a href="new/api">New API</a> | <a href="view/api">View APIs</a> | <a href="new/list">New List</a> | <a href="view/list">View Lists</a> | <a href="logout">Logout</a><br><br>
-    <table class="table table-striped" style="width: 75%">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Name</th>
-          <th>Ref ID</th>
-          <th>Generator Version</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-      <%
-      if (apis !== null) {
-        apis.forEach(function(api, index) {
-      %>
-        <tr>
-          <td><%=index+1%></td>
-          <td><%=api.name%></td>
-          <td><%=api.ref%></td>
-          <td><%=api.generator%></td>
-          <td><a href="delete/api/<%=api.id%>">Delete</a> <a href="edit/api/<%=api.ref%>">Edit</a> <a href="api/<%=api.ref%>?key=<%=session.user.key%>" target="_blank">Run API</a></td>
-        </tr>
-      <%  });
-      }
-      %>
-      </tbody>
-    </table>
   </div>
 </body>
-
 </html>

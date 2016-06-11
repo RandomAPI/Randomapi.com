@@ -2,21 +2,26 @@
 <body>
   <% include ../../snippets/navbar %>
   <div class="container main">
-    <div id="note">
-      <%=messages%>
+    <div class="row">
+      <div class="two columns">
+        <% include ../../snippets/subnav %>
+      </div>
+      <div class="ten columns">
+        <div id="note">
+          <%=messages%>
+        </div>
+        <h3>New API</h3>
+        <form action="" method="POST">
+        <input type="text" name="name" placeholder="API Name" autofocus required autocomplete="off"><br>
+        Generator version: <select name="generator">
+        <% versions.forEach(function(generator) { %>
+          <option value="<%= generator.id %>"><%= generator.version %></option>
+        <% }); %>
+        </select><br><br>
+        <input type="submit" value="Add new API">
+        </form>
+      </div>
     </div>
-    <h2>New API</h2>
-    <a href="home">Home</a> | <a href="new/api">New API</a> | <a href="view/api">View APIs</a> | <a href="new/list">New List</a> | <a href="view/list">View Lists</a> | <a href="logout">Logout</a><br><br>
-    <form action="" method="POST">
-    <input type="text" name="name" placeholder="API Name" autofocus required autocomplete="off"><br>
-    Generator version: <select name="generator">
-    <% versions.forEach(function(generator) { %>
-      <option value="<%= generator.id %>"><%= generator.version %></option>
-    <% }); %>
-    </select><br><br>
-    <input type="submit" value="Add new API">
-    </form>
   </div>
 </body>
-
 </html>

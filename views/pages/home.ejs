@@ -2,14 +2,19 @@
 <body>
   <% include ../snippets/navbar %>
   <div class="container main">
-    <div id="note">
-      <%=messages%>
+    <div class="row">
+      <div class="two columns">
+        <% include ../snippets/subnav %>
+      </div>
+      <div class="ten columns">
+        <div id="note">
+          <%=messages%>
+        </div>
+        <h3>Home</h3>
+        Your api key is <input style="color: green" onClick="this.select();" value="<%= session.user.key %>" readonly size="23"><br>
+        Your tier is <%= session.user.tier %>
+      </div>
     </div>
-    <h2>Home</h2>
-    <a href="home">Home</a> | <a href="new/api">New API</a> | <a href="view/api">View APIs</a> | <a href="new/list">New List</a> | <a href="view/list">View Lists</a> | <a href="logout">Logout</a><br><br>
-    Your api key is <input style="color: green" onClick="this.select();" value="<%= session.user.key %>" readonly size="23"><br>
-    Your tier is <%= session.user.tier %>
   </div>
 </body>
-
 </html>

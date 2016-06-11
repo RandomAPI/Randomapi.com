@@ -2,37 +2,42 @@
 <body>
   <% include ../../snippets/navbar %>
   <div class="container main">
-    <div id="note">
-      <%=messages%>
+    <div class="row">
+      <div class="two columns">
+        <% include ../../snippets/subnav %>
+      </div>
+      <div class="ten columns">
+        <div id="note">
+          <%=messages%>
+        </div>
+        <h3>View Lists</h3>
+        <table class="table table-striped" style="width: 75%">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Ref ID</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+          <%
+          if (lists !== null) {
+            lists.forEach(function(list, index) {
+          %>
+            <tr>
+              <td><%=index+1%></td>
+              <td><%=list.name%></td>
+              <td><%=list.ref%></td>
+              <td><a href="delete/list/<%=list.id%>">Delete</a> <a href="edit/list/<%=list.ref%>">Edit</a></td>
+            </tr>
+          <%  });
+          }
+          %>
+          </tbody>
+        </table>
+      </div>
     </div>
-    <h2>View Lists</h2>
-    <a href="home">Home</a> | <a href="new/api">New API</a> | <a href="view/api">View APIs</a> | <a href="new/list">New List</a> | <a href="view/list">View Lists</a> | <a href="logout">Logout</a><br><br>
-    <table class="table table-striped" style="width: 75%">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Name</th>
-          <th>Ref ID</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-      <%
-      if (lists !== null) {
-        lists.forEach(function(list, index) {
-      %>
-        <tr>
-          <td><%=index+1%></td>
-          <td><%=list.name%></td>
-          <td><%=list.ref%></td>
-          <td><a href="delete/list/<%=list.id%>">Delete</a> <a href="edit/list/<%=list.ref%>">Edit</a></td>
-        </tr>
-      <%  });
-      }
-      %>
-      </tbody>
-    </table>
   </div>
 </body>
-
 </html>

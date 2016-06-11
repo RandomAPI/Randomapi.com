@@ -78,12 +78,13 @@ defaultVars = {};  // Default vars to send into views
 var firstRun = false;
 
 app.use('*', function(req, res, next) {
+  console.log(req.originalUrl)
   // Skip if user is accessing api
   if (req.params[0].slice(0, 5) === '/api/') next();
   else {
     if (baseURL === null && basehref === null) firstRun = true;
 
-    defaultVars = { messages: req.flash('info'), session: req.session, basehref, title: null };
+    defaultVars = { messages: req.flash('info'), session: req.session, basehref, title: null, originalUrl: req.originalUrl };
     if (settings.general.behindReverseProxy) {
       var uri  = req.headers.uri.replace(/(\/)+$/,'');
       var path = req.originalUrl.replace(/(\/)+$/,'');
