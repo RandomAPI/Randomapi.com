@@ -187,30 +187,25 @@ section.login .flash {
   height: 1px;
 }
 
-
-
-
-h1#title {
-    text-align: center;
-}
-
-.editContainer {
-  margin: auto;
-  width: 80%;
-}
-
-.editor {
-
-}
-
-.preview {
-  display: block;
-  float: left;
+#preview {
   position: relative;
+  float: right;
+  width: 50%;
+  height: 475px;
+}
+
+#preview #results {
+  white-space: pre-wrap;       /* Since CSS 2.1 */
+  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+  white-space: -pre-wrap;      /* Opera 4-6 */
+  white-space: -o-pre-wrap;    /* Opera 7 */
+  word-wrap: break-word;       /* Internet Explorer 5.5+ */
+  height: 400px;
 }
 
 #aceEditor {
-  width: 100%;
+  float: left;
+  width: 50%;
   height: 500px;
 }
 

@@ -78,7 +78,6 @@ defaultVars = {};  // Default vars to send into views
 var firstRun = false;
 
 app.use('*', function(req, res, next) {
-  console.log(req.originalUrl)
   // Skip if user is accessing api
   if (req.params[0].slice(0, 5) === '/api/') next();
   else {
