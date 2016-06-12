@@ -5,7 +5,7 @@ var router   = express.Router();
 // Index //
 router.get('/', function(req, res, next) {
   if (req.session.loggedin) {
-    res.render('home', _.merge(defaultVars, {title: 'Home'}));
+    res.render('dashboard', _.merge(defaultVars, {title: 'Dashboard'}));
   } else {
     res.render('index', defaultVars);
   }
