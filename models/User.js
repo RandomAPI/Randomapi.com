@@ -58,12 +58,12 @@ User.register = function(data, cb) {
       if (err) {
         cb({flash: 'This username is already in use!', redirect: '/register'}, null);
       } else {
-        cb(null, {user: model, flash: 'Registered successfully! Welcome to RandomAPI!', redirect: '/'});
+        cb(null, {user: model, redirect: '/'});
       }
     });
     return;
   }
-  cb({flash: 'Only 20 alphanumeric characters max please!', redirect: '/register'}, null);
+  cb({flash: 'Only 20 alphanumeric chars max please!', redirect: '/register'}, null);
 };
 
 User.login = function(data, cb) {
@@ -73,9 +73,9 @@ User.login = function(data, cb) {
     } else {
       model.validPass(data.password, function(err, match) {
         if (match) {
-          cb(null, {user: model, flash: 'Logged in successfully! Welcome to RandomAPI!', redirect: '/'});
+          cb(null, {user: model, redirect: '/'});
         } else {
-          cb({flash: 'Invalid username of password!', redirect: '/login'}, null);
+          cb({flash: 'Invalid username or password!', redirect: '/login'}, null);
         }
       });
     }

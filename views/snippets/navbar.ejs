@@ -1,0 +1,19 @@
+<div id="navbar" class="scroll">
+  <a href="/"><h3>RandomAPI</h3></a>
+  <div class="nav">
+    <ul>
+      <% if (session.loggedin === true) { %>
+        <a href="/"><li>Home</li></a>
+        <a href="upgrade"><li>Upgrade</li></a>
+        <a href="documentation"><li>Documentation</li></a>
+        <a href="settings"><li>Settings</li></a>
+        <a href="logout"><li>Logout</li></a>
+      <% } else { %>
+        <a href="pricing">Pricing</a>
+        <a href="documentation"><li>Documentation</li></a>
+        <a href="login"><li>Login</li></a>
+        <a href="register"><li class='signupBadge'>Sign Up</li></a>
+      <% } %>
+    </ul>
+  </div>
+</div>

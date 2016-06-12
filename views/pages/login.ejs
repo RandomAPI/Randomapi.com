@@ -1,20 +1,21 @@
 <% include ../snippets/header %>
 <body>
-    <div align="center">
-        <div id="note">
-            <%=messages%>
-        </div>
-        <h1>Login</h1>
-        <hr width="50%">
-        <% include ../snippets/nav %>
-        <form action="" method="POST">
-            <input type="text" name="username" placeholder="username" autofocus>
-            <br>
-            <input type="password" name="password" placeholder="password">
-            <br>
-            <input type="submit" value="Login">
-        </form>
-    </div>
+  <% include ../snippets/navbar %>
+  <div class="container main">
+    <section class="login">
+      <h4>Login</h4>
+      <div class="flash">
+        <%=messages%>
+      </div>
+      <form method="POST">
+        <input type="text" name="username" placeholder="username" autofocus required>
+        <br>
+        <input type="password" name="password" placeholder="password" required>
+        <br>
+        <input type="submit" id="loginButton" value="Login">
+        <input type="button" id="forgotButton" value="Forgot Password">
+      </form>
+    </section>
+  </div>
 </body>
-
 </html>

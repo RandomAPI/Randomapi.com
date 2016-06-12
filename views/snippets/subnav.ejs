@@ -1,0 +1,41 @@
+<%
+var selected = {};
+var style = "class='selected'";
+var path;
+try {
+  path = originalUrl.match(/(?:^(\/\w+\/\w+)(?:$|.*)|(\/))/)[1];
+} catch(e) {
+  path = "/";
+}
+
+switch(path) {
+  case '/new/api':
+    selected['newapi'] = style;
+    break;
+  case '/view/api':
+  case '/edit/api':
+    selected['viewapi'] = style;
+    break;
+  case '/new/list':
+    selected['newlist'] = style;
+    break;
+  case '/view/list':
+  case '/edit/list':
+    selected['viewlist'] = style;
+    break;
+  case '/':
+  default:
+    selected['dashbaord'] = style;
+}
+%>
+<div id="subnav">
+  <ul>
+    <li <%- selected['dashbaord'] %>><a href="/">Dashboard</a></li>
+    <li class='seperator'></li>
+    <li <%- selected['newapi'] %>><a href="/new/api">New API</a></li>
+    <li <%- selected['newlist'] %>><a href="/new/list">New List</a></li>
+    <li class='seperator'></li>
+    <li <%- selected['viewapi'] %>><a href="/view/api">View APIs</a></li>
+    <li <%- selected['viewlist'] %>><a href="/view/list">View Lists</a></li>
+  </ul>
+</div>

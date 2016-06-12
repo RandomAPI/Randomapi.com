@@ -1,40 +1,45 @@
 <% include ../../snippets/header %>
 <body>
-    <div align="center">
+  <% include ../../snippets/navbar %>
+  <div class="container main">
+    <div class="row">
+      <div class="two columns">
+        <% include ../../snippets/subnav %>
+      </div>
+      <div class="ten columns">
         <div id="note">
-            <%=messages%>
+          <%=messages%>
         </div>
-        <h1>View APIs</h1>
-        <hr width="50%">
-        <% include ../../snippets/nav %>
+        <h3>View APIs</h3>
         <table class="table table-striped" style="width: 75%">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Name</th>
-                    <th>Ref ID</th>
-                    <th>Generator Version</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-            <%
-            if (apis !== null) {
-                apis.forEach(function(api, index) {
-            %>
-                    <tr>
-                        <td><%=index+1%></td>
-                        <td><%=api.name%></td>
-                        <td><%=api.ref%></td>
-                        <td><%=api.generator%></td>
-                        <td><a href="delete/api/<%=api.id%>">Delete</a> <a href="edit/api/<%=api.ref%>">Edit</a> <a href="api/<%=api.ref%>?key=<%=session.user.key%>" target="_blank">Run API</a></td>
-                    </tr>
-            <%  });
-            }
-            %>
-            </tbody>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Ref ID</th>
+              <th>Generator Version</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+          <%
+          if (apis !== null) {
+            apis.forEach(function(api, index) {
+          %>
+            <tr>
+              <td><%=index+1%></td>
+              <td><%=api.name%></td>
+              <td><%=api.ref%></td>
+              <td><%=api.generator%></td>
+              <td><a href="delete/api/<%=api.id%>">Delete</a> <a href="edit/api/<%=api.ref%>">Edit</a> <a href="api/<%=api.ref%>?key=<%=session.user.key%>" target="_blank">Run API</a></td>
+            </tr>
+          <%  });
+          }
+          %>
+          </tbody>
         </table>
+      </div>
     </div>
+  </div>
 </body>
-
 </html>

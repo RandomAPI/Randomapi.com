@@ -1,18 +1,23 @@
 <% include ../../snippets/header %>
 <body>
-    <div align="center">
+  <% include ../../snippets/navbar %>
+  <div class="container main">
+    <div class="row">
+      <div class="two columns">
+        <% include ../../snippets/subnav %>
+      </div>
+      <div class="ten columns">
         <div id="note">
-            <%=messages%>
+          <%=messages%>
         </div>
-        <h1>New List</h1>
-        <hr width="50%">
-        <% include ../../snippets/nav %>
+        <h3>New List</h3>
         <form enctype="multipart/form-data" action="" method="POST">
         <input type="text" name="name" placeholder="List Name" autofocus required autocomplete="off"><br><br>
         Choose a file to upload: <input name="file" type="file" required><br />
         <input type="submit" value="Upload File" />
         </form>
+      </div>
     </div>
+  </div>
 </body>
-
 </html>

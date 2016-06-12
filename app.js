@@ -83,7 +83,7 @@ app.use('*', function(req, res, next) {
   else {
     if (baseURL === null && basehref === null) firstRun = true;
 
-    defaultVars = { messages: req.flash('info'), session: req.session, basehref, title: null };
+    defaultVars = { messages: req.flash('info'), session: req.session, basehref, title: null, originalUrl: req.originalUrl };
     if (settings.general.behindReverseProxy) {
       var uri  = req.headers.uri.replace(/(\/)+$/,'');
       var path = req.originalUrl.replace(/(\/)+$/,'');

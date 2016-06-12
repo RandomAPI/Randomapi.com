@@ -1,0 +1,214 @@
+html {
+  height: 100%;
+  width: 100%;
+}
+
+#navbar {
+  display: block;
+  margin: 15px auto 0px auto;
+  padding: 0px 25px 50px 25px;
+  max-width: 1200px;
+}
+
+#navbar h3 {
+  float: left;
+  font-size: 24pt;
+}
+
+#navbar ul {
+  overflow: hidden;
+  float: right;
+  list-style-type: none;
+  margin-top: 7px;
+  padding: 0;
+  font-size: 16pt;
+}
+
+#navbar ul li {
+  display: inline;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+@media screen and (max-width: 760px) {
+  #navbar {
+    display: none;
+  }
+}
+
+.signupBadge {
+  border: 1px solid;
+  border-radius: 20px;
+  border-color: #0CB863;
+}
+
+.signupBadge:hover {
+  background-color: #0CB863;
+  color: white;
+  -webkit-transition: all 0.2s ease-in-out;
+  -moz-transition: all 0.2s ease-in-out;
+  -ms-transition: all 0.2s ease-in-out;
+  -o-transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.main {
+  margin-top: 50px;
+  clear: both;
+  max-width: 1200px;
+  padding: 15px;
+}
+
+section.hero {
+  text-align: center;
+}
+
+section.hero #subtitle {
+  margin: auto;
+  width: 640px;
+  font-size: 16pt;
+}
+
+section.login {
+  margin: auto;
+  width: 300px;
+}
+section.login input[type='text'],
+section.login input[type='password'] {
+  border: 1px solid;
+  width: 300px;
+}
+
+section.login #loginButton {
+  float: left;
+  width: 140px;
+  padding: 0px;
+  background-color: #0CB863;
+  color: white;
+}
+
+section.login #loginButton:hover {
+  background-color: #09A459;
+  -webkit-transition: background-color 0.2s ease-in-out;
+  -moz-transition: background-color 0.2s ease-in-out;
+  -ms-transition: background-color 0.2s ease-in-out;
+  -o-transition: background-color 0.2s ease-in-out;
+  transition: background-color 0.2s ease-in-out;
+}
+
+section.login #forgotButton {
+  float: left;
+  margin-left: 10px;
+  width: 140px;
+  padding: 0px;
+}
+
+section.login h4 {
+  float: left;
+  margin-left: 0px;
+}
+
+section.login .flash {
+  clear: both;
+  color: red;
+}
+
+
+
+section.register {
+  margin: auto;
+  width: 300px;
+}
+section.register input[type='text'],
+section.register input[type='password'] {
+  border: 1px solid;
+  width: 300px;
+}
+
+section.register #registerButton {
+  display: block;
+  margin : 0 auto;
+  width: 140px;
+  padding: 0px;
+  background-color: #0CB863;
+  color: white;
+}
+
+section.register #registerButton:hover {
+  background-color: #09A459;
+  -webkit-transition: background-color 0.2s ease-in-out;
+  -moz-transition: background-color 0.2s ease-in-out;
+  -ms-transition: background-color 0.2s ease-in-out;
+  -o-transition: background-color 0.2s ease-in-out;
+  transition: background-color 0.2s ease-in-out;
+}
+
+section.login h4 {
+  float: left;
+  margin-left: 0px;
+}
+
+section.login .flash {
+  clear: both;
+  color: red;
+}
+
+.green {
+  color: #0CB863;
+}
+
+#subnav {
+}
+
+#subnav ul {
+  overflow: hidden;
+  list-style-type: none;
+  margin-top: 5px;
+  padding: 0;
+  font-size: 14pt;
+}
+
+#subnav ul .selected {
+  font-weight: bold;
+  color: #0CB863;
+}
+
+#subnav ul .seperator {
+  height: 1px;
+}
+
+#preview {
+  position: relative;
+  float: right;
+  width: 50%;
+  height: 475px;
+}
+
+#preview #results {
+  white-space: pre-wrap;       /* Since CSS 2.1 */
+  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+  white-space: -pre-wrap;      /* Opera 4-6 */
+  white-space: -o-pre-wrap;    /* Opera 7 */
+  word-wrap: break-word;       /* Internet Explorer 5.5+ */
+  height: 400px;
+}
+
+#aceEditor {
+  float: left;
+  width: 50%;
+  height: 500px;
+}
+
+.table th, td {
+   text-align: center;
+}

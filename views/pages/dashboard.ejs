@@ -1,0 +1,20 @@
+<% include ../snippets/header %>
+<body>
+  <% include ../snippets/navbar %>
+  <div class="container main">
+    <div class="row">
+      <div class="two columns">
+        <% include ../snippets/subnav %>
+      </div>
+      <div class="ten columns">
+        <div id="note">
+          <%=messages%>
+        </div>
+        <h3>Dashboard</h3>
+        Your api key is <input style="color: green" onClick="this.select();" value="<%= session.user.key %>" readonly size="23"><br>
+        Your tier is <%= session.user.tier %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
