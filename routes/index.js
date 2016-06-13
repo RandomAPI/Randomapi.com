@@ -1,6 +1,9 @@
 const express = require('express');
+const _       = require('lodash');
 const router  = express.Router();
 const logger  = require('../utils').logger;
+
+const User = require('../models/User');
 
 // Setup defaultVars and baseURL for all routes
 let defaultVars, baseURL;
@@ -67,6 +70,7 @@ router.get('/register', (req, res, next) => {
 router.post('/register', (req, res, next) => {
   if (!req.session.loggedin) {
     User.register(req.body, (err, data) => {
+      logger(err, data);
       if (err) {
         req.flash('info', err.flash);
         res.redirect(baseURL + err.redirect);

@@ -1,7 +1,7 @@
 CREATE USER IF NOT EXISTS 'randomapi'@'localhost' IDENTIFIED BY 'randomapi';
 CREATE DATABASE IF NOT EXISTS randomapi;
 USE randomapi;
-GRANT ALL PRIVILEGES ON randomapi TO 'randomapi'@'localhost' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON `randomapi`.* TO 'randomapi'@'localhost' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 -- phpMyAdmin SQL Dump
 -- version 4.6.2
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS `User` (
   `id` int(11) NOT NULL,
   `username` varchar(16) NOT NULL,
   `password` varchar(64) NOT NULL,
-  `apikey` varchar(16) NOT NULL,
+  `apikey` varchar(19) NOT NULL,
   `role` tinyint(4) NOT NULL DEFAULT '4',
   `tier` tinyint(4) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
