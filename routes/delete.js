@@ -1,16 +1,26 @@
-var express  = require('express');
-var fs       = require('fs');
-var router   = express.Router();
+const express  = require('express');
+const fs       = require('fs');
+const router   = express.Router();
 
-// api //
-router.get('/api/:id', function(req, res, next) {
+const API = require('../models/API');
+const List = require('../models/List');
+
+// Setup defaultVars and baseURL for all routes
+let defaultVars, baseURL;
+router.all('*', function(req, res, next) {
+  defaultVars = req.app.get('defaultVars');
+  baseURL = req.app.get('baseURL');
+  next();
+});
+
+router.get('/api/:id', (req, res, next) => {
   if (req.session.loggedin) {
-    var doc = API.getAPI(req.params.id);
+    let doc = API.getAPI(req.params.id);
     if (doc.owner !== req.session.user.id) {
       res.redirect(baseURL + '/view/api');
     } else {
-      API.remove({id: req.params.id}, function(err) {
-        fs.unlink('./data/apis/' + req.params.id + '.api', function(err) {
+      API.remove({id: req.params.id}, err => {
+        fs.unlink('./data/apis/' + req.params.id + '.api', err => {
           req.flash('info', 'API ' + doc.name + ' was deleted successfully!');
           res.redirect(baseURL + '/view/api');
         });
@@ -22,14 +32,14 @@ router.get('/api/:id', function(req, res, next) {
 });
 
 // list //
-router.get('/list/:id', function(req, res, next) {
+router.get('/list/:id', (req, res, next) => {
   if (req.session.loggedin) {
-    var doc = List.getList(req.params.id)
+    let doc = List.getList(req.params.id)
     if (doc.owner !== req.session.user.id) {
       res.redirect(baseURL + '/view/list');
     } else {
-      List.remove({id: req.params.id}, function(err) {
-        fs.unlink('./data/lists/' + req.params.id + '.list', function(err) {
+      List.remove({id: req.params.id}, err => {
+        fs.unlink('./data/lists/' + req.params.id + '.list', err => {
           req.flash('info', 'List ' + doc.name + ' was deleted successfully!');
           res.redirect(baseURL + '/view/list');
         });

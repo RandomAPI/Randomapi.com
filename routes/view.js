@@ -1,14 +1,24 @@
-var express  = require('express');
-var fs       = require('fs');
-var router   = express.Router();
+const express  = require('express');
+const router   = express.Router();
 
-// api //
-router.get('/api', function(req, res, next) {
+const API = require('../models/API');
+const List = require('../models/List');
+const Generator = require('../models/Generator');
+
+// Setup defaultVars and baseURL for all routes
+let defaultVars, baseURL;
+router.all('*', function(req, res, next) {
+  defaultVars = req.app.get('defaultVars');
+  baseURL = req.app.get('baseURL');
+  next();
+});
+
+router.get('/api', (req, res, next) => {
   if (req.session.loggedin) {
-    var obs = [];
-    var apis = API.getAPIs(req.session.user.id);
-    for (var i = 0; i < apis.length; i++) {
-      var newobj = JSON.parse(JSON.stringify(apis[i]));
+    let obs = [];
+    let apis = API.getAPIs(req.session.user.id);
+    for (let i = 0; i < apis.length; i++) {
+      let newobj = JSON.parse(JSON.stringify(apis[i]));
       newobj.generator = Generator.getByID(apis[i].generator).version;
       obs.push(newobj);
     }
@@ -20,9 +30,9 @@ router.get('/api', function(req, res, next) {
 
 
 // list //
-router.get('/list', function(req, res, next) {
+router.get('/list', (req, res, next) => {
   if (req.session.loggedin) {
-    var lists = List.getLists(req.session.user.id);
+    let lists = List.getLists(req.session.user.id);
     res.render('view/list', _.merge(defaultVars, {lists}));
   } else {
     res.render('index', defaultVars);

@@ -14,7 +14,7 @@
     },
     "db": {
         "host": "localhost",
-        "user": "randomapi",
+        "username": "randomapi",
         "password": "randomapi",
         "database": "randomapi"
     }

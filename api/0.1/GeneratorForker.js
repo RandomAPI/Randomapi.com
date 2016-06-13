@@ -2,6 +2,7 @@
 var fork  = require('child_process').fork;
 var util  = require('util');
 var async = require('async');
+var _     = require('lodash');
 var EventEmitter = require('events').EventEmitter;
 
 var GeneratorForker = function(options) {
