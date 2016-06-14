@@ -1,4 +1,4 @@
-const mysql    = require('mysql');
+const mysql    = require('mysql2');
 const settings = require('../settings.json');
 const logger   = require('../utils').logger;
 
@@ -14,7 +14,7 @@ connection.connect(err => {
     logger('[db]: error connecting: ' + err.stack);
     return;
   }
-  logger('[db]: connected as id ' + connection.threadId);
+  logger('[db]: connected as id ' + connection.connectionId);
 });
 
 module.exports = connection;

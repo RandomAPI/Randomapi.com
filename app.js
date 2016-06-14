@@ -93,6 +93,8 @@ app.use('*', (req, res, next) => {
       basehref = baseURL + '/';
     }
 
+    app.set('defaultVars', defaultVars);
+
     if (firstRun) {
       firstRun = false;
       if (settings.general.behindReverseProxy) {
@@ -102,7 +104,6 @@ app.use('*', (req, res, next) => {
       }
       app.set('baseURL', baseURL);
       app.set('basehref', basehref);
-      app.set('defaultVars', defaultVars);
     } else {
       next();
     }
