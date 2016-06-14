@@ -9,7 +9,7 @@ const User = require('../models/User');
 let defaultVars, baseURL;
 router.all('*', function(req, res, next) {
   defaultVars = req.app.get('defaultVars');
-  baseURL = req.app.get('baseURL');
+  baseURL     = req.app.get('baseURL');
   next();
 });
 

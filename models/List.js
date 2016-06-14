@@ -1,7 +1,8 @@
-const db      = require('./db');
 const random  = require('../utils').random;
 const range   = require('../utils').range;
 const logger  = require('../utils').logger;
+const db      = require('./db');
+const Promise = require('bluebird');
 
 module.exports = {
   add(data) {

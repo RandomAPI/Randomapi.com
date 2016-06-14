@@ -25,7 +25,7 @@ const Generator = require('../models/Generator');
 let defaultVars, baseURL;
 router.all('*', function(req, res, next) {
   defaultVars = req.app.get('defaultVars');
-  baseURL = req.app.get('baseURL');
+  baseURL     = req.app.get('baseURL');
   next();
 });
 
@@ -44,7 +44,7 @@ router.post('/api', (req, res, next) => {
     req.flash('info', 'Please provide a name for your API');
     res.redirect(baseURL + '/new/api');
   } else {
-    API.add({name: req.body.name, generator: req.body.generator, owner: req.session.user.id}, model => {
+    API.add({name: req.body.name, generator: req.body.generator, owner: req.session.user.id}).then(API.getAPI).then(model => {
       fs.writeFile('./data/apis/' + model.id + '.api', `
 // APIs are coded with Vanilla Javascript and are executed in a sandboxed environment
 // Append all fields to the api object that you want to have returned
