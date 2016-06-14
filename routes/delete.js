@@ -34,17 +34,18 @@ router.get('/api/:id', (req, res, next) => {
 // list //
 router.get('/list/:id', (req, res, next) => {
   if (req.session.loggedin) {
-    let doc = List.getList(req.params.id)
-    if (doc.owner !== req.session.user.id) {
-      res.redirect(baseURL + '/view/list');
-    } else {
-      List.remove({id: req.params.id}, err => {
-        fs.unlink('./data/lists/' + req.params.id + '.list', err => {
-          req.flash('info', 'List ' + doc.name + ' was deleted successfully!');
-          res.redirect(baseURL + '/view/list');
+    List.getList(req.params.id).then(doc => {
+      if (doc.owner !== req.session.user.id) {
+        res.redirect(baseURL + '/view/list');
+      } else {
+        List.remove({id: req.params.id}).then(() => {
+          fs.unlink('./data/lists/' + req.params.id + '.list', err => {
+            req.flash('info', 'List ' + doc.name + ' was deleted successfully!');
+            res.redirect(baseURL + '/view/list');
+          });
         });
-      });
-    }
+      }
+    });
   } else {
     res.redirect(baseURL + '/view/list');
   }

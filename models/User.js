@@ -51,7 +51,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       db.query('SELECT * FROM `User` WHERE ?', {id}, (err, data) => {
         if (err) reject(err);
-        else if (data.length === 0) reject(null);
+        else if (data.length === 0) resolve(null);
         else resolve(data[0]);
       });
     });
@@ -60,7 +60,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       db.query('SELECT * FROM `User` WHERE ?', {username}, (err, data) => {
         if (err) reject(err);
-        else if (data.length === 0) reject(null);
+        else if (data.length === 0) resolve(null);
         else resolve(data[0]);
       });
     });

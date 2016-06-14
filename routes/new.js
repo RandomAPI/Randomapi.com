@@ -1,4 +1,5 @@
 const express  = require('express');
+const _        = require('lodash');
 const fs       = require('fs');
 const router   = express.Router();
 const multer   = require('multer');
@@ -30,7 +31,9 @@ router.all('*', function(req, res, next) {
 
 router.get('/api', (req, res, next) => {
   if (req.session.loggedin) {
-    res.render('new/api', _.merge(defaultVars, {versions: Generator.getAvailableVersions()}));
+    Generator.getAvailableVersions().then(versions => {
+      res.render('new/api', _.merge(defaultVars, {versions}));
+    });
   } else {
     res.render('index', defaultVars);
   }
@@ -116,7 +119,7 @@ router.post('/list', upload.any(), (req, res, next) => {
     req.flash('info', 'Looks like you provided an invalid file...please try again.');
     res.redirect(baseURL + '/new/list');
   } else {
-    List.add({name: req.body.name, owner: req.session.user.id}, model => {
+    List.add({name: req.body.name, owner: req.session.user.id}).then(List.getList).then(model => {
       fs.rename('./'+ req.files[0].path, './data/lists/' + model.id + '.list', err => {
         req.flash('info', 'List ' + req.body.name + ' was added successfully!');
         res.redirect(baseURL + '/view/list');

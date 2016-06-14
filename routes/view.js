@@ -1,4 +1,5 @@
 const express  = require('express');
+const _        = require('lodash');
 const router   = express.Router();
 
 const API = require('../models/API');
@@ -32,8 +33,9 @@ router.get('/api', (req, res, next) => {
 // list //
 router.get('/list', (req, res, next) => {
   if (req.session.loggedin) {
-    let lists = List.getLists(req.session.user.id);
-    res.render('view/list', _.merge(defaultVars, {lists}));
+    lists = List.getLists(req.session.user.id).then(lists => {
+      res.render('view/list', _.merge(defaultVars, {lists}));
+    });
   } else {
     res.render('index', defaultVars);
   }
