@@ -112,7 +112,6 @@ util.inherits(Generator, EventEmitter);
 
 // Receives the query which contains API, owner, and reqest data
 Generator.prototype.instruct = function(options, done) {
-  console.log('here');
   let self = this;
 
   this.options = options || {};
@@ -172,15 +171,11 @@ Generator.prototype.instruct = function(options, done) {
       cb(null);
     }
   ], (err, results) => {
-    console.log('here2');
-    console.log(err);
-    console.log(results);
     done(err);
   });
 };
 
 Generator.prototype.generate = function(cb) {
-  console.log('test');
   let self = this;
 
   this.results = this.results || 1;
@@ -199,7 +194,7 @@ Generator.prototype.generate = function(cb) {
     ${self.src}
           } catch (e) {
             api = {
-              API_ERROR: 'Someasdfthing went wrong'//e.toString(),
+              API_ERROR: e.toString()//e.toString(),
               //API_STACK: e.stack
             };
           }
@@ -218,7 +213,7 @@ Generator.prototype.generate = function(cb) {
     });
     returnResults(null, this.context._APIresults);
   } catch(e) {
-    returnResults('aaaaSomething went wrong', null);
+    returnResults(null, [{API_ERROR: e.toString()}]);
     //console.log(e.stack);
   }
 
