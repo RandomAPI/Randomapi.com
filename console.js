@@ -69,7 +69,7 @@ const generateTables = () => {
 
 generateTables();
 
-const totalQueues = grid.set(4, 0, 3, 6, contrib.line, {
+const totalQueues = grid.set(4, 0, 3, 4, contrib.line, {
   showNthLabel: 5,
   label: 'Total Queues',
   showLegend: true,
@@ -81,7 +81,7 @@ const totalQueues = grid.set(4, 0, 3, 6, contrib.line, {
   }
 });
 
-const totalMemory = grid.set(4, 6, 3, 6, contrib.line, {
+const totalMemory = grid.set(4, 4, 3, 4, contrib.line, {
   showNthLabel: 5,
   label: 'Total Memory Usage',
   showLegend: true,
@@ -93,7 +93,7 @@ const totalMemory = grid.set(4, 6, 3, 6, contrib.line, {
   }
 });
 
-const eventLoopResponseAvg = grid.set(7, 0, 3, 6, contrib.line, {
+const eventLoopResponseAvg = grid.set(4, 8, 3, 4, contrib.line, {
   showNthLabel: 5,
   label: 'Event Loop Response Average',
   showLegend: true,

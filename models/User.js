@@ -11,14 +11,14 @@ module.exports = {
       if (data.password === '') {
         cb({flash: 'Please provide a password!', redirect: '/register'}, null);
       } else {
-        this.getByName(data.username).then(() => {
-          cb({flash: 'This username is already in use!', redirect: '/register'}, null);
-        }, () => {
-          this.addUser(data).then(userID => {
-            this.getByID(userID).then(user => {
+        this.getByName(data.username).then((user) => {
+          if (user !== null) {
+            cb({flash: 'This username is already in use!', redirect: '/register'}, null);
+          } else {
+            this.addUser(data).then(this.getByID).then(user => {
               cb(null, {user, redirect: '/'});
-            }, () => {});
-          }, () => {});
+            });
+          }
         });
       }
     } else {
@@ -38,13 +38,11 @@ module.exports = {
   },
   login(data, cb) {
     this.getByName(data.username).then(user => {
-      if (this.validPass(data.password, user.password)) {
+      if (user !== null && this.validPass(data.password, user.password)) {
         cb(null, {user, redirect: '/'});
       } else {
         cb({flash: 'Invalid username or password!', redirect: '/login'}, null);
       }
-    }, (err) => {
-      cb({flash: 'Invalid username or password!', redirect: '/login'}, null);
     });
   },
   getByID(id) {
