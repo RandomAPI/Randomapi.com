@@ -1,12 +1,16 @@
 'use strict'
-var fork  = require('child_process').fork;
-var util  = require('util');
-var async = require('async');
-var _     = require('lodash');
-var EventEmitter = require('events').EventEmitter;
+const fork    = require('child_process').fork;
+const util    = require('util');
+const async   = require('async');
+const _       = require('lodash');
+const EventEmitter = require('events').EventEmitter;
 
-var GeneratorForker = function(options) {
-  var self = this;
+const API  = require('../../models/API');
+const List = require('../../models/List');
+const User = require('../../models/User');
+
+const GeneratorForker = function(options) {
+  let self = this;
 
   this.limits = {
     execTime: options.execTime,
@@ -19,16 +23,17 @@ var GeneratorForker = function(options) {
   this.jobCount  = 0;
 
   // Queue to push generate requests into
-  this.queue = async.queue(function(task, callback) {
+  this.queue = async.queue((task, callback) => {
     self.jobCount++;
+
     // Realtime or Speedtest
     if (task.socket !== undefined) {
-      self.generate({mode: 'lint', options: {key: task.data.key, src: task.data.src}}, function(err, results, fmt) {
+      self.generate({mode: 'lint', options: {apikey: task.data.apikey, src: task.data.src}}, (err, results, fmt) => {
         task.socket.emit('codeLinted', results);
         callback();
       });
     } else {
-      var ref;
+      let ref;
       if (task.req.params.ref === undefined) {
         ref = task.req.query.ref;
       } else {
@@ -36,7 +41,7 @@ var GeneratorForker = function(options) {
       }
       _.merge(task.req.query, {ref});
 
-      self.generate({mode: 'generate', options: task.req.query}, function(err, results, fmt) {
+      self.generate({mode: 'generate', options: task.req.query}, (err, results, fmt) => {
         if (fmt === 'json') {
           task.res.setHeader('Content-Type', 'application/json');
         } else if (fmt === 'xml') {
@@ -60,7 +65,7 @@ var GeneratorForker = function(options) {
 util.inherits(GeneratorForker, EventEmitter);
 
 GeneratorForker.prototype.fork = function() {
-  var self = this;
+  let self = this;
 
   // Fork new Generator with provided limits
   this.generator = fork(__dirname + '/Generator', [this.name, JSON.stringify(this.limits)]);
@@ -70,15 +75,15 @@ GeneratorForker.prototype.fork = function() {
   this.generator.on('message', msg => {
     if (msg.type === 'lookup') {
       if (msg.mode === 'api') {
-        API.findOne({ref: msg.data}, function(err, doc) {
+        API.getAPIByRef(msg.data).then(doc => {
           self.generator.send({type: 'response', mode: 'api', data: doc});
         });
       } else if (msg.mode === 'user') {
-        User.findOne({id: msg.data}, function(err, doc) {
+        User.getByID(msg.data).then(doc => {
           self.generator.send({type: 'response', mode: 'user', data: doc});
         });
       } else if (msg.mode === 'list') {
-        List.findOne({ref: msg.data}, function(err, doc) {
+        List.getListByRef(msg.data).then(doc => {
           self.generator.send({type: 'response', mode: 'list', data: doc});
         });
       }
@@ -97,7 +102,7 @@ GeneratorForker.prototype.fork = function() {
 // Opts contains options and mode
 // cb(err, results, fmt)
 GeneratorForker.prototype.generate = function(opts, cb) {
-  var self = this;
+  let self = this;
 
   // Send generator a new task using the given mode and options
   this.generator.send({
@@ -127,7 +132,7 @@ GeneratorForker.prototype.memUsage = function() {
     data: 'getMemory'
   });
 
-  var memory, done = false;
+  let memory, done = false;
   this.once('memComplete', data => {
     memory = data;
     done   = true;
@@ -149,7 +154,7 @@ GeneratorForker.prototype.getCacheSize = function() {
     type: 'cmd',
     data: 'getLists'
   });
-  var lists, done = false;
+  let lists, done = false;
   this.once('listsComplete', data => {
     lists = data;
     done  = true;

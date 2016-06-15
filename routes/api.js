@@ -2,15 +2,14 @@ const express = require('express');
 const router  = express.Router();
 const logger  = require('../utils').logger;
 const spawn   = require('child_process').spawn;
-const app     = express();
 
 router.get('/:ref?', (req, res, next) => {
   const Generators = req.app.get('Generators');
   let type = Math.floor(Math.random() * 100);
 
-  if (type < 20) {
+  if (type < 33) {
     type = 'premium';
-  } else if (type < 50) {
+  } else if (type < 66) {
     type = 'standard';
   } else {
     type = 'basic';

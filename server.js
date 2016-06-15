@@ -8,7 +8,7 @@ const server = require('./app').server;
 const app    = require('./app').app;
 
 // GUI - can be commented out if not required or too much overhead
-require('./console.js');
+//require('./console.js');
 require('./sockets.js');
 
 // Attach db reference to app
