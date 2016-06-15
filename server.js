@@ -40,3 +40,8 @@ server.on('listening', () => {
     : 'port ' + addr.port;
   logger('[server]: Listening on ' + bind);
 });
+
+var elapsedTime = 0;
+setInterval(() => {
+  process.title = "RandomAPI_Server | Uptime: " + elapsedTime++;
+}, 1000);

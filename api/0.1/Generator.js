@@ -14,7 +14,8 @@ const EventEmitter = require('events').EventEmitter;
 const Generator = function(name, options) {
   let self = this;
   name = name || 'generator';
-  process.title = 'RandomAPI Generator ' + name + ' - ' + options;
+  process.title = 'RandomAPI_Generator ' + name;
+  this.parentReplied = true;
 
   options = JSON.parse(options);
   this.version   = '0.1';
@@ -80,6 +81,8 @@ const Generator = function(name, options) {
       } else if (msg.data === 'clearLists') {
         self.listsResults = {};
       }
+    } else if (msg.type === 'pong') {
+      self.emit('pong');
     }
   });
 
@@ -87,6 +90,22 @@ const Generator = function(name, options) {
   setInterval(() => {
     self.checkLists();
   }, 60000);
+
+  // Commit sudoku if parent process doesn't reply during 5 second check
+  setInterval(() => {
+    self.parentReplied = false;
+    setTimeout(() => {
+      if (!self.parentReplied) {
+        process.exit();
+      }
+    }, 5000)
+    try {
+      process.send({type: 'ping'});
+    } catch(e) {}
+    self.once('pong', () => {
+      self.parentReplied = true;
+    });
+  }, 5000)
 };
 
 util.inherits(Generator, EventEmitter);
@@ -96,14 +115,14 @@ Generator.prototype.instruct = function(options, done) {
   console.log('here');
   let self = this;
 
-  this.options     = options || {};
-  this.results     = Number(this.options.results);
-  this.seed        = this.options.seed || '';
-  this.format      = (this.options.format || this.options.fmt || 'json').toLowerCase();
-  this.noInfo      = typeof this.options.noinfo !== 'undefined';
-  this.page        = Number(this.options.page) || 1;
-  this.mode        = options.mode;
-  this.src         = options.src;
+  this.options = options || {};
+  this.results = Number(this.options.results);
+  this.seed    = this.options.seed || '';
+  this.format  = (this.options.format || this.options.fmt || 'json').toLowerCase();
+  this.noInfo  = typeof this.options.noinfo !== 'undefined';
+  this.page    = Number(this.options.page) || 1;
+  this.mode    = options.mode;
+  this.src     = options.src;
 
   // Sanitize values
   if (isNaN(this.results) || this.results < 0 || this.results > this.limits.results || this.results === '') this.results = 1;

@@ -95,6 +95,10 @@ GeneratorForker.prototype.fork = function() {
       } else if (msg.mode === 'lists') {
         self.emit('listsComplete', msg.content);
       }
+    } else if (msg.type === 'ping') {
+      this.generator.send({
+        type: 'pong'
+      });
     }
   });
 };
