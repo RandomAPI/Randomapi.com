@@ -7,8 +7,10 @@ const logger    = require('./utils').logger;
 const server = require('./app').server;
 const app    = require('./app').app;
 
+const GUI = true;
+
 // GUI - can be commented out if not required or too much overhead
-require('./console.js');
+if (GUI) require('./console.js');
 require('./sockets.js');
 
 // Attach db reference to app
