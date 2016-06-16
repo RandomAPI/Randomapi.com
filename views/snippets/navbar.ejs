@@ -1,12 +1,37 @@
+<%
+var selected = {};
+var style = "class='selected'";
+var path;
+try {
+  path = originalUrl.match(/(?:^(\/\w+))/)[1];
+} catch(e) {
+  path = "/";
+}
+
+switch(path) {
+  case '/upgrade':
+    selected['upgrade'] = style;
+    break;
+  case '/documentation':
+    selected['documentation'] = style;
+    break;
+  case '/settings':
+    selected['settings'] = style;
+    break;
+  default:
+    selected['home'] = style;
+}
+%>
+
 <div id="navbar" class="scroll">
   <a href=""><h3>RandomAPI</h3></a>
   <div class="nav">
     <ul>
       <% if (session.loggedin === true) { %>
-        <a href=""><li>Home</li></a>
-        <a href="upgrade"><li>Upgrade</li></a>
-        <a href="documentation"><li>Documentation</li></a>
-        <a href="settings"><li>Settings</li></a>
+        <a href=""><li <%- selected['home'] %>>Home</li></a>
+        <a href="upgrade"><li <%- selected['upgrade'] %>>Upgrade</li></a>
+        <a href="documentation"><li <%- selected['documentation'] %>>Documentation</li></a>
+        <a href="settings"><li <%- selected['settings'] %>>Settings</li></a>
         <a href="logout"><li>Logout</li></a>
       <% } else { %>
         <a href="pricing">Pricing</a>

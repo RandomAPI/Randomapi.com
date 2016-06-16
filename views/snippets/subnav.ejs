@@ -25,12 +25,12 @@ switch(path) {
     break;
   case '/':
   default:
-    selected['dashbaord'] = style;
+    selected['dashboard'] = style;
 }
 %>
 <div id="subnav">
   <ul>
-    <li <%- selected['dashbaord'] %>><a href="">Dashboard</a></li>
+    <li <%- selected['dashboard'] %>><a href="">Dashboard</a></li>
     <li class='seperator'></li>
     <li <%- selected['newapi'] %>><a href="new/api">New API</a></li>
     <li <%- selected['newlist'] %>><a href="new/list">New List</a></li>

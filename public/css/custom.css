@@ -36,6 +36,11 @@ html {
   }
 }
 
+.nav ul .selected {
+  font-weight: bold;
+  color: #0CB863;
+}
+
 .signupBadge {
   border: 1px solid;
   border-radius: 20px;

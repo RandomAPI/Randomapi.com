@@ -21,6 +21,30 @@ router.get('/', (req, res, next) => {
   }
 });
 
+router.get('/upgrade', (req, res, next) => {
+  if (req.session.loggedin) {
+    res.render('upgrade', _.merge(defaultVars, {title: 'Upgrade'}));
+  } else {
+    res.render('index', defaultVars);
+  }
+});
+
+router.get('/documentation', (req, res, next) => {
+  if (req.session.loggedin) {
+    res.render('documentation', _.merge(defaultVars, {title: 'Documentation'}));
+  } else {
+    res.render('index', defaultVars);
+  }
+});
+
+router.get('/settings', (req, res, next) => {
+  if (req.session.loggedin) {
+    res.render('settings', _.merge(defaultVars, {title: 'Settings'}));
+  } else {
+    res.render('index', defaultVars);
+  }
+});
+
 // Login //
 router.get('/login', (req, res, next) => {
   if (req.session.loggedin) {
