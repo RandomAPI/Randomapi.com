@@ -29,6 +29,14 @@ router.get('/upgrade', (req, res, next) => {
   }
 });
 
+router.get('/pricing', (req, res, next) => {
+  if (req.session.loggedin) {
+    res.render('upgrade', _.merge(defaultVars, {title: 'Upgrade'}));
+  } else {
+    res.render('pricing', _.merge(defaultVars, {title: 'Pricing'}));
+  }
+});
+
 router.get('/documentation', (req, res, next) => {
   if (req.session.loggedin) {
     res.render('documentation', _.merge(defaultVars, {title: 'Documentation'}));
