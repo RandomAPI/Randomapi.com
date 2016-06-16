@@ -19,8 +19,12 @@ router.all('*', function(req, res, next) {
 router.get('/api/:ref?', (req, res, next) => {
   if (req.session.loggedin) {
     API.getAPIByRef(req.params.ref).then(doc => {
-      doc.code = fs.readFileSync('./data/apis/' + doc.id + '.api'); // Read api src into this...
-      res.render('edit/api', _.merge(defaultVars, {api: doc, socket: ':' + settings.general.socket}));
+      if (doc.owner !== req.session.user.id) {
+        res.redirect(baseURL + '/view/api');
+      } else {
+        doc.code = fs.readFileSync('./data/apis/' + doc.id + '.api'); // Read api src into this...
+        res.render('edit/api', _.merge(defaultVars, {api: doc, socket: ':' + settings.general.socket}));
+      }
     }).catch(err => {
       res.redirect(baseURL + '/view/api');
     });

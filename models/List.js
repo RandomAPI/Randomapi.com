@@ -15,9 +15,9 @@ module.exports = {
       });
     });
   },
-  remove(id) {
+  remove(cond) {
     return new Promise((resolve, reject) => {
-      db.query('DELETE FROM `List` WHERE ?', {id}, (err, data) => {
+      db.query('DELETE FROM `List` WHERE ?', cond, (err, data) => {
         if (err) reject(err);
         else resolve();
       });

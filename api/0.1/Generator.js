@@ -9,6 +9,7 @@ const vm           = require('vm');
 const async        = require('async');
 const util         = require('util');
 const _            = require('lodash');
+const logger  = require('../../utils').logger;
 const EventEmitter = require('events').EventEmitter;
 
 const Generator = function(name, options) {
@@ -40,7 +41,7 @@ const Generator = function(name, options) {
       if (msg.mode === 'generate') {
         self.instruct(msg.data, err => {
           if (err) {
-            process.send({type: 'taskFinished', data: {data: err, results: null, fmt: null}});
+            process.send({type: 'done', data: {data: err, results: null, fmt: null}});
           } else {
             self.generate((data, fmt) => {
               process.send({type: 'done', data: {data, fmt}});
@@ -142,7 +143,7 @@ Generator.prototype.instruct = function(options, done) {
         self.doc = data;
 
         if (!self.doc) {
-          cb('This API doesn\'t exist boi!');
+          cb('This API doesn\'t exist.');
         } else {
           cb(null);
         }
@@ -154,7 +155,7 @@ Generator.prototype.instruct = function(options, done) {
         self.keyOwner = data;
 
         if (self.keyOwner.apikey !== self.options.key) {
-          cb('You are not the owner of this API boi!');
+          cb('You are not the owner of this API.');
         } else {
           cb(null);
         }
