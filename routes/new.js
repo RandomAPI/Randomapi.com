@@ -1,36 +1,50 @@
-var express  = require('express');
-var fs       = require('fs');
-var router   = express.Router();
-var multer   = require('multer');
-var crypto   = require('crypto');
-var storage = multer.diskStorage({
-  destination: function (req, file, cb) {
+const express  = require('express');
+const _        = require('lodash');
+const fs       = require('fs');
+const router   = express.Router();
+const multer   = require('multer');
+const crypto   = require('crypto');
+const storage = multer.diskStorage({
+  destination(req, file, cb) {
     cb(null, './uploads/')
   },
-  filename: function (req, file, cb) {
-    crypto.pseudoRandomBytes(16, function (err, raw) {
+  filename(req, file, cb) {
+    crypto.pseudoRandomBytes(16, (err, raw) => {
       // Extension:  + '.' + file.originalname.match(/.*\.(.*)/)[1]
       cb(null, raw.toString('hex') + Date.now());
     });
   }
 });
-var upload = multer({ storage: storage });
+const upload = multer({ storage: storage });
 
-// api //
-router.get('/api', function(req, res, next) {
+const API = require('../models/API');
+const List = require('../models/List');
+const Generator = require('../models/Generator');
+
+// Setup defaultVars and baseURL for all routes
+let defaultVars, baseURL;
+router.all('*', function(req, res, next) {
+  defaultVars = req.app.get('defaultVars');
+  baseURL     = req.app.get('baseURL');
+  next();
+});
+
+router.get('/api', (req, res, next) => {
   if (req.session.loggedin) {
-    res.render('new/api', _.merge(defaultVars, {versions: Generator.getAvailableVersions()}));
+    Generator.getAvailableVersions().then(versions => {
+      res.render('new/api', _.merge(defaultVars, {versions}));
+    });
   } else {
     res.render('index', defaultVars);
   }
 });
 
-router.post('/api', function(req, res, next) {
+router.post('/api', (req, res, next) => {
   if (req.body.name === '') {
     req.flash('info', 'Please provide a name for your API');
     res.redirect(baseURL + '/new/api');
   } else {
-    API.add({name: req.body.name, generator: req.body.generator, owner: req.session.user.id}, function(model) {
+    API.add({name: req.body.name, generator: req.body.generator, owner: req.session.user.id}).then(API.getAPI).then(model => {
       fs.writeFile('./data/apis/' + model.id + '.api', `
 // APIs are coded with Vanilla Javascript and are executed in a sandboxed environment
 // Append all fields to the api object that you want to have returned
@@ -77,13 +91,13 @@ api.sha256 = hash.sha256(api.time);
 api.num1 = random.numeric(1, 100);
 api.num2 = random.numeric(1, 100);
 api.results = {
-    add: api.num1 + api.num2,
-    sub: api.num1 - api.num2,
-    div: api.num1 / api.num2,
-    mul: api.num1 * api.num2,
-    mod: api.num1 % api.num2
+  add: api.num1 + api.num2,
+  sub: api.num1 - api.num2,
+  div: api.num1 / api.num2,
+  mul: api.num1 * api.num2,
+  mod: api.num1 % api.num2
 };
-`, 'utf8', function(err) {
+`, 'utf8', err => {
         req.flash('info', 'API ' + req.body.name + ' was added successfully!');
         res.redirect(baseURL + '/edit/api/' + model.ref);
       });
@@ -92,7 +106,7 @@ api.results = {
 });
 
 // list //
-router.get('/list', function(req, res, next) {
+router.get('/list', (req, res, next) => {
   if (req.session.loggedin) {
     res.render('new/list', defaultVars);
   } else {
@@ -100,17 +114,18 @@ router.get('/list', function(req, res, next) {
   }
 });
 
-router.post('/list', upload.any(), function(req, res, next) {
+router.post('/list', upload.any(), (req, res, next) => {
   if (req.body.name === undefined || req.files.length === 0 || req.files[0].originalname.match(/(?:\.([^.]+))?$/)[1] !== 'txt') {
     req.flash('info', 'Looks like you provided an invalid file...please try again.');
     res.redirect(baseURL + '/new/list');
   } else {
-    List.add({name: req.body.name, owner: req.session.user.id}, function(model) {
-      fs.rename('./'+ req.files[0].path, './data/lists/' + model.id + '.list', function(err) {
+    List.add({name: req.body.name, owner: req.session.user.id}).then(List.getList).then(model => {
+      fs.rename('./'+ req.files[0].path, './data/lists/' + model.id + '.list', err => {
         req.flash('info', 'List ' + req.body.name + ' was added successfully!');
         res.redirect(baseURL + '/view/list');
       });
     });
   }
 });
+
 module.exports = router;

@@ -1,9 +1,19 @@
-var express  = require('express');
-var fs       = require('fs');
-var router   = express.Router();
+const express = require('express');
+const _       = require('lodash');
+const router  = express.Router();
+const logger  = require('../utils').logger;
 
-// Index //
-router.get('/', function(req, res, next) {
+const User = require('../models/User');
+
+// Setup defaultVars and baseURL for all routes
+let defaultVars, baseURL;
+router.all('*', function(req, res, next) {
+  defaultVars = req.app.get('defaultVars');
+  baseURL     = req.app.get('baseURL');
+  next();
+});
+
+router.get('/', (req, res, next) => {
   if (req.session.loggedin) {
     res.render('dashboard', _.merge(defaultVars, {title: 'Dashboard'}));
   } else {
@@ -12,19 +22,19 @@ router.get('/', function(req, res, next) {
 });
 
 // Login //
-router.get('/login', function(req, res, next) {
+router.get('/login', (req, res, next) => {
     if (req.session.loggedin) {
       res.redirect(baseURL + '/');
     } else {
-      res.render('login',defaultVars);
+      res.render('login', defaultVars);
     }
 });
 
-router.post('/login', function(req, res, next) {
+router.post('/login', (req, res, next) => {
   if (req.session.loggedin) {
     res.redirect(baseURL + '/');
   } else {
-    User.login({username: req.body.username, password: req.body.password}, function(err, data) {
+    User.login({username: req.body.username, password: req.body.password}, (err, data) => {
       if (err) {
         req.flash('info', err.flash);
         res.redirect(baseURL + err.redirect);
@@ -39,7 +49,7 @@ router.post('/login', function(req, res, next) {
 });
 
 // Logout //
-router.get('/logout', function(req, res, next) {
+router.get('/logout', (req, res, next) => {
   if (req.session.loggedin) {
     delete req.session.loggedin;
     res.redirect(baseURL + '/');
@@ -49,7 +59,7 @@ router.get('/logout', function(req, res, next) {
 });
 
 // Registration //
-router.get('/register', function(req, res, next) {
+router.get('/register', (req, res, next) => {
   if (req.session.loggedin) {
     res.redirect(baseURL + '/');
   } else {
@@ -57,9 +67,9 @@ router.get('/register', function(req, res, next) {
   }
 });
 
-router.post('/register', function(req, res, next) {
+router.post('/register', (req, res, next) => {
   if (!req.session.loggedin) {
-    User.register(req.body, function(err, data) {
+    User.register(req.body, (err, data) => {
       if (err) {
         req.flash('info', err.flash);
         res.redirect(baseURL + err.redirect);

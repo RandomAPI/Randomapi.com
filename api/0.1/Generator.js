@@ -1,21 +1,21 @@
-var mersenne     = require('mersenne');
-var crypto       = require('crypto');
-var YAML         = require('yamljs');
-var js2xmlparser = require('js2xmlparser');
-var converter    = require('json-2-csv');
-var fs           = require('fs');
-var deasync      = require('deasync');
-var mersenne     = require('mersenne');
-var vm           = require('vm');
-var async        = require('async');
-var util         = require('util');
-var _            = require('lodash');
-var EventEmitter = require('events').EventEmitter;
+const mersenne     = require('mersenne');
+const crypto       = require('crypto');
+const YAML         = require('yamljs');
+const js2xmlparser = require('js2xmlparser');
+const converter    = require('json-2-csv');
+const fs           = require('fs');
+const deasync      = require('deasync');
+const vm           = require('vm');
+const async        = require('async');
+const util         = require('util');
+const _            = require('lodash');
+const EventEmitter = require('events').EventEmitter;
 
-var Generator = function(name, options) {
-  var self = this;
+const Generator = function(name, options) {
+  let self = this;
   name = name || 'generator';
-  process.title = 'RandomAPI Generator ' + name + ' - ' + options;
+  process.title = 'RandomAPI_Generator ' + name;
+  this.parentReplied = true;
 
   options = JSON.parse(options);
   this.version   = '0.1';
@@ -25,7 +25,7 @@ var Generator = function(name, options) {
     results:  options.results
   };
   this.context = vm.createContext(this.availableFuncs());
-  this.originalContext = ['random', 'list', 'hash', 'String', 'timestamp', '_APIgetVars', '_APIresults', 'getVar'];
+  this.originalContext = ['random', 'list', 'hash', 'String', 'timestamp', 'require', '_APIgetVars', '_APIresults', 'getVar'];
   this.listsResults = {}; // Hold cache of list results
 
   // Lists that were added to cache within last minute.
@@ -38,25 +38,25 @@ var Generator = function(name, options) {
   process.on('message', msg => {
     if (msg.type === 'task') {
       if (msg.mode === 'generate') {
-        self.instruct(msg.data, function(err) {
+        self.instruct(msg.data, err => {
           if (err) {
             process.send({type: 'taskFinished', data: {data: err, results: null, fmt: null}});
           } else {
-            self.generate(function(data, fmt) {
+            self.generate((data, fmt) => {
               process.send({type: 'done', data: {data, fmt}});
             });
           }
         });
       } else if (msg.mode === 'lint') {
-        var a = _.merge({
+        let a = _.merge({
           seed: String('linter' + ~~(Math.random() * 100)),
           format: 'json',
           noinfo: true,
           page: 1,
           mode: 'lint'
         }, msg.data);
-        self.instruct(a, function(err) {
-          self.generate(function(data, fmt) {
+        self.instruct(a, err => {
+          self.generate((data, fmt) => {
             process.send({type: 'done', data: {data, fmt}});
           });
         });
@@ -81,29 +81,47 @@ var Generator = function(name, options) {
       } else if (msg.data === 'clearLists') {
         self.listsResults = {};
       }
+    } else if (msg.type === 'pong') {
+      self.emit('pong');
     }
   });
 
   // Remove lists that shouldn't be cached
-  setInterval(function() {
+  setInterval(() => {
     self.checkLists();
   }, 60000);
+
+  // Commit sudoku if parent process doesn't reply during 5 second check
+  setInterval(() => {
+    self.parentReplied = false;
+    setTimeout(() => {
+      if (!self.parentReplied) {
+        process.exit();
+      }
+    }, 5000)
+    try {
+      process.send({type: 'ping'});
+    } catch(e) {}
+    self.once('pong', () => {
+      self.parentReplied = true;
+    });
+  }, 5000)
 };
 
 util.inherits(Generator, EventEmitter);
 
 // Receives the query which contains API, owner, and reqest data
 Generator.prototype.instruct = function(options, done) {
-  var self = this;
+  let self = this;
 
-  this.options     = options || {};
-  this.results     = Number(this.options.results);
-  this.seed        = this.options.seed || '';
-  this.format      = (this.options.format || this.options.fmt || 'json').toLowerCase();
-  this.noInfo      = typeof this.options.noinfo !== 'undefined';
-  this.page        = Number(this.options.page) || 1;
-  this.mode        = options.mode;
-  this.src         = options.src;
+  this.options = options || {};
+  this.results = Number(this.options.results);
+  this.seed    = this.options.seed || '';
+  this.format  = (this.options.format || this.options.fmt || 'json').toLowerCase();
+  this.noInfo  = typeof this.options.noinfo !== 'undefined';
+  this.page    = Number(this.options.page) || 1;
+  this.mode    = options.mode;
+  this.src     = options.src;
 
   // Sanitize values
   if (isNaN(this.results) || this.results < 0 || this.results > this.limits.results || this.results === '') this.results = 1;
@@ -118,7 +136,7 @@ Generator.prototype.instruct = function(options, done) {
   this.seedRNG();
 
   async.series([
-    function(cb) {
+    cb => {
       process.send({type: 'lookup', mode: 'api', data: options.ref});
       self.once('apiResponse', data => {
         self.doc = data;
@@ -130,19 +148,19 @@ Generator.prototype.instruct = function(options, done) {
         }
       });
     },
-    function(cb) {
+    cb => {
       process.send({type: 'lookup', mode: 'user', data: self.doc.owner});
       self.once('userResponse', data => {
         self.keyOwner = data;
 
-        if (self.keyOwner.key !== self.options.key) {
+        if (self.keyOwner.apikey !== self.options.key) {
           cb('You are not the owner of this API boi!');
         } else {
           cb(null);
         }
       });
     },
-    function(cb) {
+    cb => {
       if (self.mode === "lint") {
         self.src = options.src;
       } else {
@@ -152,16 +170,16 @@ Generator.prototype.instruct = function(options, done) {
 
       cb(null);
     }
-  ], function(err, results) {
+  ], (err, results) => {
     done(err);
   });
 };
 
 Generator.prototype.generate = function(cb) {
-  var self = this;
+  let self = this;
 
   this.results = this.results || 1;
-  var output = [];
+  let output = [];
 
   try {
 
@@ -176,7 +194,7 @@ Generator.prototype.generate = function(cb) {
     ${self.src}
           } catch (e) {
             api = {
-              API_ERROR: 'Something went wrong'//e.toString(),
+              API_ERROR: e.toString()//e.toString(),
               //API_STACK: e.stack
             };
           }
@@ -195,12 +213,12 @@ Generator.prototype.generate = function(cb) {
     });
     returnResults(null, this.context._APIresults);
   } catch(e) {
-    returnResults('Something went wrong', null);
+    returnResults(null, [{API_ERROR: e.toString()}]);
     //console.log(e.stack);
   }
 
   // Remove accidental user defined globals. Pretty hacky, should probably look into improving this...
-  var diff = Object.keys(this.context);
+  let diff = Object.keys(this.context);
   diff.filter(each => this.originalContext.indexOf(each) === -1).forEach(each => delete self.context[each]);
 
   function returnResults(err, output) {
@@ -208,7 +226,7 @@ Generator.prototype.generate = function(cb) {
       output = [{API_ERROR: err.toString()}];
     }
 
-    var json = {
+    let json = {
       results: output,
       info: {
         seed: String(self.seed),
@@ -241,8 +259,8 @@ Generator.prototype.generate = function(cb) {
 };
 
 Generator.prototype.speedTest = function(limit, cb) {
-  var self = this;
-  var output = [];
+  let self = this;
+  let output = [];
 
   try {
 
@@ -288,7 +306,7 @@ ${self.src}
 
 //self.lint(m.code, m.user, function(err, results) {
 Generator.prototype.lint = function(code, user, cb) {
-  var self = this;
+  let self = this;
   this.results   = 1;
   this.seed      = String('linter' + ~~(Math.random() * 100));
   this.format    = 'json';
@@ -302,16 +320,16 @@ Generator.prototype.lint = function(code, user, cb) {
 
   this.seedRNG();
 
-  var output = [];
+  let output = [];
 
   try {
     this.sandBox = new vm.Script(`
       'use strict'
-      var _APIgetVars = ${JSON.stringify(self.options)};
-      var _APIresults = [];
+      let _APIgetVars = ${JSON.stringify(self.options)};
+      let _APIresults = [];
       (function() {
-        for (var _APIi = 0; _APIi < ${self.results}; _APIi++) {
-          var api = {};
+        for (let _APIi = 0; _APIi < ${self.results}; _APIi++) {
+          let api = {};
           try {
 ${self.src}
           } catch (e) {
@@ -339,7 +357,7 @@ ${self.src}
   }
 
   // Remove accidental user defined globals. Pretty hacky, should probably look into improving this...
-  var diff = Object.keys(this.context);
+  let diff = Object.keys(this.context);
   diff.filter(each => this.originalContext.indexOf(each) === -1).forEach(each => delete self.context[each]);
 
   function returnResults(err, output) {
@@ -347,7 +365,7 @@ ${self.src}
       output = [{API_ERROR: err.toString()}];
     }
 
-    var json = {
+    let json = {
       results: output,
       info: {
         seed: String(self.seed),
@@ -381,7 +399,7 @@ ${self.src}
 
 
 Generator.prototype.seedRNG = function() {
-  var seed = this.seed;
+  let seed = this.seed;
   seed = this.page !== 1 ? seed + String(this.page) : seed;
 
   this.numericSeed = parseInt(crypto.createHash('md5').update(seed).digest('hex').substring(0, 8), 16);
@@ -393,18 +411,18 @@ Generator.prototype.defaultSeed = function() {
 };
 
 Generator.prototype.availableFuncs = function() {
-  var self = this;
+  let self = this;
   return {
     random: {
-      numeric: function(a, b) {
+      numeric: (a, b) => {
         return range(a, b);
       },
-      special: function(mode, length) {
-        if (length >= 65535) length = 1;
+      special: (mode, length) => {
+        if (length > 65535) length = 1;
         return random(mode, length);
       }
     },
-    list: function(obj, num) {
+    list: (obj, num) => {
       if (num !== '' && num !== undefined) num = Number(num); // Convert string to num if it isn't undefined
       if (num === '') num = undefined;
 
@@ -415,7 +433,7 @@ Generator.prototype.availableFuncs = function() {
           return obj[range(0, obj.length-1)];
         }
       } else {
-        var done = false;
+        let done = false;
         if (!(obj in self.listsResults)) {
           process.send({type: 'lookup', mode: 'list', data: obj});
           self.once('listResponse', data => {
@@ -427,8 +445,8 @@ Generator.prototype.availableFuncs = function() {
               self.listsResults[obj].content = [null];
               done = true;
             } else {
-              var res = data;
-              var file = fs.readFileSync(process.cwd() + '/data/lists/' + res.id + '.list', 'utf8');
+              let res = data;
+              let file = fs.readFileSync(process.cwd() + '/data/lists/' + res.id + '.list', 'utf8');
 
               // Add filesize to listAdded object to check later
               self.listsAdded[obj] = file.length;
@@ -454,30 +472,35 @@ Generator.prototype.availableFuncs = function() {
       }
     },
     hash: {
-      md5: function(val) {
+      md5: val => {
         return crypto.createHash('md5').update(String(val)).digest('hex');
       },
-      sha1: function(val) {
+      sha1: val => {
         return crypto.createHash('sha1').update(String(val)).digest('hex');
       },
-      sha256: function(val) {
+      sha256: val => {
         return crypto.createHash('sha256').update(String(val)).digest('hex');
       }
     },
     String,
-    timestamp: function() {
+    timestamp: () => {
       return Math.floor(new Date().getTime()/1000);
+    },
+    require: function(lib) {
+      if (lib === 'faker') {
+        return require('faker');
+      }
     }
   };
 };
 
 Generator.prototype.checkLists = function() {
-  var self = this;
-  var keys = Object.keys(this.listsAdded);
-  var listsDeleted = false;
+  let self = this;
+  let keys = Object.keys(this.listsAdded);
+  let listsDeleted = false;
 
   // Remove list from cache if it is bigger than 1/4 the cache
-  for (var i = 0; i < keys.length; i++) {
+  for (let i = 0; i < keys.length; i++) {
     if (this.listsAdded[keys[i]] > ~~(this.limits.memory/4)) {
       delete this.listsResults[keys[i]];
       listsDeleted = true;
@@ -495,14 +518,14 @@ Generator.prototype.checkLists = function() {
 };
 
 Generator.prototype.getOldestList = function() {
-  var self = this;
-  var keys = Object.keys(this.listsAdded);
-  var listsDeleted = false;
-  var oldest = {
+  let self = this;
+  let keys = Object.keys(this.listsAdded);
+  let listsDeleted = false;
+  let oldest = {
     ref: null,
     lastUsed: Infinity
   };
-  for (var i = 0; i < keys.length; i++) {
+  for (let i = 0; i < keys.length; i++) {
     if (this.listsResults[keys[i]].lastUsed < oldest.lastUsed) {
       oldest.ref = keys[i];
       oldest.lastUsed = this.listsResults[keys[i]].lastUsed;
@@ -513,18 +536,18 @@ Generator.prototype.getOldestList = function() {
 }
 
 Generator.prototype.getCacheSize = function() {
-  var size = 0;
+  let size = 0;
 
-  for (var i = 0; i < keys.length; i++) {
+  for (let i = 0; i < keys.length; i++) {
     size += this.listResults[keys[i]].content.length;
   }
 
   return size;
 }
 
-var random = (mode, length) => {
-  var result = '';
-  var chars;
+const random = (mode, length) => {
+  let result = '';
+  let chars;
 
   if (mode === 1) {
     chars = 'abcdef1234567890';
@@ -540,22 +563,22 @@ var random = (mode, length) => {
     chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
   }
 
-  for (var i = 0; i < length; i++) {
+  for (let i = 0; i < length; i++) {
       result += chars[range(0, chars.length - 1)];
   }
 
   return result;
 };
 
-var randomItem = arr => {
+const randomItem = arr => {
   return arr[range(0, arr.length-1)];
 };
 
-var range = (min, max) => {
+const range = (min, max) => {
   return min + mersenne.rand(max-min+1);
 };
 
-var log = msg => {
+const log = msg => {
   process.send({type: 'logger', content: String(msg)});
 }
 

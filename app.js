@@ -1,53 +1,48 @@
-settings         = require('./settings.json');
-var express      = require('express');
-var path         = require('path');
-var favicon      = require('serve-favicon');
-var logger       = require('morgan');
-var cookieParser = require('cookie-parser')();
-var bodyParser   = require('body-parser');
-var http         = require('http');
-var flash        = require('connect-flash');
-var compress     = require('compression');
-var cors         = require('cors');
-var debug        = require('debug')('RandomAPI:server');
-var app          = express();
-var server       = http.createServer(app);
-_                = require('lodash');
-io               = require('socket.io')(settings.general.socket);
-
-var db           = require('./models/db');
+const express      = require('express');
+const path         = require('path');
+const favicon      = require('serve-favicon');
+const cookieParser = require('cookie-parser')();
+const bodyParser   = require('body-parser');
+const http         = require('http');
+const flash        = require('connect-flash');
+const compress     = require('compression');
+const cors         = require('cors');
+const debug        = require('debug')('RandomAPI:server');
+const app          = express();
+const server       = http.createServer(app);
+const _            = require('lodash');
+const settings     = require('./settings.json');
 
 // Redis Session Store
-var session      = require('express-session');
-var redisStore   = require('connect-redis')(session);
+const session      = require('express-session');
+const redisStore   = require('connect-redis')(session);
 
-// Routes
-var index    = require('./routes/index');
-var newRoute = require('./routes/new');
-var view     = require('./routes/view');
-var edit     = require('./routes/edit');
-var delRoute = require('./routes/delete');
-var api      = require('./routes/api');
-
-// global models
-API       = require('./models/API');
-List      = require('./models/List');
-User      = require('./models/User');
-Generator = require('./models/Generator');
-Counters  = require('./models/Counters');
+// Initialize generators and list/api caches
+const GeneratorForker = require('./api/0.1/GeneratorForker');
+let listCache  = {};
+let apiCache   = {};
+let Generators = {
+  basic:     new Array(1).fill().map((k, v) => new GeneratorForker({name: 'basic_' + v, execTime: 1, memory: 5, results: 25})),
+  standard:  new Array(2).fill().map((k, v) => new GeneratorForker({name: 'standard_' + v, execTime: 5, memory: 10, results: 250})),
+  premium:   new Array(3).fill().map((k, v) => new GeneratorForker({name: 'premium_' + v, execTime: 10, memory: 25, results: 2500})),
+  realtime:  new Array(3).fill().map((k, v) => new GeneratorForker({name: 'realtime_' + v, execTime: 1, memory: 1, results: 1})),
+  speedtest: new Array(1).fill().map((k, v) => new GeneratorForker({name: 'speedtest_' + v, execTime: 5, memory: 5, results: 0}))
+};
+// Store Generators in app
+app.set("Generators", Generators);
 
 // view engine setup
 app.set('views', path.join(__dirname, '.viewsMin/pages'));
 app.set('view engine', 'ejs');
 app.set('port', settings.general.port);
 
+// CORS and GZIP
 app.use(cors());
 app.use(compress());
 
 // Session store
 app.use(cookieParser);
-
-var sessionSettings = {
+let sessionSettings = {
   key: settings.session.key,
   store: new redisStore(),
   secret: settings.session.secret,
@@ -57,7 +52,6 @@ var sessionSettings = {
   resave: false,
   saveUninitialized: false
 };
-
 app.use(session(sessionSettings));
 
 // Flash messages
@@ -71,13 +65,13 @@ app.use(bodyParser.json({limit: '128mb'}));
 app.use(bodyParser.urlencoded({ limit: '128mb', extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Routes
-baseURL     = null;  // For redirects
-basehref    = null;  // For relative JS and CSS in pages
-defaultVars = {};  // Default vars to send into views
-var firstRun = false;
+// Determine relative URLs (behindProxy)
+let baseURL     = null;  // For redirects
+let basehref    = null;  // For relative JS and CSS in pages
+let defaultVars = {};    // Default vars to send into views
+let firstRun    = false;
 
-app.use('*', function(req, res, next) {
+app.use('*', (req, res, next) => {
   // Skip if user is accessing api
   if (req.params[0].slice(0, 5) === '/api/') next();
   else {
@@ -85,8 +79,8 @@ app.use('*', function(req, res, next) {
 
     defaultVars = { messages: req.flash('info'), session: req.session, basehref, title: null, originalUrl: req.originalUrl };
     if (settings.general.behindReverseProxy) {
-      var uri  = req.headers.uri.replace(/(\/)+$/,'');
-      var path = req.originalUrl.replace(/(\/)+$/,'');
+      let uri  = req.headers.uri.replace(/(\/)+$/,'');
+      let path = req.originalUrl.replace(/(\/)+$/,'');
 
       if (path === '') {
         baseURL = uri;
@@ -99,6 +93,8 @@ app.use('*', function(req, res, next) {
       basehref = baseURL + '/';
     }
 
+    app.set('defaultVars', defaultVars);
+
     if (firstRun) {
       firstRun = false;
       if (settings.general.behindReverseProxy) {
@@ -106,29 +102,29 @@ app.use('*', function(req, res, next) {
       } else {
         res.redirect(req.originalUrl);
       }
+      app.set('baseURL', baseURL);
+      app.set('basehref', basehref);
     } else {
       next();
     }
   }
 });
 
-app.use('/', index);
-app.use('/new', newRoute);
-app.use('/view', view);
-app.use('/edit', edit);
-app.use('/delete', delRoute);
-app.use('/api', api);
+// Routes
+app.use('/', require('./routes/index'));
+app.use('/new', require('./routes/new'));
+app.use('/view', require('./routes/view'));
+app.use('/edit', require('./routes/edit'));
+app.use('/delete', require('./routes/delete'));
+app.use('/api', require('./routes/api'));
 
 // production error handler
 // no stacktraces leaked to user
-app.use(function(req, res, next) {
+app.use((req, res, next) => {
   res.redirect(baseURL + '/');
 });
 
-app.use(function(err, req, res, next) {
-  //res.status(err.status || 500);
-  res.send(err.stack);
-});
+app.use((err, req, res, next) => res.send(err.stack));
 
 module.exports = {
   server,

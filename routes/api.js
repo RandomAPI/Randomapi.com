@@ -1,29 +1,28 @@
-var express = require('express');
-var spawn   = require('child_process').spawn;
-var router  = express.Router();
+const express = require('express');
+const router  = express.Router();
+const logger  = require('../utils').logger;
+const spawn   = require('child_process').spawn;
 
-router.get('/:ref?', function(req, res, next) {
-  var type = Math.floor(Math.random() * 100);
+router.get('/:ref?', (req, res, next) => {
+  const Generators = req.app.get('Generators');
+  let type = Math.floor(Math.random() * 100);
 
-  if (type < 20) {
+  if (type < 33) {
     type = 'premium';
-  } else if (type < 50) {
+  } else if (type < 66) {
     type = 'standard';
   } else {
     type = 'basic';
   }
 
-  var shortest = Math.floor(Math.random() * Generators[type].length);
-  for (var i = 0; i < Generators[type].length; i++) {
+  let shortest = Math.floor(Math.random() * Generators[type].length);
+  for (let i = 0; i < Generators[type].length; i++) {
     if (Generators[type][i].queueLength() < Generators[type][shortest].queueLength()) {
       shortest = i;
     }
-
-    //log.log(`Generator ${i} is ${Generators.basic[i].queueLength()} items long`);
   }
 
   Generators[type][shortest].queue.push({req, res});
-
 });
 
 module.exports = router;

@@ -1,142 +1,89 @@
-var mongoose = require('mongoose');
-var bcrypt   = require('bcrypt-nodejs');
-var deasync  = require('deasync');
+const bcrypt  = require('bcrypt-nodejs');
+const random  = require('../utils').random;
+const range   = require('../utils').range;
+const logger  = require('../utils').logger;
+const db      = require('./db');
+const Promise = require('bluebird');
 
-var userSchema = mongoose.Schema({
-  id: {
-    type: Number,
-    unique: true
-  },
-  username: {
-    type: String,
-    unique: true
-  },
-  password: String,
-  key: {
-    type: String,
-    unique: true
-  },
-  role: {
-    type: String,
-    default: 'user'
-  },
-  tier: {
-    type: Number,
-    default: 1
-  }
-});
-
-userSchema.pre('save', function(next) {
-  var self = this;
-  this.password = bcrypt.hashSync(this.password);
-
-  Counters.getNextIndex('users', true, function(data) {
-    self.id = data.index;
-
-    User.genRandomKey(function(key) {
-      self.key = key;
-    next();
-    });
-  });
-});
-
-userSchema.methods.validPass = function(password, cb) {
-  bcrypt.compare(password, this.password, function(err, isMatch) {
-    if (err) return cb(err);
-    cb(null, isMatch);
-  });
-};
-
-var User = mongoose.model('User', userSchema);
-
-User.register = function(data, cb) {
-  if (data.username.match(/^[a-zA-Z0-9]{1,20}$/)) {
-    if (data.password === '') {
-      return cb({flash: 'Please provide a password!', redirect: '/register'}, null);
-    }
-    User.create(data, function(err, model) {
-      if (err) {
-        cb({flash: 'This username is already in use!', redirect: '/register'}, null);
+module.exports = {
+  register(data, cb) {
+    if (data.username.match(/^[a-zA-Z0-9]{1,20}$/)) {
+      if (data.password === '') {
+        cb({flash: 'Please provide a password!', redirect: '/register'}, null);
       } else {
-        cb(null, {user: model, redirect: '/'});
+        this.getByName(data.username).then((user) => {
+          if (user !== null) {
+            cb({flash: 'This username is already in use!', redirect: '/register'}, null);
+          } else {
+            this.addUser(data).then(this.getByID).then(user => {
+              cb(null, {user, redirect: '/'});
+            });
+          }
+        });
       }
-    });
-    return;
-  }
-  cb({flash: 'Only 20 alphanumeric chars max please!', redirect: '/register'}, null);
-};
-
-User.login = function(data, cb) {
-  User.findOne({username: data.username}, function(err, model) {
-    if (err || !model) {
-      cb({flash: 'Invalid username or password!', redirect: '/login'}, null);
     } else {
-      model.validPass(data.password, function(err, match) {
-        if (match) {
-          cb(null, {user: model, redirect: '/'});
-        } else {
-          cb({flash: 'Invalid username or password!', redirect: '/login'}, null);
-        }
-      });
+      cb({flash: 'Only 20 alphanumeric chars max please!', redirect: '/register'}, null);
     }
-  });
-};
-
-User.getByID = deasync(function(id, cb) {
-  User.findOne({id: id}, function(err, model) {
-    cb(null, model);
-  });
-});
-
-User.getByName = deasync(function(name, cb) {
-  User.findOne({username: name}, function(err, model) {
-    cb(null, model);
-  });
-});
-
-User.genRandomKey = function(cb) {
-  var key, dup;
-  do {
-    dup = false;
-    key = random(6, 16).match(/.{4}/g).join('-');
-
-    User.findOne({key: key}, function(err, model) {
-      if (model === null) {
-        cb(key);
+  },
+  keyExists(apikey) {
+    return new Promise((resolve, reject) => {
+      db.query('SELECT * FROM `User` WHERE ?', {apikey}, (err, data) => {
+        if (err) reject(err);
+        else resolve(data.length !== 0);
+      });
+    });
+  },
+  validPass(password, hash) {
+    return bcrypt.compareSync(password, hash);
+  },
+  login(data, cb) {
+    this.getByName(data.username).then(user => {
+      if (user !== null && this.validPass(data.password, user.password)) {
+        cb(null, {user, redirect: '/'});
       } else {
-        dup = true;
+        cb({flash: 'Invalid username or password!', redirect: '/login'}, null);
       }
     });
-  } while(dup);
+  },
+  getByID(id) {
+    return new Promise((resolve, reject) => {
+      db.query('SELECT * FROM `User` WHERE ?', {id}, (err, data) => {
+        if (err) reject(err);
+        else if (data.length === 0) resolve(null);
+        else resolve(data[0]);
+      });
+    });
+  },
+  getByName(username) {
+    return new Promise((resolve, reject) => {
+      db.query('SELECT * FROM `User` WHERE ?', {username}, (err, data) => {
+        if (err) reject(err);
+        else if (data.length === 0) resolve(null);
+        else resolve(data[0]);
+      });
+    });
+  },
+  genRandomKey() {
+    let key, dup;
+    do {
+      key = random(6, 16).match(/.{4}/g).join('-');
+
+      this.keyExists(key).then(exists => {
+        dup = exists;
+      }, () => {});
+    } while(dup);
+
+    return key;
+  },
+  addUser(data) {
+    return new Promise((resolve, reject) => {
+      let self = this;
+      data.password = bcrypt.hashSync(data.password);
+      data.apikey   = this.genRandomKey();
+
+      db.query('INSERT INTO `User` SET ?', data, (err, result) => {
+        err ? reject(err) : resolve(result.insertId);
+      });
+    });
+  }
 };
-
-function random(mode, length) {
-  var result = '';
-  var chars;
-
-  if (mode === 1) {
-    chars = 'abcdef1234567890';
-  } else if (mode === 2) {
-    chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
-  } else if (mode === 3) {
-    chars = '0123456789';
-  } else if (mode === 4) {
-    chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  } else if (mode === 5) {
-    chars = 'abcdefghijklmnopqrstuvwxyz1234567890';
-  } else if (mode === 6) {
-    chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
-  }
-
-  for (var i = 0; i < length; i++) {
-      result += chars[range(0, chars.length - 1)];
-  }
-
-  return result;
-}
-
-function range(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-module.exports = User;

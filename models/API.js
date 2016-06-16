@@ -1,107 +1,73 @@
-var mongoose     = require('mongoose');
-var findOrCreate = require('mongoose-findorcreate')
-var deasync      = require('deasync');
+const random  = require('../utils').random;
+const range   = require('../utils').range;
+const logger  = require('../utils').logger;
+const db      = require('./db');
+const Promise = require('bluebird');
 
-var APISchema = mongoose.Schema({
-  id: {
-    type: Number,
-    unique: true
-  },
-  ref: {
-    type: String,
-    unique: true
-  },
-  name: String,
-  generator: {
-    type: Number,
-    default: 1
-  },
-  owner: Number
-});
+module.exports = {
+  add(data) {
+    return new Promise((resolve, reject) => {
+      let self = this;
+      data.ref = this.genRandomRef();
 
-APISchema.pre('save', function(next) {
-  var self = this;
-  if (Generator.getByID(self.generator) === null) {
-    self.generator = Generator.getLatestVersion().index;
-  }
-
-  Counters.getNextIndex('apis', true, function(data) {
-    self.id = data.index;
-
-    API.genRandomRef(function(ref) {
-      self.ref = ref;
-      next();
+      db.query('INSERT INTO `API` SET ?', data, (err, result) => {
+        err ? reject(err) : resolve(result.insertId);
+      });
     });
-  });
-});
-
-APISchema.plugin(findOrCreate);
-var API = mongoose.model('API', APISchema);
-
-API.add = function(data, cb) {
-  API.create(data, function(err, model) {
-    cb(model);
-  });
-};
-
-API.genRandomRef = function(cb) {
-  var ref, dup;
-  do {
-    dup = false;
-    ref = random(5, 5);
-
-    API.findOne({ref: ref}, function(err, model) {
-      if (model === null) {
-        cb(ref);
-      } else {
-        dup = true;
-      }
+  },
+  remove(id) {
+    return new Promise((resolve, reject) => {
+      db.query('DELETE FROM `API` WHERE ?', {id}, (err, data) => {
+        if (err) reject(err);
+        else resolve();
+      });
     });
-  } while(dup);
+  },
+  genRandomRef() {
+    let ref, dup;
+    do {
+      dup = false;
+      ref = random(5, 5);
+
+      this.refExists(ref).then(exists => {
+        dup = exists;
+      }, () => {});
+    } while(dup);
+    return ref;
+  },
+  refExists(ref) {
+    return new Promise((resolve, reject) => {
+      db.query('SELECT * FROM `API` WHERE ?', {ref}, (err, data) => {
+        if (err) reject(err);
+        else resolve(data.length !== 0);
+      });
+    });
+  },
+  getAPIByRef(ref) {
+    return new Promise((resolve, reject) => {
+      db.query('SELECT * FROM `API` WHERE ?', {ref}, (err, data) => {
+        if (err) reject(err);
+        else if (data.length === 0) resolve(null);
+        else resolve(data[0]);
+      });
+    });
+  },
+  getAPI(id) {
+    return new Promise((resolve, reject) => {
+      db.query('SELECT * FROM `API` WHERE ?', {id}, (err, data) => {
+        if (err) reject(err);
+        else if (data.length === 0) resolve(null);
+        else resolve(data[0]);
+      });
+    });
+  },
+  getAPIs(owner) {
+    return new Promise((resolve, reject) => {
+      db.query('SELECT a.id, a.ref, a.name, g.version generator, a.owner  FROM API a INNER JOIN Generator g ON (a.generator=g.id) WHERE ?', {owner}, (err, data) => {
+        if (err) reject(err);
+        else if (data.length === 0) resolve(null);
+        else resolve(data);
+      });
+    });
+  }
 };
-
-function random(mode, length) {
-  var result = '';
-  var chars;
-
-  if (mode === 1) {
-    chars = 'abcdef1234567890';
-  } else if (mode === 2) {
-    chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
-  } else if (mode === 3) {
-    chars = '0123456789';
-  } else if (mode === 4) {
-    chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  } else if (mode === 5) {
-    chars = 'abcdefghijklmnopqrstuvwxyz1234567890';
-  }
-
-  for (var i = 0; i < length; i++) {
-      result += chars[range(0, chars.length-1)];
-  }
-  return result;
-}
-
-function range(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-API.getAPIs = deasync(function(id, cb) {
-  API.find({owner: id}, function(err, docs) {
-    cb(null, docs);
-  });
-});
-
-API.getAPI = deasync(function(id, cb) {
-  API.findOne({id: id}, function(err, doc) {
-    cb(null, doc);
-  });
-});
-
-API.getAPIByRef = deasync(function(ref, cb) {
-  API.findOne({ref: ref}, function(err, doc) {
-    cb(null, doc);
-  });
-});
-
-module.exports = API;

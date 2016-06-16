@@ -1,51 +1,44 @@
-var mongoose = require('mongoose');
-var bcrypt   = require('bcrypt-nodejs');
-var deasync  = require('deasync');
+const bcrypt    = require('bcrypt-nodejs');
+const db        = require('./db');
+const Promise   = require('bluebird');
 
-var generatorSchema = mongoose.Schema({
-  id: {
-    type: Number,
-    unique: true
+module.exports = {
+  getByID(id) {
+    return new Promise((resolve, reject) => {
+      db.query('SELECT * FROM `Generator` WHERE ?', {id}, (err, data) => {
+        if (err) reject(err);
+        else resolve(data);
+      });
+    });
   },
-  version: {
-    type: String,
-    unique: true
+  getByVersion(version) {
+    return new Promise((resolve, reject) => {
+      db.query('SELECT * FROM `Generator` WHERE ?', {version}, (err, data) => {
+        if (err) reject(err);
+        else resolve(data);
+      });
+    });
+  },
+  getLatestVersion() {
+    return new Promise((resolve, reject) => {
+      db.query('SELECT * FROM `Generator` ORDER BY `id` DESC LIMIT 1', (err, data) => {
+        if (err) reject(err);
+        else resolve(data[0]);
+      });
+    });
+  },
+  getAvailableVersions() {
+    return new Promise((resolve, reject) => {
+      db.query('SELECT * FROM `Generator` ORDER BY `id` DESC', (err, data) => {
+        if (err) reject(err);
+        else {
+          let versions = [];
+          data.forEach(row => {
+            versions.push({id: row.id, version: row.version});
+          });
+          resolve(versions);
+        }
+      });
+    });
   }
-});
-
-generatorSchema.pre('save', function(next) {
-  var self = this;
-
-  Counters.getNextIndex('generators', true, function(data) {
-    self.id = data.index;
-    next();
-  });
-});
-
-var Generator = mongoose.model('Generator', generatorSchema);
-
-Generator.getByID = deasync(function(id, cb) {
-  Generator.findOne({id: id}, function(err, model) {
-    cb(null, model);
-  });
-});
-
-Generator.getByVersion = deasync(function(version, cb) {
-  Generator.findOne({version: version}, function(err, model) {
-    cb(null, model);
-  });
-});
-
-Generator.getLatestVersion = deasync(function(cb) {
-  Counters.getNextIndex('generators', false, (data) => {
-    cb(null, data);
-  });
-});
-
-Generator.getAvailableVersions = deasync(function(cb) {
-  Generator.find({}, {id: 1, version: 1, _id: 0}, function(err, versions) {
-    cb(null, versions);
-  });
-});
-
-module.exports = Generator;
+};

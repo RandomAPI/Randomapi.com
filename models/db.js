@@ -1,12 +1,20 @@
-var settings = require('../settings.json');
-var mongoose = require('mongoose');
+const mysql    = require('mysql2');
+const settings = require('../settings.json');
+const logger   = require('../utils').logger;
 
-var options = {
-  user: settings.db.user,
-  pass: settings.db.password
-};
+const connection = mysql.createConnection({
+  host:     settings.db.host,
+  database: settings.db.database,
+  user:     settings.db.username,
+  password: settings.db.password
+});
 
-mongoose.connect('mongodb://' + settings.db.host + '/' + settings.db.database, options);
-var conn = mongoose.connection;
+connection.connect(err => {
+  if (err) {
+    logger('[db]: error connecting: ' + err.stack);
+    return;
+  }
+  logger('[db]: connected as id ' + connection.connectionId);
+});
 
-conn.on('error', console.error.bind(console, 'connection error:'));
+module.exports = connection;
