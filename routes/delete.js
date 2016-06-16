@@ -35,7 +35,7 @@ router.get('/api/:ref', (req, res, next) => {
 // list //
 router.get('/list/:ref', (req, res, next) => {
   if (req.session.loggedin) {
-    List.getListByRef(req.params.ref).then(doc => {
+    List.getCond({ref: req.params.ref}).then(doc => {
       if (doc.owner !== req.session.user.id) {
         res.redirect(baseURL + '/view/list');
       } else {

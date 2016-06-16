@@ -87,7 +87,7 @@ GeneratorForker.prototype.fork = function() {
           self.generator.send({type: 'response', mode: 'user', data: doc});
         });
       } else if (msg.mode === 'list') {
-        List.getListByRef(msg.data).then(doc => {
+        List.getCond({ref: msg.data}).then(doc => {
           self.generator.send({type: 'response', mode: 'list', data: doc});
         });
       }
