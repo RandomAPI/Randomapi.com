@@ -18,7 +18,7 @@ router.all('*', function(req, res, next) {
 
 router.get('/api/:ref?', (req, res, next) => {
   if (req.session.loggedin) {
-    API.getAPIByRef(req.params.ref).then(doc => {
+    API.getCond({ref: req.params.ref}).then(doc => {
       if (doc.owner !== req.session.user.id) {
         res.redirect(baseURL + '/view/api');
       } else {
@@ -35,7 +35,7 @@ router.get('/api/:ref?', (req, res, next) => {
 
 router.post('/api/:ref', (req, res, next) => {
   if (req.session.loggedin) {
-    API.getAPIByRef(req.params.ref).then(doc => {
+    API.getCond({ref: req.params.ref}).then(doc => {
       if (doc.owner !== req.session.user.id) {
         res.redirect(baseURL + '/view/api');
       } else {

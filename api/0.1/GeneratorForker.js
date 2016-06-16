@@ -79,7 +79,7 @@ GeneratorForker.prototype.fork = function() {
   this.generator.on('message', msg => {
     if (msg.type === 'lookup') {
       if (msg.mode === 'api') {
-        API.getAPIByRef(msg.data).then(doc => {
+        API.getCond({ref: msg.data}).then(doc => {
           self.generator.send({type: 'response', mode: 'api', data: doc});
         });
       } else if (msg.mode === 'user') {
