@@ -4,6 +4,7 @@ const util    = require('util');
 const async   = require('async');
 const _       = require('lodash');
 const EventEmitter = require('events').EventEmitter;
+const logger  = require('../../utils').logger;
 
 const API  = require('../../models/API');
 const List = require('../../models/List');
@@ -29,6 +30,9 @@ const GeneratorForker = function(options) {
     // Realtime or Speedtest
     if (task.socket !== undefined) {
       self.generate({mode: 'lint', options: {apikey: task.data.apikey, src: task.data.src}}, (err, results, fmt) => {
+        if (results.length > 4096) {
+          results = "Output has been truncated\n---------------\n" + results.slice(0, 4096);
+        }
         task.socket.emit('codeLinted', results);
         callback();
       });

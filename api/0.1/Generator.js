@@ -25,7 +25,7 @@ const Generator = function(name, options) {
     results:  options.results
   };
   this.context = vm.createContext(this.availableFuncs());
-  this.originalContext = ['random', 'list', 'hash', 'String', 'timestamp', '_APIgetVars', '_APIresults', 'getVar'];
+  this.originalContext = ['random', 'list', 'hash', 'String', 'timestamp', 'require', '_APIgetVars', '_APIresults', 'getVar'];
   this.listsResults = {}; // Hold cache of list results
 
   // Lists that were added to cache within last minute.
@@ -485,6 +485,11 @@ Generator.prototype.availableFuncs = function() {
     String,
     timestamp: () => {
       return Math.floor(new Date().getTime()/1000);
+    },
+    require: function(lib) {
+      if (lib === 'faker') {
+        return require('faker');
+      }
     }
   };
 };
