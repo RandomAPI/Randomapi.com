@@ -12,11 +12,11 @@ module.exports = {
         if (data.password === '') {
           reject({flash: 'Please provide a password!', redirect: '/register'});
         } else {
-          this.getByName(data.username).then((user) => {
+          this.getCond({username: data.username}).then((user) => {
             if (user !== null) {
               reject({flash: 'This username is already in use!', redirect: '/register'});
             } else {
-              this.addUser(data).then(this.getByID).then(user => {
+              this.addUser(data).then(this.getCond).then(user => {
                 resolve({user, redirect: '/'});
               });
             }
@@ -40,7 +40,7 @@ module.exports = {
   },
   login(data, cb) {
     return new Promise((resolve, reject) => {
-      this.getByName(data.username).then(user => {
+      this.getCond({username: data.username}).then(user => {
         if (user !== null && this.validPass(data.password, user.password)) {
           resolve({user, redirect: '/'});
         } else {
@@ -49,18 +49,9 @@ module.exports = {
       });
     });
   },
-  getByID(id) {
+  getCond(cond) {
     return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM `User` WHERE ?', {id}, (err, data) => {
-        if (err) reject(err);
-        else if (data.length === 0) resolve(null);
-        else resolve(data[0]);
-      });
-    });
-  },
-  getByName(username) {
-    return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM `User` WHERE ?', {username}, (err, data) => {
+      db.query('SELECT * FROM `User` WHERE ?', cond, (err, data) => {
         if (err) reject(err);
         else if (data.length === 0) resolve(null);
         else resolve(data[0]);
@@ -86,7 +77,7 @@ module.exports = {
       data.apikey   = this.genRandomKey();
 
       db.query('INSERT INTO `User` SET ?', data, (err, result) => {
-        err ? reject(err) : resolve(result.insertId);
+        err ? reject(err) : resolve({id: result.insertId});
       });
     });
   }

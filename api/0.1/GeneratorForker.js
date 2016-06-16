@@ -83,7 +83,7 @@ GeneratorForker.prototype.fork = function() {
           self.generator.send({type: 'response', mode: 'api', data: doc});
         });
       } else if (msg.mode === 'user') {
-        User.getByID(msg.data).then(doc => {
+        User.getCond({id: msg.data}).then(doc => {
           self.generator.send({type: 'response', mode: 'user', data: doc});
         });
       } else if (msg.mode === 'list') {
