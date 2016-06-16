@@ -51,7 +51,7 @@ module.exports = {
   },
   getCond(cond) {
     return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM `User` WHERE ?', cond, (err, data) => {
+      db.query('SELECT u.*, t.name AS tierName FROM `User` u INNER JOIN `Tier` t WHERE ?', cond, (err, data) => {
         if (err) reject(err);
         else if (data.length === 0) resolve(null);
         else resolve(data[0]);
@@ -77,7 +77,7 @@ module.exports = {
       data.apikey   = this.genRandomKey();
 
       db.query('INSERT INTO `User` SET ?', data, (err, result) => {
-        err ? reject(err) : resolve({id: result.insertId});
+        err ? reject(err) : resolve({['u.id']: result.insertId});
       });
     });
   }

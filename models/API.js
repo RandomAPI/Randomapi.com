@@ -54,7 +54,7 @@ module.exports = {
   },
   getAPIs(owner) {
     return new Promise((resolve, reject) => {
-      db.query('SELECT a.id, a.ref, a.name, g.version generator, a.owner  FROM API a INNER JOIN Generator g ON (a.generator=g.id) WHERE ?', {owner}, (err, data) => {
+      db.query('SELECT u.*, t.name AS tierName FROM `User` u INNER JOIN `Tier` t ON (u.tier=t.id) WHERE ?', {owner}, (err, data) => {
         if (err) reject(err);
         else if (data.length === 0) resolve(null);
         else resolve(data);
