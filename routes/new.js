@@ -44,7 +44,7 @@ router.post('/api', (req, res, next) => {
     req.flash('info', 'Please provide a name for your API');
     res.redirect(baseURL + '/new/api');
   } else {
-    API.add({name: req.body.name, generator: req.body.generator, owner: req.session.user.id}).then(API.getAPI).then(model => {
+    API.add({name: req.body.name, generator: req.body.generator, owner: req.session.user.id}).then(API.getCond).then(model => {
       fs.writeFile('./data/apis/' + model.id + '.api', `
 // APIs are coded with Vanilla Javascript and are executed in a sandboxed environment
 // Append all fields to the api object that you want to have returned
@@ -119,7 +119,7 @@ router.post('/list', upload.any(), (req, res, next) => {
     req.flash('info', 'Looks like you provided an invalid file...please try again.');
     res.redirect(baseURL + '/new/list');
   } else {
-    List.add({name: req.body.name, owner: req.session.user.id}).then(List.getList).then(model => {
+    List.add({name: req.body.name, owner: req.session.user.id}).then(List.getCond).then(model => {
       fs.rename('./'+ req.files[0].path, './data/lists/' + model.id + '.list', err => {
         req.flash('info', 'List ' + req.body.name + ' was added successfully!');
         res.redirect(baseURL + '/view/list');

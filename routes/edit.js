@@ -3,8 +3,9 @@ const _        = require('lodash');
 const fs       = require('fs');
 const router   = express.Router();
 const settings = require('../settings.json');
+const logger   = require('../utils').logger;
 
-const API = require('../models/API');
+const API  = require('../models/API');
 const List = require('../models/List');
 
 // Setup defaultVars and baseURL for all routes
@@ -15,11 +16,17 @@ router.all('*', function(req, res, next) {
   next();
 });
 
-router.get('/api/:ref', (req, res, next) => {
+router.get('/api/:ref?', (req, res, next) => {
   if (req.session.loggedin) {
-    API.getAPIByRef(req.params.ref).then(doc => {
-      doc.code = fs.readFileSync('./data/apis/' + doc.id + '.api'); // Read api src into this...
-      res.render('edit/api', _.merge(defaultVars, {api: doc, socket: ':' + settings.general.socket}));
+    API.getCond({ref: req.params.ref}).then(doc => {
+      if (doc.owner !== req.session.user.id) {
+        res.redirect(baseURL + '/view/api');
+      } else {
+        doc.code = fs.readFileSync('./data/apis/' + doc.id + '.api'); // Read api src into this...
+        res.render('edit/api', _.merge(defaultVars, {api: doc, socket: ':' + settings.general.socket}));
+      }
+    }).catch(err => {
+      res.redirect(baseURL + '/view/api');
     });
   } else {
     res.render('index', defaultVars);
@@ -28,7 +35,7 @@ router.get('/api/:ref', (req, res, next) => {
 
 router.post('/api/:ref', (req, res, next) => {
   if (req.session.loggedin) {
-    API.getAPIByRef(req.params.ref).then(doc => {
+    API.getCond({ref: req.params.ref}).then(doc => {
       if (doc.owner !== req.session.user.id) {
         res.redirect(baseURL + '/view/api');
       } else {
@@ -44,7 +51,7 @@ router.post('/api/:ref', (req, res, next) => {
 // list //
 router.get('/list/:ref', (req, res, next) => {
   if (req.session.loggedin) {
-    List.getListByRef(req.params.ref).then(doc => {
+    List.getCond({ref: req.params.ref}).then(doc => {
       res.render('edit/list', _.merge(defaultVars, {list: doc}));
     });
   } else {

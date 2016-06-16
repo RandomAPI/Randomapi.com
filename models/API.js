@@ -11,13 +11,13 @@ module.exports = {
       data.ref = this.genRandomRef();
 
       db.query('INSERT INTO `API` SET ?', data, (err, result) => {
-        err ? reject(err) : resolve(result.insertId);
+        err ? reject(err) : resolve({id: result.insertId});
       });
     });
   },
-  remove(id) {
+  remove(cond) {
     return new Promise((resolve, reject) => {
-      db.query('DELETE FROM `API` WHERE ?', {id}, (err, data) => {
+      db.query('DELETE FROM `API` WHERE ?', cond, (err, data) => {
         if (err) reject(err);
         else resolve();
       });
@@ -43,18 +43,9 @@ module.exports = {
       });
     });
   },
-  getAPIByRef(ref) {
+  getCond(cond) {
     return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM `API` WHERE ?', {ref}, (err, data) => {
-        if (err) reject(err);
-        else if (data.length === 0) resolve(null);
-        else resolve(data[0]);
-      });
-    });
-  },
-  getAPI(id) {
-    return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM `API` WHERE ?', {id}, (err, data) => {
+      db.query('SELECT * FROM `API` WHERE ?', cond, (err, data) => {
         if (err) reject(err);
         else if (data.length === 0) resolve(null);
         else resolve(data[0]);

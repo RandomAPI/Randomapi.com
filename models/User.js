@@ -7,23 +7,25 @@ const Promise = require('bluebird');
 
 module.exports = {
   register(data, cb) {
-    if (data.username.match(/^[a-zA-Z0-9]{1,20}$/)) {
-      if (data.password === '') {
-        cb({flash: 'Please provide a password!', redirect: '/register'}, null);
+    return new Promise((resolve, reject) => {
+      if (data.username.match(/^[a-zA-Z0-9]{1,20}$/)) {
+        if (data.password === '') {
+          reject({flash: 'Please provide a password!', redirect: '/register'});
+        } else {
+          this.getCond({username: data.username}).then((user) => {
+            if (user !== null) {
+              reject({flash: 'This username is already in use!', redirect: '/register'});
+            } else {
+              this.addUser(data).then(this.getCond).then(user => {
+                resolve({user, redirect: '/'});
+              });
+            }
+          });
+        }
       } else {
-        this.getByName(data.username).then((user) => {
-          if (user !== null) {
-            cb({flash: 'This username is already in use!', redirect: '/register'}, null);
-          } else {
-            this.addUser(data).then(this.getByID).then(user => {
-              cb(null, {user, redirect: '/'});
-            });
-          }
-        });
+        reject({flash: 'Only 20 alphanumeric chars max please!', redirect: '/register'});
       }
-    } else {
-      cb({flash: 'Only 20 alphanumeric chars max please!', redirect: '/register'}, null);
-    }
+    });
   },
   keyExists(apikey) {
     return new Promise((resolve, reject) => {
@@ -37,26 +39,19 @@ module.exports = {
     return bcrypt.compareSync(password, hash);
   },
   login(data, cb) {
-    this.getByName(data.username).then(user => {
-      if (user !== null && this.validPass(data.password, user.password)) {
-        cb(null, {user, redirect: '/'});
-      } else {
-        cb({flash: 'Invalid username or password!', redirect: '/login'}, null);
-      }
-    });
-  },
-  getByID(id) {
     return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM `User` WHERE ?', {id}, (err, data) => {
-        if (err) reject(err);
-        else if (data.length === 0) resolve(null);
-        else resolve(data[0]);
+      this.getCond({username: data.username}).then(user => {
+        if (user !== null && this.validPass(data.password, user.password)) {
+          resolve({user, redirect: '/'});
+        } else {
+          reject({flash: 'Invalid username or password!', redirect: '/login'});
+        }
       });
     });
   },
-  getByName(username) {
+  getCond(cond) {
     return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM `User` WHERE ?', {username}, (err, data) => {
+      db.query('SELECT * FROM `User` WHERE ?', cond, (err, data) => {
         if (err) reject(err);
         else if (data.length === 0) resolve(null);
         else resolve(data[0]);
@@ -82,7 +77,7 @@ module.exports = {
       data.apikey   = this.genRandomKey();
 
       db.query('INSERT INTO `User` SET ?', data, (err, result) => {
-        err ? reject(err) : resolve(result.insertId);
+        err ? reject(err) : resolve({id: result.insertId});
       });
     });
   }

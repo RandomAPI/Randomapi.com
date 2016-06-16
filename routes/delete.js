@@ -13,14 +13,14 @@ router.all('*', function(req, res, next) {
   next();
 });
 
-router.get('/api/:id', (req, res, next) => {
+router.get('/api/:ref', (req, res, next) => {
   if (req.session.loggedin) {
-    API.getAPI(req.params.id).then(doc => {
+    API.getCond({ref: req.params.ref}).then(doc => {
       if (doc.owner !== req.session.user.id) {
         res.redirect(baseURL + '/view/api');
       } else {
-        API.remove({id: req.params.id}).then(() => {
-          fs.unlink('./data/apis/' + req.params.id + '.api', err => {
+        API.remove({id: doc.id}).then(() => {
+          fs.unlink('./data/apis/' + doc.id + '.api', err => {
             req.flash('info', 'API ' + doc.name + ' was deleted successfully!');
             res.redirect(baseURL + '/view/api');
           });
@@ -33,14 +33,14 @@ router.get('/api/:id', (req, res, next) => {
 });
 
 // list //
-router.get('/list/:id', (req, res, next) => {
+router.get('/list/:ref', (req, res, next) => {
   if (req.session.loggedin) {
-    List.getList(req.params.id).then(doc => {
+    List.getCond({ref: req.params.ref}).then(doc => {
       if (doc.owner !== req.session.user.id) {
         res.redirect(baseURL + '/view/list');
       } else {
-        List.remove({id: req.params.id}).then(() => {
-          fs.unlink('./data/lists/' + req.params.id + '.list', err => {
+        List.remove({id: doc.id}).then(() => {
+          fs.unlink('./data/lists/' + doc.id + '.list', err => {
             req.flash('info', 'List ' + doc.name + ' was deleted successfully!');
             res.redirect(baseURL + '/view/list');
           });

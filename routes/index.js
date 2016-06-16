@@ -23,27 +23,25 @@ router.get('/', (req, res, next) => {
 
 // Login //
 router.get('/login', (req, res, next) => {
-    if (req.session.loggedin) {
-      res.redirect(baseURL + '/');
-    } else {
-      res.render('login', defaultVars);
-    }
+  if (req.session.loggedin) {
+    res.redirect(baseURL + '/');
+  } else {
+    res.render('login', defaultVars);
+  }
 });
 
 router.post('/login', (req, res, next) => {
   if (req.session.loggedin) {
     res.redirect(baseURL + '/');
   } else {
-    User.login({username: req.body.username, password: req.body.password}, (err, data) => {
-      if (err) {
-        req.flash('info', err.flash);
-        res.redirect(baseURL + err.redirect);
-      } else {
-        req.session.loggedin = true;
-        req.session.user = data.user;
-        req.flash('info', data.flash);
-        res.redirect(baseURL + data.redirect);
-      }
+    User.login({username: req.body.username, password: req.body.password}).then(data => {
+      req.session.loggedin = true;
+      req.session.user = data.user;
+      req.flash('info', data.flash);
+      res.redirect(baseURL + data.redirect);
+    }, err => {
+      req.flash('info', err.flash);
+      res.redirect(baseURL + err.redirect);
     });
   }
 });
@@ -69,16 +67,14 @@ router.get('/register', (req, res, next) => {
 
 router.post('/register', (req, res, next) => {
   if (!req.session.loggedin) {
-    User.register(req.body, (err, data) => {
-      if (err) {
-        req.flash('info', err.flash);
-        res.redirect(baseURL + err.redirect);
-      } else {
-        req.session.loggedin = true;
-        req.session.user = data.user;
-        req.flash('info', data.flash);
-        res.redirect(baseURL + data.redirect);
-      }
+    User.register(req.body).then(data => {
+      req.session.loggedin = true;
+      req.session.user = data.user;
+      req.flash('info', data.flash);
+      res.redirect(baseURL + data.redirect);
+    }, err => {
+      req.flash('info', err.flash);
+      res.redirect(baseURL + err.redirect);
     });
   } else {
     res.redirect(baseURL + '/index');

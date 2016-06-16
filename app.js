@@ -21,13 +21,19 @@ const redisStore   = require('connect-redis')(session);
 const GeneratorForker = require('./api/0.1/GeneratorForker');
 let listCache  = {};
 let apiCache   = {};
-let Generators = {
-  basic:     new Array(1).fill().map((k, v) => new GeneratorForker({name: 'basic_' + v, execTime: 1, memory: 5, results: 25})),
-  standard:  new Array(2).fill().map((k, v) => new GeneratorForker({name: 'standard_' + v, execTime: 5, memory: 10, results: 250})),
-  premium:   new Array(3).fill().map((k, v) => new GeneratorForker({name: 'premium_' + v, execTime: 10, memory: 25, results: 2500})),
-  realtime:  new Array(3).fill().map((k, v) => new GeneratorForker({name: 'realtime_' + v, execTime: 1, memory: 1, results: 1})),
-  speedtest: new Array(1).fill().map((k, v) => new GeneratorForker({name: 'speedtest_' + v, execTime: 5, memory: 5, results: 0}))
-};
+let Generators = {};
+
+Object.keys(settings.generators).forEach(generator => {
+  Generators[generator] = new Array(settings.generators[generator].count).fill().map((k, v) => {
+    return new GeneratorForker({
+      name: generator + '_' + v,
+      execTime: settings.generators[generator].execTime,
+      memory: settings.generators[generator].memory,
+      results: settings.generators[generator].results
+    });
+  });
+});
+
 // Store Generators in app
 app.set("Generators", Generators);
 

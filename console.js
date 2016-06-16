@@ -1,16 +1,18 @@
-const async   = require('async');
-const moment  = require('moment');
-const _       = require('lodash');
-const blessed = require('blessed');
-const contrib = require('blessed-contrib');
-const pad     = require('./utils').pad;
-const logger  = require('./utils').logger;
-const app     = require('./app').app;
+const async    = require('async');
+const moment   = require('moment');
+const _        = require('lodash');
+const blessed  = require('blessed');
+const contrib  = require('blessed-contrib');
+const pad      = require('./utils').pad;
+const logger   = require('./utils').logger;
+const app      = require('./app').app;
+const settings = require('./settings.json');
 
 const screen  = blessed.screen();
 const grid    = new contrib.grid({rows: 12, cols: 12, screen: screen});
+
 const Generators = app.get('Generators');
-const types = ['basic', 'standard', 'premium', 'realtime', 'speedtest'];
+const types      = Object.keys(settings.generators);
 
 // For graphing stats
 let queueStats = {};
@@ -221,13 +223,13 @@ screen.render();
 // Queue length stats
 setInterval(() => {
   types.forEach(type => {
-    queueStats[type] = new Array(Generators[type].length).fill().slice(0, 3).map((v, k) => Generators[type][k].queueLength());
-    memStats[type] = new Array(Generators[type].length).fill().slice(0, 3).map((v, k) => Generators[type][k].memUsage());
-    jobStats[type] = new Array(Generators[type].length).fill().slice(0, 3).map((v, k) => Generators[type][k].totalJobs());
+    queueStats[type] = new Array(Generators[type].length).fill().map((v, k) => Generators[type][k].queueLength());
+    memStats[type] = new Array(Generators[type].length).fill().map((v, k) => Generators[type][k].memUsage());
+    jobStats[type] = new Array(Generators[type].length).fill().map((v, k) => Generators[type][k].totalJobs());
 
     if (type === 'speedtest' || type === 'realtime') return;
     bars[type].setData({
-      titles: new Array(Generators[type].length).fill().slice(0, 3).map((v, k) => '#' + k),
+      titles: new Array(Generators[type].length).fill().map((v, k) => '#' + k),
       data: queueStats[type]
     });
   });
@@ -284,7 +286,6 @@ setInterval(() => {
   eventLoopResponseAvg.setData([botline, eventLine]);
   oldEventTime = tmp;
   screen.render();
-
 }, 1000)
 
 // Donut Loads

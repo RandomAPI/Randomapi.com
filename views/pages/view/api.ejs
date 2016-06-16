@@ -31,7 +31,7 @@
               <td><%=api.name%></td>
               <td><%=api.ref%></td>
               <td><%=api.generator%></td>
-              <td><a href="delete/api/<%=api.id%>">Delete</a> <a href="edit/api/<%=api.ref%>">Edit</a> <a href="api/<%=api.ref%>?key=<%=session.user.apikey%>" target="_blank">Run API</a></td>
+              <td><a href="delete/api/<%=api.ref%>">Delete</a> <a href="edit/api/<%=api.ref%>">Edit</a> <a href="api/<%=api.ref%>?key=<%=session.user.apikey%>" target="_blank">Run API</a></td>
             </tr>
           <%  });
           }
