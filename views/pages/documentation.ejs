@@ -38,7 +38,40 @@ api.dogYears = api.age * 7;</code></pre>
         </div>
 
         <a name="variables"><h5>Variables</h5></a>
-        <p>In RandomAPI, all of your <b>fields</b> are attached to the <b>api</b> object. A <b>field</b> is a Javascript property that holds the data that you generate and the <b>api</b> object is the central variable that RandomAPI will end up pushing into a results array.</p>
+        <p>Since APIs are coded in Javascript, you are free to do whatever you like in order to generate your data. This includes creating functions, variables, comments, etc. Just make sure that whatever data you generate gets attached to the api object or else it won't be available in your results.
+        <div class="row">
+          <div class="six columns">
+            <span class='caption'>API Code</span>
+            <pre><code class="javascript">// This is a comment that isn't evaluated
+/*
+    Multiline comments work as well!
+*/
+let fullname = "Billy Bob"; // Not attached to api object
+
+let age   = 5;
+api.age   = age; // Attached to api object
+api.phone = phoneNum();
+
+function phoneNum (format) {
+    format = format || "(xxx) xxx-xxxx";
+    return String(format).split('').map(digit => {
+        return digit === 'x' ? random.numeric(0, 9) : digit;
+    }).join('');
+}</code></pre>
+          </div>
+          <div class="six columns">
+            <span class='caption'>Result</span>
+            <pre><code>{
+  "results": [
+    {
+      "age": 5,
+      "phone": "(336) 580-1131"
+    }
+  ]
+}
+            </code></pre>
+          </div>
+        </div>
 
       </div>
     </div>
