@@ -47,7 +47,6 @@ socket.on('codeLinted', function(msg) {
       $('#results').html(msg);
     }
   } catch (e) {
-    window.alert("Something very weird happened.");
     $('#results').html(msg);
   }
 });

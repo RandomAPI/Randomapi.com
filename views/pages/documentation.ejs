@@ -152,11 +152,48 @@ list('a1b2c3', 2); // horse</code></pre>Notice: Example 2 chose line number 2 fr
             </tr>
             <tr>
               <td>array, [indexNumber]</td>
-              <td><pre><code class='javascript'>list([a, b, c]); // c
-list([male, female], 1); // female</code></pre>Warning: Indexes are zero based for arrays.<br>
+              <td><pre><code class='javascript'>list(['a', 'b', 'c']); // c
+list(["male", "female"], 1); // female</code></pre>Warning: Indexes are zero based for arrays.<br>
             </tr>
           </tbody>
         </table>
+
+        <h5 class='subtitle'><a name="availableFunctionsHash">Hash</a></h5>
+        <p>Generate a hash from a string.</p>
+        <table class="u-full-width">
+          <thead>
+            <tr>
+              <th>Mode</th>
+              <th>Arguments</th>
+              <th>Example</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>md5</td>
+              <td>str</td>
+              <td><pre><code class='javascript'>hash.md5('mysoupersekurepasswurd!'); // 82961fecf4f7ee8d8a10390072332efd</code></pre>
+            </tr>
+            <tr>
+              <td>sha1</td>
+              <td>str</td>
+              <td><pre><code class='javascript'>hash.sha1('mysoupersekurepasswurd!'); // 7babf75100bbe01ad3e0795831463dd9fd0ed517</code></pre>
+            </tr>
+            <tr>
+              <td>shad256</td>
+              <td>str</td>
+              <td><pre><code class='javascript'>hash.sha256('mysoupersekurepasswurd!'); // a6360b34e354384e75de6241ba4fa3a33c6ef799c8943a04d000f19cb6af1051</code></pre>
+            </tr>
+          </tbody>
+        </table>
+
+        <h5 class='subtitle'><a name="availableFunctionsTimestamp">Timestamp</a></h5>
+        <p>Returns the current unix timestamp.</p>
+        <pre><code class='javascript'>timestamp(); //1466196805</code></pre>
+
+        <h5 class='subtitle'><a name="availableFunctionsRequire">Require</a></h5>
+        <p>Shhhh...coming soon.</p>
+        <pre><code class='javascript'>const faker = require('faker'); // I wonder this will do... :)</code></pre>
 
         <h4 class='title'><a name="callingAPIs">Calling APIs</a></h4>
         <p>APIs can be accessed through via the <a href="https://randomapi.com/api" class='green' target="_blank">https://randomapi.com/api</a> endpoint.</p>

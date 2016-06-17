@@ -422,7 +422,7 @@ Generator.prototype.availableFuncs = function() {
       sha256: val => funcs.hash.sha256(val)
     },
     timestamp: () => funcs.timestamp(),
-    require: lib  => funcs.require(lib)
+    require: () => null//lib  => funcs.require(lib)
   };
 };
 
