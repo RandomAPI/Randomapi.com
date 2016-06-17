@@ -18,11 +18,11 @@
         <h2>Documentation</h2>
         <h5>Learn how to code your API</h5>
 
-        <a name="general"><h4>General</h4></a>
+        <a name="general"><h4 class='title'>General</h4></a>
         <p>If you know Javascript, then coding an API is a piece of cake! If not, it's fairly easy to pick up and is very similar to other programming languages. Check out <a href="http://eloquentjavascript.net/" class='green' target="_blank">Eloquent Javascript</a> if you'd like a brief intro to the language and then check back here, we'll wait. :)</p>
         <p>The reason you need to know Javascript is because APIs are coded in Javascript! No learning a new language and its fancy syntax is required!</p>
 
-        <a name="APIObject"><h5>API Object</h5></a>
+        <a name="APIObject"><h5 class='subtitle'>API Object</h5></a>
         <p>In RandomAPI, all of your <b>fields</b> are attached to the <b>api</b> object. A <b>field</b> is a Javascript property that holds the data that you generate and the <b>api</b> object is the central variable that RandomAPI will end up pushing into a results array.</p>
         <div class="row">
           <div class="six columns">
@@ -37,7 +37,7 @@ api.dogYears = api.age * 7;</code></pre>
           </div>
         </div>
 
-        <a name="variables"><h5>Variables</h5></a>
+        <a name="variables"><h5 class='subtitle'>Variables and functions and comments, oh my!</h5></a>
         <p>Since APIs are coded in Javascript, you are free to do whatever you like in order to generate your data. This includes creating functions, variables, comments, etc. Just make sure that whatever data you generate gets attached to the api object or else it won't be available in your results.
         <div class="row">
           <div class="six columns">
@@ -46,17 +46,17 @@ api.dogYears = api.age * 7;</code></pre>
 /*
     Multiline comments work as well!
 */
-let fullname = "Billy Bob"; // Not attached to api object
-
+const fullName = "Billy Builder"; // Not attached to api object
+var middleName = "The";
 let age   = 5;
 api.age   = age; // Attached to api object
-api.phone = phoneNum();
+api.phone = phoneNum(); // Calling user defined function
 
 function phoneNum (format) {
-    format = format || "(xxx) xxx-xxxx";
-    return String(format).split('').map(digit => {
-        return digit === 'x' ? random.numeric(0, 9) : digit;
-    }).join('');
+  format = format || "(xxx) xxx-xxxx";
+  return String(format).split('').map(digit => {
+    return digit === 'x' ? random.numeric(0, 9) : digit;
+  }).join('');
 }</code></pre>
           </div>
           <div class="six columns">
@@ -72,6 +72,67 @@ function phoneNum (format) {
             </code></pre>
           </div>
         </div>
+
+        <a name="availableFunctions"><h4 class='title'>Available functions</h4></a>
+
+        <a name="callingAPIs"><h4 class='title'>Calling APIs</h4></a>
+        <p>APIs can be accessed through via the <a href="https://randomapi.com/api"><span class='green'>https://randomapi.com/api</span></a> endpoint.</p>
+        <p>At a minimum, the endpoint requires a <b>key</b> and <b>ref</b> value. Key would be your API key and ref is the Ref ID of the API you want to access which can be found on the <a href="view/api" target="_blank"><span class='green'>View APIs</span></a> page.</p>
+        <p>APIs can be called in two different ways:</p>
+        <pre><code class="html">https://randomapi.com/api/<span class='green'>123abc</span>?key=<span class='green'>ABCD-1234-EFGH-5678</span>      // Ref value is implied
+https://randomapi.com/api/?key=<span class='green'>ABCD-1234-EFGH-5678</span>&ref=<span class='green'>123abc</span> // Ref value is explicitly stated</code></pre>
+
+        <a name="options"><h5 class='subtitle'>Options</h5></a>
+        <p>You can add extra parameters to your API call to transform your data into different formats, specify how many results you'd like to generate, specify a seed, and even communicate with your api through the <span class="green">getVar</span> function.</p>
+        <p>RandomAPI parameters:</p>
+        <table class="u-full-width">
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>key</td>
+              <td>Your API Key (<span class='red'>required</span>)</td>
+            </tr>
+            <tr>
+              <td>ref</td>
+              <td>The Ref ID of the API that you want to access (<span class='red'>required</span>)</td>
+            </tr>
+            <tr>
+              <td>fmt</td>
+              <td>Format your data to your liking. Currently available: json (default), pretty, csv, xml, yaml</td>
+            </tr>
+            <tr>
+              <td>results</td>
+              <td>How many results would you like to have generated</td>
+            </tr>
+            <tr>
+              <td>seed</td>
+              <td>Generate the same results</td>
+            </tr>
+            <tr>
+              <td>page</td>
+              <td>Pagination through results</td>
+            </tr>
+            <tr>
+              <td>noinfo</td>
+              <td>Only show the results. Don't show the info property</td>
+            </tr>
+            <tr>
+              <td>dl</td>
+              <td>Download the file with proper headers and file extension</td>
+            </tr>
+            <tr>
+              <td>callback</td>
+              <td>For JSONP requests. Only available with json format</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Custom parameters:</p>
+        <p>You can specify other custom parameters and then access them in your API using the <span class="green">getVar</span> function.</p>
 
       </div>
     </div>
