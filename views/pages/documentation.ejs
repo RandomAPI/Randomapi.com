@@ -123,13 +123,40 @@ random.special(8, 10); // SEFXPCCBIP</code></pre></td>
             <tr>
               <td>custom</td>
               <td>charset, length</td>
-              <td><pre><code class='javascript'>random.custom("1111111112", 10);                 // 1112111111
-random.custom("aBcáΩßDefG1290é\"", 10);         // G"BcGé02D1
+              <td><pre><code class='javascript'>random.custom("1111111112", 10); // 1112111111
+random.custom("aBcáΩßDefG1290é\"", 10); // G"BcGé02D1
 random.custom("œ∑´®†¥¨ˆøπåß∂ƒ©˙∆˚¬Ω≈ç√∫˜µ", 10); // ®®ø˚øƒ˚†Ωç</code></pre>Notice: There is a 10% chance of a 2 being chosen in example 1.</td>
             </tr>
           </tbody>
         </table>
 
+        <h5 class='subtitle'><a name="availableFunctionsList">List</a></h5>
+        <p>Chooses a random (or specified) item from either a list or provided array. If no lineNumber or indexNumber is provided, a random item will be chosen forom the list or array respectively.</p>
+        <table class="u-full-width">
+          <thead>
+            <tr>
+              <th>Arguments</th>
+              <th>Example</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>listid, [lineNumber]</td>
+              <td><pre><code class='javascript'>// list a1b2c3 contents:
+// line 1: cat
+// line 2: horse
+// line 3: dog
+
+list('a1b2c3'); // dog
+list('a1b2c3', 2); // horse</code></pre>Notice: Example 2 chose line number 2 from list <b>a1b2c3</b>.<br>
+            </tr>
+            <tr>
+              <td>array, [indexNumber]</td>
+              <td><pre><code class='javascript'>list([a, b, c]); // c
+list([male, female], 1); // female</code></pre>Warning: Indexes are zero based for arrays.<br>
+            </tr>
+          </tbody>
+        </table>
 
         <h4 class='title'><a name="callingAPIs">Calling APIs</a></h4>
         <p>APIs can be accessed through via the <a href="https://randomapi.com/api" class='green' target="_blank">https://randomapi.com/api</a> endpoint.</p>

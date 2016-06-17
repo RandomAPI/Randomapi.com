@@ -344,7 +344,7 @@ Generator.prototype.availableFuncs = function() {
 
       if (Array.isArray(obj)) {
         if (num !== undefined) {
-          return obj[num-1];
+          return obj[num];
         } else {
           return obj[range(0, obj.length-1)];
         }
