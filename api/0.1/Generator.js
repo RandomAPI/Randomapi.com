@@ -477,7 +477,8 @@ Generator.prototype.getCacheSize = function() {
   return size;
 }
 
-const random = (mode = 1, length = 10, charset = null) => {
+const random = (mode = 1, length = 10, charset = "") => {
+  if (!Number.isInteger(mode) || !Number.isInteger(length)) throw new TypeError('Non numeric arguments provided');
 
   let result = '';
   let chars;
@@ -499,6 +500,7 @@ const random = (mode = 1, length = 10, charset = null) => {
   } else if (mode === 8) {
     chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
   } else if (mode === -1) {
+    if ((typeof charset !== 'string' && !(charset instanceof String)) || charset.length === 0) throw new TypeError('Provided charset is invalid');
     chars = charset;
   }
 
