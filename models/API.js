@@ -9,6 +9,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       let self = this;
       data.ref = this.genRandomRef();
+      data.generator = 1;
 
       db.query('INSERT INTO `API` SET ?', data, (err, result) => {
         err ? reject(err) : resolve({id: result.insertId});

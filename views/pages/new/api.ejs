@@ -17,11 +17,6 @@
         <h3>New API</h3>
         <form action="" method="POST">
         <input type="text" name="name" placeholder="API Name" autofocus required autocomplete="off"><br>
-        Generator version: <select name="generator">
-        <% versions.forEach(function(generator) { %>
-          <option value="<%= generator.id %>"><%= generator.version %></option>
-        <% }); %>
-        </select><br><br>
         <input type="submit" value="Add new API">
         </form>
       </div>

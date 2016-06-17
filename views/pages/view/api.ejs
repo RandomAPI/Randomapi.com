@@ -21,7 +21,7 @@
               <th>#</th>
               <th>Name</th>
               <th>Ref ID</th>
-              <th>Generator Version</th>
+              <!-- <th>Generator Version</th> -->
               <th>Actions</th>
             </tr>
           </thead>
@@ -34,7 +34,7 @@
               <td><%=index+1%></td>
               <td><%=api.name%></td>
               <td><%=api.ref%></td>
-              <td><%=api.generator%></td>
+              <!-- <td><%=api.generator%></td> -->
               <td><a href="delete/api/<%=api.ref%>">Delete</a> <a href="edit/api/<%=api.ref%>">Edit</a> <a href="api/<%=api.ref%>?key=<%=session.user.apikey%>" target="_blank">Run API</a></td>
             </tr>
           <%  });

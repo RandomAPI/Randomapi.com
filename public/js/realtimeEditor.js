@@ -39,6 +39,17 @@ socket.on('codeLinted', function(msg) {
   //   $('#results').html(JSON.stringify(result.results));
   // }
   $('#results').html(msg);
+  try {
+    let json = JSON.parse(msg);
+    if (json.error) {
+      $('#results').html(json.results[0].API_ERROR);
+    } else {
+      $('#results').html(msg);
+    }
+  } catch (e) {
+    window.alert("Something very weird happened.");
+    $('#results').html(msg);
+  }
 });
 
 function lintCode() {

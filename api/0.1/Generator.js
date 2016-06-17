@@ -51,7 +51,7 @@ const Generator = function(name, options) {
       } else if (msg.mode === 'lint') {
         let a = _.merge({
           seed: String('linter' + ~~(Math.random() * 100)),
-          format: 'yaml',
+          format: 'pretty',
           noinfo: true,
           page: 1,
           mode: 'lint'
@@ -238,6 +238,13 @@ Generator.prototype.generate = function(cb) {
 
     if (output[0].API_ERROR !== undefined) {
       json.error = true;
+      if ([
+        "SyntaxError: Unexpected token }",
+        "SyntaxError: Unexpected token catch",
+        "SyntaxError: Missing catch or finally after try"
+      ].indexOf(output[0].API_ERROR) !== -1) {
+        output[0].API_ERROR = "SyntaxError: Unexpected end of input";
+      }
     }
 
     if (self.noInfo) delete json.info;
@@ -319,12 +326,16 @@ Generator.prototype.availableFuncs = function() {
   // Actual logic
   let funcs = {
     random: {
-      numeric: (min, max) => {
+      numeric: (min = 1, max = 100) => {
         return range(min, max);
       },
       special: (mode, length) => {
         if (length > 65535) length = 1;
         return random(mode, length);
+      },
+      custom: (charset, length) => {
+        if (length > 65535) length = 1;
+        return random(-1, length, charset);
       }
     },
     list: (obj, num) => {
@@ -401,7 +412,8 @@ Generator.prototype.availableFuncs = function() {
   return {
     random: {
       numeric: (min, max)     => funcs.random.numeric(min, max),
-      special: (mode, length) => funcs.random.special(mode, length)
+      special: (mode, length) => funcs.random.special(mode, length),
+      custom:  (charset, length) => funcs.random.custom(charset, length)
     },
     list: (obj, num) => funcs.list(obj, num),
     hash: {
@@ -465,22 +477,29 @@ Generator.prototype.getCacheSize = function() {
   return size;
 }
 
-const random = (mode, length) => {
+const random = (mode = 1, length = 10, charset = null) => {
+
   let result = '';
   let chars;
 
   if (mode === 1) {
     chars = 'abcdef1234567890';
   } else if (mode === 2) {
-    chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+    chars = 'ABCDEF1234567890';
   } else if (mode === 3) {
-    chars = '0123456789';
+    chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
   } else if (mode === 4) {
-    chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    chars = '0123456789';
   } else if (mode === 5) {
-    chars = 'abcdefghijklmnopqrstuvwxyz1234567890';
+    chars = 'abcdefghijklmnopqrstuvwxyz';
   } else if (mode === 6) {
+    chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  } else if (mode === 7) {
+    chars = 'abcdefghijklmnopqrstuvwxyz1234567890';
+  } else if (mode === 8) {
     chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+  } else if (mode === -1) {
+    chars = charset;
   }
 
   for (let i = 0; i < length; i++) {
@@ -495,6 +514,8 @@ const randomItem = arr => {
 };
 
 const range = (min, max) => {
+  if (!Number.isInteger(min) || !Number.isInteger(max)) throw new TypeError('Non numeric arguments provided');
+  if (max < min) throw new RangeError('min is greater than max');
   return min + mersenne.rand(max-min+1);
 };
 
