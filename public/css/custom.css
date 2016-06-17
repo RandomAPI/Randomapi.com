@@ -191,8 +191,22 @@ section.login .flash {
   height: 1px;
 }
 
+.documentationMain {
+  margin-left: 22%;
+}
+
 #documentationNav {
   position: fixed;
+}
+
+@media screen and (max-width: 1000px) {
+  #documentationNav {
+    display: none;
+  }
+  .documentationMain {
+    width: 100% !important;
+    margin: auto;
+  }
 }
 
 #documentationNav ul {

@@ -11,18 +11,18 @@
       <div class="three columns">
         <% include ../snippets/documentationSubnav %>
       </div>
-      <div class="nine columns" style="margin-left: 22%;">
+      <div class="nine columns documentationMain">
         <div id="note">
           <%=messages%>
         </div>
         <h2>Documentation</h2>
         <h5>Learn how to code your API</h5>
 
-        <a name="general"><h4 class='title'>General</h4></a>
+        <h4 class='title'><a name="general">General</a></h4>
         <p>If you know Javascript, then coding an API is a piece of cake! If not, it's fairly easy to pick up and is very similar to other programming languages. Check out <a href="http://eloquentjavascript.net/" class='green' target="_blank">Eloquent Javascript</a> if you'd like a brief intro to the language and then check back here, we'll wait. :)</p>
         <p>The reason you need to know Javascript is because APIs are coded in Javascript! No learning a new language and its fancy syntax is required!</p>
 
-        <a name="APIObject"><h5 class='subtitle'>API Object</h5></a>
+        <h5 class='subtitle'><a name="APIObject">API Object</a></h5>
         <p>In RandomAPI, all of your <b>fields</b> are attached to the <b>api</b> object. A <b>field</b> is a Javascript property that holds the data that you generate and the <b>api</b> object is the central variable that RandomAPI will end up pushing into a results array.</p>
         <div class="row">
           <div class="six columns">
@@ -37,7 +37,7 @@ api.dogYears = api.age * 7;</code></pre>
           </div>
         </div>
 
-        <a name="variables"><h5 class='subtitle'>Variables and functions and comments, oh my!</h5></a>
+        <h5 class='subtitle'><a name="variables">Variables and functions and comments, oh my!</a></h5>
         <p>Since APIs are coded in Javascript, you are free to do whatever you like in order to generate your data. This includes creating functions, variables, comments, etc. Just make sure that whatever data you generate gets attached to the api object or else it won't be available in your results.
         <div class="row">
           <div class="six columns">
@@ -72,18 +72,74 @@ function phoneNum (format) {
             </code></pre>
           </div>
         </div>
+        <h5 class='subtitle'><a name="sandbox">Sandbox</a></h5>
+        <p>In order to keep other users and the server safe from malicious code, all APIs are executed in a sandboxed environment with limited native Node.js/Javascript functions available. Features like requiring modules, spawning child processes, access the file system, etc. are all disabled. All code is run in strict mode as well.</p>
+        <p>Native methods and build in objects such as type casting using <b>String</b> and <b>Number</b> and using <b>JSON.stringify</b> are enabled and methods that can be chained to those data types such as <b>.toString()</b> are also available for use.
 
-        <a name="availableFunctions"><h4 class='title'>Available functions</h4></a>
 
-        <a name="callingAPIs"><h4 class='title'>Calling APIs</h4></a>
-        <p>APIs can be accessed through via the <a href="https://randomapi.com/api"><span class='green'>https://randomapi.com/api</span></a> endpoint.</p>
-        <p>At a minimum, the endpoint requires a <b>key</b> and <b>ref</b> value. Key would be your API key and ref is the Ref ID of the API you want to access which can be found on the <a href="view/api" target="_blank"><span class='green'>View APIs</span></a> page.</p>
+        <h4 class='title'><a name="availableFunctions">Available functions</a></h4>
+        <p>RandomAPI includes some basic data generation functions in the sandboxed environment that your API can make use of. All of these included functions respect the <b>seed</b> value that is sent in through an API request</p>.
+
+        <h5 class='subtitle'><a name="availableFunctionsRandom">Random</a></h5>
+        <p>Generates a random number within a range as well as a string of random characters from a predefined or custom charset.</p>
+        <table class="u-full-width">
+          <thead>
+            <tr>
+              <th>Mode</th>
+              <th>Arguments</th>
+              <th>Example</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>numeric</td>
+              <td>min, max</td>
+              <td><pre><code class='javascript'>random.numeric(25, 85);    // 31
+random.numeric('adsf', 2); // TypeError: Non numeric arguments provided
+random.numeric(3, 2);      // RangeError: min is greater than max</code></pre></td>
+            </tr>
+            <tr>
+              <td>special</td>
+              <td>mode, length</td>
+              <td><pre><code class='javascript'>// Available predefined charsets
+// 1: abcdef1234567890
+// 2: ABCDEF1234567890
+// 3: abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
+// 4: 0123456789
+// 5: abcdefghijklmnopqrstuvwxyz
+// 6: ABCDEFGHIJKLMNOPQRSTUVWXYZ
+// 7: abcdefghijklmnopqrstuvwxyz1234567890
+// 8: ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
+
+random.special(1, 10); // 616283c380
+random.special(2, 10); // 18550F0761
+random.special(3, 10); // oyE8seFUJW
+random.special(4, 10); // 3064867594
+random.special(5, 10); // pvdsmelnei
+random.special(6, 10); // YIHHSSVRXR
+random.special(7, 10); // auws4syf9k
+random.special(8, 10); // SEFXPCCBIP</code></pre></td>
+            </tr>
+            <tr>
+              <td>custom</td>
+              <td>charset, length</td>
+              <td><pre><code class='javascript'>random.custom("1111111112", 10);                 // 1112111111
+random.custom("aBcáΩßDefG1290é\"", 10);         // G"BcGé02D1
+random.custom("œ∑´®†¥¨ˆøπåß∂ƒ©˙∆˚¬Ω≈ç√∫˜µ", 10); // ®®ø˚øƒ˚†Ωç</code></pre>Notice: There is a 10% chance of a 2 being chosen in example 1.</td>
+            </tr>
+          </tbody>
+        </table>
+
+
+        <h4 class='title'><a name="callingAPIs">Calling APIs</a></h4>
+        <p>APIs can be accessed through via the <a href="https://randomapi.com/api" class='green' target="_blank">https://randomapi.com/api</a> endpoint.</p>
+        <p>At a minimum, the endpoint requires a <b>key</b> and <b>ref</b> value. Key would be your API key and ref is the Ref ID of the API you want to access which can be found on the <a href="view/api" class='green' target="_blank">View APIs</a> page.</p>
         <p>APIs can be called in two different ways:</p>
         <pre><code class="html">https://randomapi.com/api/<span class='green'>123abc</span>?key=<span class='green'>ABCD-1234-EFGH-5678</span>      // Ref value is implied
 https://randomapi.com/api/?key=<span class='green'>ABCD-1234-EFGH-5678</span>&ref=<span class='green'>123abc</span> // Ref value is explicitly stated</code></pre>
 
-        <a name="options"><h5 class='subtitle'>Options</h5></a>
-        <p>You can add extra parameters to your API call to transform your data into different formats, specify how many results you'd like to generate, specify a seed, and even communicate with your api through the <span class="green">getVar</span> function.</p>
+        <h5 class='subtitle'><a name="options">Options</a></h5>
+        <p>You can add extra parameters to your API call to transform your data into different formats, specify how many results you'd like to generate, specify a seed, and even communicate with your api through the <b>getVar</b> function.</p>
         <table class="u-full-width">
           <thead>
             <tr>
@@ -152,7 +208,7 @@ https://randomapi.com/api/?key=<span class='green'>ABCD-1234-EFGH-5678</span>&re
               <td><i>Custom Parameter</i></td>
               <td><i>null</i></td>
               <td>mode=3</td>
-              <td>You can specify custom parameters and then access them in your API using the <span class="green">getVar</span> function.</td>
+              <td>You can specify custom parameters and then access them in your API using the <b>getVar</b> function.</td>
             </tr>
           </tbody>
         </table>
