@@ -172,9 +172,6 @@ section.login .flash {
   color: #0CB863;
 }
 
-#subnav {
-}
-
 #subnav ul {
   overflow: hidden;
   list-style-type: none;
@@ -192,6 +189,27 @@ section.login .flash {
   height: 1px;
 }
 
+#documentationNav {
+  position: fixed;
+}
+
+#documentationNav ul {
+  overflow: hidden;
+  list-style-type: none;
+  margin-top: 5px;
+  padding: 0;
+  font-size: 14pt;
+}
+
+#documentationNav ul .selected {
+  font-weight: bold;
+  color: #0CB863;
+}
+
+#documentationNav ul .seperator {
+  height: 1px;
+}
+
 #preview {
   margin-top: -25px;
   position: relative;
@@ -200,7 +218,7 @@ section.login .flash {
   height: 500px;
 }
 
-#preview #results {
+#results {
   white-space: pre-wrap;       /* Since CSS 2.1 */
   white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
   white-space: -pre-wrap;      /* Opera 4-6 */
@@ -231,4 +249,9 @@ section.login .flash {
   -ms-transition: background-color 0.2s ease-in-out;
   -o-transition: background-color 0.2s ease-in-out;
   transition: background-color 0.2s ease-in-out;
+}
+
+.caption {
+  display: block;
+  text-align: center;
 }

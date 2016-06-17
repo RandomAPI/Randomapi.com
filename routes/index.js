@@ -38,11 +38,7 @@ router.get('/pricing', (req, res, next) => {
 });
 
 router.get('/documentation', (req, res, next) => {
-  if (req.session.loggedin) {
-    res.render('documentation', _.merge(defaultVars, {title: 'Documentation'}));
-  } else {
-    res.render('index', defaultVars);
-  }
+  res.render('documentation', _.merge(defaultVars, {title: 'Documentation'}));
 });
 
 router.get('/settings', (req, res, next) => {

@@ -1,12 +1,50 @@
-<% include ../snippets/header %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <% include ../snippets/header %>
+  <link rel="stylesheet" href="css/highlight/monokai-sublime.css  ">
+</head>
 <body>
   <% include ../snippets/navbar %>
-
   <div class="container main">
-    <section class="hero">
-      <h3>Simplify your testing</h3>
-      <h5 id="subtitle">Easily generate mock data for testing your application</h5>
-    </section>
+    <div class="row">
+      <div class="three columns">
+        <% include ../snippets/documentationSubnav %>
+      </div>
+      <div class="nine columns" style="margin-left: 22%;">
+        <div id="note">
+          <%=messages%>
+        </div>
+        <h2>Documentation</h2>
+        <h5>Learn how to code your API</h5>
+
+        <a name="general"><h4>General</h4></a>
+        <p>If you know Javascript, then coding an API is a piece of cake! If not, it's fairly easy to pick up and is very similar to other programming languages. Check out <a href="http://eloquentjavascript.net/" class='green' target="_blank">Eloquent Javascript</a> if you'd like a brief intro to the language and then check back here, we'll wait. :)</p>
+        <p>The reason you need to know Javascript is because APIs are coded in Javascript! No learning a new language and its fancy syntax is required!</p>
+
+        <a name="APIObject"><h5>API Object</h5></a>
+        <p>In RandomAPI, all of your <b>fields</b> are attached to the <b>api</b> object. A <b>field</b> is a Javascript property that holds the data that you generate and the <b>api</b> object is the central variable that RandomAPI will end up pushing into a results array.</p>
+        <div class="row">
+          <div class="six columns">
+            <span class='caption'>API Code</span>
+            <pre><code class="javascript">api.age      = random.numeric(1, 25);
+api.dogYears = api.age * 7;</code></pre>
+          </div>
+          <div class="six columns">
+            <span class='caption'>Result</span>
+            <pre><code>{"results":[{"age":20,"dogYears":140}]}
+            </code></pre>
+          </div>
+        </div>
+
+        <a name="variables"><h5>Variables</h5></a>
+        <p>In RandomAPI, all of your <b>fields</b> are attached to the <b>api</b> object. A <b>field</b> is a Javascript property that holds the data that you generate and the <b>api</b> object is the central variable that RandomAPI will end up pushing into a results array.</p>
+
+      </div>
+    </div>
   </div>
+  <% include ../snippets/footer %>
+  <script src="js/highlight.pack.js"></script>
+  <script src="js/documentation.js"></script>
 </body>
 </html>
