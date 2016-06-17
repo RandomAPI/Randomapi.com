@@ -84,56 +84,82 @@ https://randomapi.com/api/?key=<span class='green'>ABCD-1234-EFGH-5678</span>&re
 
         <a name="options"><h5 class='subtitle'>Options</h5></a>
         <p>You can add extra parameters to your API call to transform your data into different formats, specify how many results you'd like to generate, specify a seed, and even communicate with your api through the <span class="green">getVar</span> function.</p>
-        <p>RandomAPI parameters:</p>
         <table class="u-full-width">
           <thead>
             <tr>
               <th>Parameter</th>
+              <th>Default value</th>
+              <th>Example value</th>
               <th>Description</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>key</td>
-              <td>Your API Key (<span class='red'>required</span>)</td>
+              <td><i>null</i></td>
+              <td>ABCD-1234-EFGH-5678</td>
+              <td>(<span class='red'>required</span>) Your API Key</td>
             </tr>
             <tr>
               <td>ref</td>
-              <td>The Ref ID of the API that you want to access (<span class='red'>required</span>)</td>
+              <td><i>null</i></td>
+              <td>123abc</td>
+              <td>(<span class='red'>required</span>) The Ref ID of the API that you want to access</td>
             </tr>
             <tr>
               <td>fmt</td>
-              <td>Format your data to your liking. Currently available: json (default), pretty, csv, xml, yaml</td>
+              <td>json</td>
+              <td>json, pretty, csv, xml, yaml</td>
+              <td>Format your data to your liking</td>
             </tr>
             <tr>
               <td>results</td>
+              <td>10</td>
+              <td>20</td>
               <td>How many results would you like to have generated</td>
             </tr>
             <tr>
               <td>seed</td>
+              <td><i>Random 16 character hex string</i></td>
+              <td>huskiesarecute</td>
               <td>Generate the same results</td>
             </tr>
             <tr>
               <td>page</td>
+              <td>1</td>
+              <td>3</td>
               <td>Pagination through results</td>
             </tr>
             <tr>
               <td>noinfo</td>
+              <td><i>null</i></td>
+              <td><i>No value required</i></td>
               <td>Only show the results. Don't show the info property</td>
             </tr>
             <tr>
               <td>dl</td>
+              <td><i>null</i></td>
+              <td><i>No value required</i></td>
               <td>Download the file with proper headers and file extension</td>
             </tr>
             <tr>
               <td>callback</td>
+              <td><i>null</i></td>
+              <td>fetchdata</td>
               <td>For JSONP requests. Only available with json format</td>
+            </tr>
+            <tr>
+              <td><i>Custom Parameter</i></td>
+              <td><i>null</i></td>
+              <td>mode=3</td>
+              <td>You can specify custom parameters and then access them in your API using the <span class="green">getVar</span> function.</td>
             </tr>
           </tbody>
         </table>
-        <p>Custom parameters:</p>
-        <p>You can specify other custom parameters and then access them in your API using the <span class="green">getVar</span> function.</p>
-
+        <pre><code class="html">https://randomapi.com/api/123abc?key=ABCD-1234-EFGH-5678&results=<span class='green'>25</span>&seed=<span class='green'>huskiesarecute</span>&page=<span class='green'>3</span>
+https://randomapi.com/api/?key=ABCD-1234-EFGH-5678&ref=123abc&callback=<span class='green'>fetchData</span>
+https://randomapi.com/api/?key=ABCD-1234-EFGH-5678&ref=123abc&fmt=<span class='green'>xml</span>&<span class='green'>dl</span>
+https://randomapi.com/api/?key=ABCD-1234-EFGH-5678&ref=123abc&fmt=<span class='green'>pretty</span>&<span class='green'>noinfo</span></code></pre>
       </div>
     </div>
   </div>
