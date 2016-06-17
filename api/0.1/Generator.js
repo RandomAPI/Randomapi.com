@@ -9,7 +9,7 @@ const vm           = require('vm');
 const async        = require('async');
 const util         = require('util');
 const _            = require('lodash');
-const logger  = require('../../utils').logger;
+const logger       = require('../../utils').logger;
 const EventEmitter = require('events').EventEmitter;
 
 const Generator = function(name, options) {
@@ -26,7 +26,7 @@ const Generator = function(name, options) {
     results:  options.results
   };
   this.context = vm.createContext(this.availableFuncs());
-  this.originalContext = ['random', 'list', 'hash', 'String', 'timestamp', 'require', '_APIgetVars', '_APIresults', 'getVar'];
+  this.originalContext = ['random', 'list', 'hash', 'timestamp', 'require', '_APIgetVars', '_APIresults', 'getVar'];
   this.listsResults = {}; // Hold cache of list results
 
   // Lists that were added to cache within last minute.
@@ -51,7 +51,7 @@ const Generator = function(name, options) {
       } else if (msg.mode === 'lint') {
         let a = _.merge({
           seed: String('linter' + ~~(Math.random() * 100)),
-          format: 'json',
+          format: 'yaml',
           noinfo: true,
           page: 1,
           mode: 'lint'
@@ -203,7 +203,6 @@ Generator.prototype.generate = function(cb) {
         }
       })();
       function getVar(key) {
-        //if (_APIgetVars === undefined) return undefined;
         return key in _APIgetVars ? _APIgetVars[key] : undefined;
       }
     `);
@@ -302,103 +301,6 @@ ${self.src}
   }
 };
 
-
-
-
-//self.lint(m.code, m.user, function(err, results) {
-Generator.prototype.lint = function(code, user, cb) {
-  let self = this;
-  this.results   = 1;
-  this.seed      = String('linter' + ~~(Math.random() * 100));
-  this.format    = 'json';
-  this.noInfo    = true;
-  this.page      = 1;
-  this.speedtest = false;
-  this.src       = code;
-
-  this.page = 1;
-  ///////////////////
-
-  this.seedRNG();
-
-  let output = [];
-
-  try {
-    this.sandBox = new vm.Script(`
-      'use strict'
-      let _APIgetVars = ${JSON.stringify(self.options)};
-      let _APIresults = [];
-      (function() {
-        for (let _APIi = 0; _APIi < ${self.results}; _APIi++) {
-          let api = {};
-          try {
-${self.src}
-          } catch (e) {
-            api = {
-              API_ERROR: e.toString(),
-              API_STACK: e.stack
-            };
-          }
-          _APIresults.push(api);
-        }
-      })();
-      function getVar(key) {
-        //if (_APIgetVars === undefined) return undefined;
-        return key in _APIgetVars ? _APIgetVars[key] : undefined;
-      }
-    `);
-
-    this.sandBox.runInContext(this.context, {
-      displayErrors: true,
-      timeout: self.limits.execTime * 1000
-    });
-    returnResults(null, this.context._APIresults);
-  } catch(e) {
-    returnResults(e.toString(), null);
-  }
-
-  // Remove accidental user defined globals. Pretty hacky, should probably look into improving this...
-  let diff = Object.keys(this.context);
-  diff.filter(each => this.originalContext.indexOf(each) === -1).forEach(each => delete self.context[each]);
-
-  function returnResults(err, output) {
-    if (err !== null) {
-      output = [{API_ERROR: err.toString()}];
-    }
-
-    let json = {
-      results: output,
-      info: {
-        seed: String(self.seed),
-        results: self.results,
-        page: self.page,
-        version: self.version
-      }
-    };
-
-    if (output[0].API_ERROR !== undefined) {
-      json.error = true;
-    }
-
-    if (self.noInfo) delete json.info;
-
-    if (self.format === 'yaml') {
-      cb(YAML.stringify(json, 4), 'yaml');
-    } else if (self.format === 'xml') {
-      cb(js2xmlparser('user', json), 'xml');
-    } else if (self.format === 'prettyjson' || self.format === 'pretty') {
-      cb(JSON.stringify(json, null, 2), 'json');
-    } else if (self.format === 'csv') {
-      converter.json2csv(json.results, (err, csv) => {
-        cb(csv, 'csv');
-      });
-    } else {
-      cb(JSON.stringify(json), 'json');
-    }
-  }
-};
-
-
 Generator.prototype.seedRNG = function() {
   let seed = this.seed;
   seed = this.page !== 1 ? seed + String(this.page) : seed;
@@ -413,10 +315,12 @@ Generator.prototype.defaultSeed = function() {
 
 Generator.prototype.availableFuncs = function() {
   let self = this;
-  return {
+
+  // Actual logic
+  let funcs = {
     random: {
-      numeric: (a, b) => {
-        return range(a, b);
+      numeric: (min, max) => {
+        return range(min, max);
       },
       special: (mode, length) => {
         if (length > 65535) length = 1;
@@ -483,7 +387,6 @@ Generator.prototype.availableFuncs = function() {
         return crypto.createHash('sha256').update(String(val)).digest('hex');
       }
     },
-    String,
     timestamp: () => {
       return Math.floor(new Date().getTime()/1000);
     },
@@ -492,6 +395,22 @@ Generator.prototype.availableFuncs = function() {
         return require('faker');
       }
     }
+  };
+
+  // Proxy
+  return {
+    random: {
+      numeric: (min, max)     => funcs.random.numeric(min, max),
+      special: (mode, length) => funcs.random.special(mode, length)
+    },
+    list: (obj, num) => funcs.list(obj, num),
+    hash: {
+      md5: val    => funcs.hash.md5(val),
+      sha1: val   => funcs.hash.sha1(val),
+      sha256: val => funcs.hash.sha256(val)
+    },
+    timestamp: () => funcs.timestamp(),
+    require: lib  => funcs.require(lib)
   };
 };
 

@@ -14,12 +14,11 @@
         <h3>Editing API <%=api.ref%></h3>
         <pre id="aceEditor" name="code"><%=api.code%></pre>
         <div id="preview">
-          <button onClick="lintCode()">Lint Code</button>
+          <input type="submit" id="submit" value="Save"> <button onClick="lintCode()">Test API</button>
           <pre id="results">
   preview thing
           </pre>
         </div>
-        <input type="submit" id="submit" value="Save">
       </div>
     </div>
   </div>

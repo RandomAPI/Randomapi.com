@@ -30,8 +30,8 @@ const GeneratorForker = function(options) {
     // Realtime or Speedtest
     if (task.socket !== undefined) {
       self.generate({mode: 'lint', options: {apikey: task.data.apikey, src: task.data.src}}, (err, results, fmt) => {
-        if (results.length > 4096) {
-          results = "Output has been truncated\n---------------\n" + results.slice(0, 4096);
+        if (results.length > 65535) {
+          results = "Output has been truncated\n---------------\n" + results.slice(0, 65535);
         }
         task.socket.emit('codeLinted', results);
         callback();
