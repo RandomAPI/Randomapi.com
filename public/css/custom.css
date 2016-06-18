@@ -195,6 +195,10 @@ section.login .flash {
   margin-left: 22%;
 }
 
+.documentationMain table {
+  table-layout: fixed;
+}
+
 #documentationNav {
   position: fixed;
 }
