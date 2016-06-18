@@ -18,10 +18,10 @@ router.get('/api', (req, res, next) => {
   if (req.session.loggedin) {
     let obs = [];
     API.getAPIs(req.session.user.id).then(apis => {
-      res.render('view/api', _.merge(defaultVars, {apis}));
+      res.render('view/api', _.merge(defaultVars, {apis, title: 'View APIs'}));
     });
   } else {
-    res.render('index', defaultVars);
+    res.redirect(baseURL + '/');
   }
 });
 
@@ -30,10 +30,10 @@ router.get('/api', (req, res, next) => {
 router.get('/list', (req, res, next) => {
   if (req.session.loggedin) {
     List.getLists(req.session.user.id).then(lists => {
-      res.render('view/list', _.merge(defaultVars, {lists}));
+      res.render('view/list', _.merge(defaultVars, {lists, title: 'View APIs'}));
     });
   } else {
-    res.render('index', defaultVars);
+    res.redirect(baseURL + '/');
   }
 });
 

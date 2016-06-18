@@ -29,11 +29,11 @@ const GeneratorForker = function(options) {
 
     // Realtime or Speedtest
     if (task.socket !== undefined) {
-      self.generate({mode: 'lint', options: {apikey: task.data.apikey, src: task.data.src}}, (err, results, fmt) => {
+      self.generate({mode: 'lint', options: {apikey: task.data.apikey, src: task.data.src}}, (error, results, fmt) => {
         if (results.length > 65535) {
           results = "Warning: Output has been truncated\n---------------\n" + results.slice(0, 65535);
         }
-        task.socket.emit('codeLinted', results);
+        task.socket.emit('codeLinted', {error, results: JSON.parse(results).results[0]});
         callback();
       });
     } else {
@@ -45,7 +45,7 @@ const GeneratorForker = function(options) {
       }
       _.merge(task.req.query, {ref});
 
-      self.generate({mode: 'generate', options: task.req.query}, (err, results, fmt) => {
+      self.generate({mode: 'generate', options: task.req.query}, (error, results, fmt) => {
         if (fmt === 'json') {
           task.res.setHeader('Content-Type', 'application/json');
         } else if (fmt === 'xml') {
@@ -92,7 +92,7 @@ GeneratorForker.prototype.fork = function() {
         });
       }
     } else if (msg.type === 'done') {
-      self.emit('taskFinished', {err: msg.data.err, data: msg.data.data, fmt: msg.data.fmt});
+      self.emit('taskFinished', {error: msg.data.error, results: msg.data.results, fmt: msg.data.fmt});
     } else if (msg.type === 'cmdComplete') {
       if (msg.mode === 'memory') {
         self.emit('memComplete', msg.content);
@@ -121,7 +121,7 @@ GeneratorForker.prototype.generate = function(opts, cb) {
 
   // Wait for the task to finish and then send err, results, and fmt to cb.
   this.once('taskFinished', data => {
-    cb(data.err, data.data, data.fmt);
+    cb(data.error, data.results, data.fmt);
   });
 };
 

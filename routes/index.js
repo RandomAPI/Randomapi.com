@@ -17,7 +17,7 @@ router.get('/', (req, res, next) => {
   if (req.session.loggedin) {
     res.render('dashboard', _.merge(defaultVars, {title: 'Dashboard'}));
   } else {
-    res.render('index', defaultVars);
+    res.render('index', _.merge(defaultVars, {title: 'Index'}));
   }
 });
 
@@ -25,7 +25,7 @@ router.get('/upgrade', (req, res, next) => {
   if (req.session.loggedin) {
     res.render('upgrade', _.merge(defaultVars, {title: 'Upgrade'}));
   } else {
-    res.render('index', defaultVars);
+    res.redirect(baseURL + '/');
   }
 });
 
@@ -45,7 +45,7 @@ router.get('/settings', (req, res, next) => {
   if (req.session.loggedin) {
     res.render('settings', _.merge(defaultVars, {title: 'Settings'}));
   } else {
-    res.render('index', defaultVars);
+    res.redirect(baseURL + '/');
   }
 });
 
@@ -54,7 +54,7 @@ router.get('/login', (req, res, next) => {
   if (req.session.loggedin) {
     res.redirect(baseURL + '/');
   } else {
-    res.render('login', defaultVars);
+    res.render('login', _.merge(defaultVars, {title: 'Login'}));
   }
 });
 
@@ -89,7 +89,7 @@ router.get('/register', (req, res, next) => {
   if (req.session.loggedin) {
     res.redirect(baseURL + '/');
   } else {
-    res.render('register', defaultVars);
+    res.render('register', _.merge(defaultVars, {title: 'Register'}));
   }
 });
 

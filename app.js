@@ -12,6 +12,7 @@ const app          = express();
 const server       = http.createServer(app);
 const _            = require('lodash');
 const settings     = require('./settings.json');
+const logger  = require('./utils').logger;
 
 // Redis Session Store
 const session      = require('express-session');

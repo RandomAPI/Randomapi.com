@@ -26,7 +26,7 @@ const Generator = function(name, options) {
     results:  options.results
   };
   this.context = vm.createContext(this.availableFuncs());
-  this.originalContext = ['random', 'list', 'hash', 'timestamp', 'require', '_APIgetVars', '_APIresults', 'getVar'];
+  this.originalContext = ['random', 'list', 'hash', 'timestamp', 'require', '_APIgetVars', '_APIresults', '_APIstack', '_APIerror', 'getVar'];
   this.listsResults = {}; // Hold cache of list results
 
   // Lists that were added to cache within last minute.
@@ -39,12 +39,12 @@ const Generator = function(name, options) {
   process.on('message', msg => {
     if (msg.type === 'task') {
       if (msg.mode === 'generate') {
-        self.instruct(msg.data, err => {
-          if (err) {
-            process.send({type: 'done', data: {data: err, results: null, fmt: null}});
+        self.instruct(msg.data, error => {
+          if (error) {
+            process.send({type: 'done', data: {error, results: null, fmt: null}});
           } else {
-            self.generate((data, fmt) => {
-              process.send({type: 'done', data: {data, fmt}});
+            self.generate((error, results, fmt) => {
+              process.send({type: 'done', data: {error, results, fmt}});
             });
           }
         });
@@ -57,12 +57,10 @@ const Generator = function(name, options) {
           mode: 'lint'
         }, msg.data);
         self.instruct(a, err => {
-          self.generate((data, fmt) => {
-            process.send({type: 'done', data: {data, fmt}});
+          self.generate((error, results, fmt) => {
+            process.send({type: 'done', data: {error, results, fmt}});
           });
         });
-      } else if (msg.mode === 'speedtest') {
-
       }
     } else if (msg.type === 'response') {
       if (msg.mode === 'api') {
@@ -183,21 +181,21 @@ Generator.prototype.generate = function(cb) {
   let output = [];
 
   try {
-
     this.sandBox = new vm.Script(`
       'use strict'
       var _APIgetVars = ${JSON.stringify(self.options)};
       var _APIresults = [];
+      var _APIerror = null;
+      var _APIstack = null;
       (function() {
         for (var _APIi = 0; _APIi < ${self.results}; _APIi++) {
           var api = {};
           try {
-    ${self.src}
+${self.src}
           } catch (e) {
-            api = {
-              API_ERROR: e.toString()//e.toString(),
-              //API_STACK: e.stack
-            };
+            api = {};
+            _APIerror = e.toString();
+            _APIstack = e.stack;
           }
           _APIresults.push(api);
         }
@@ -211,10 +209,15 @@ Generator.prototype.generate = function(cb) {
       displayErrors: true,
       timeout: self.limits.execTime * 1000
     });
-    returnResults(null, this.context._APIresults);
+    //evalmachine\.:(\d+):(\d+)
+
+    if (this.context._APIerror === null && this.context._APIstack === null) {
+      returnResults(null, this.context._APIresults);
+    } else {
+      returnResults({error: this.context._APIerror, stack: this.context._APIstack}, [{}]);
+    }
   } catch(e) {
-    returnResults(null, [{API_ERROR: e.toString()}]);
-    //console.log(e.stack);
+    returnResults({error: e.toString(), stack: e.stack}, [{}]);
   }
 
   // Remove accidental user defined globals. Pretty hacky, should probably look into improving this...
@@ -222,89 +225,52 @@ Generator.prototype.generate = function(cb) {
   diff.filter(each => this.originalContext.indexOf(each) === -1).forEach(each => delete self.context[each]);
 
   function returnResults(err, output) {
-    if (err !== null) {
-      output = [{API_ERROR: err.toString()}];
-    }
+    if (err === null) {
+      let json = {
+        results: output,
+        info: {
+          seed: String(self.seed),
+          results: self.results,
+          page: self.page,
+          version: self.version
+        }
+      };
 
-    let json = {
-      results: output,
-      info: {
-        seed: String(self.seed),
-        results: self.results,
-        page: self.page,
-        version: self.version
+      if (self.noInfo) delete json.info;
+
+      if (self.format === 'yaml') {
+        cb(null, YAML.stringify(json, 4), 'yaml');
+      } else if (self.format === 'xml') {
+        cb(null, js2xmlparser('user', json), 'xml');
+      } else if (self.format === 'prettyjson' || self.format === 'pretty') {
+        cb(null, JSON.stringify(json, null, 2), 'json');
+      } else if (self.format === 'csv') {
+        converter.json2csv(json.results, (err, csv) => {
+          cb(null, csv, 'csv');
+        });
+      } else {
+        cb(null, JSON.stringify(json), 'json');
       }
-    };
-
-    if (output[0].API_ERROR !== undefined) {
-      json.error = true;
+    } else {
       if ([
         "SyntaxError: Unexpected token }",
         "SyntaxError: Unexpected token catch",
         "SyntaxError: Missing catch or finally after try"
-      ].indexOf(output[0].API_ERROR) !== -1) {
-        output[0].API_ERROR = "SyntaxError: Unexpected end of input";
+      ].indexOf(err.error) !== -1) {
+        err.error = "SyntaxError: Unexpected end of input";
       }
-    }
+      try {
+        parseStack = err.stack.split('\n').slice(0, 2).join('').match(/evalmachine.*?:(\d+)(?::(\d+))?/);
+        var line = parseStack[1]-10;
+        var col  = parseStack[2];
 
-    if (self.noInfo) delete json.info;
-
-    if (self.format === 'yaml') {
-      cb(YAML.stringify(json, 4), 'yaml');
-    } else if (self.format === 'xml') {
-      cb(js2xmlparser('user', json), 'xml');
-    } else if (self.format === 'prettyjson' || self.format === 'pretty') {
-      cb(JSON.stringify(json, null, 2), 'json');
-    } else if (self.format === 'csv') {
-      converter.json2csv(json.results, (err, csv) => {
-        cb(csv, 'csv');
-      });
-    } else {
-      cb(JSON.stringify(json), 'json');
-    }
-  }
-};
-
-Generator.prototype.speedTest = function(limit, cb) {
-  let self = this;
-  let output = [];
-
-  try {
-
-    this.sandBox = new vm.Script(`
-      'use strict'
-      var _APIgetVars = ${JSON.stringify(self.options)};
-      var _APIresults = [];
-      var start = new Date().getTime();
-      (function() {
-        while(true) {
-          var api = {};
-          try {
-${self.src}
-          } catch (e) {
-            api = {
-              API_ERROR: e.toString(),
-              API_STACK: e.stack
-            };
-          }
-          _APIresults.push(api);
-          if (new Date().getTime() - start >= ${limit}*1000) break;
-        }
-      })();
-      function getVar(key) {
-        //if (_APIgetVars === undefined) return undefined;
-        return key in _APIgetVars ? _APIgetVars[key] : undefined;
+        parseStack = `${err.error.toString().split(':').join(':\n-')} on line ${line}${col === undefined ? "." : " column " + col}`;
+      } catch(e) {
+        parseStack = e.toString();
       }
-    `);
-    this.sandBox.runInContext(this.context, {
-      displayErrors: true,
-      timeout: self.limits.execTime * 1000
-    });
-
-    self.listsResults = {}; // Clear lists everytime for speedtest runs
-    cb(this.context._APIresults.length);
-  } catch(e) {
-    cb(-1);
+      err.formatted = parseStack;
+      cb(err, JSON.stringify({results: [{}]}), null);
+    }
   }
 };
 

@@ -32,10 +32,10 @@ router.all('*', function(req, res, next) {
 router.get('/api', (req, res, next) => {
   if (req.session.loggedin) {
     Generator.getAvailableVersions().then(versions => {
-      res.render('new/api', _.merge(defaultVars, {versions}));
+      res.render('new/api', _.merge(defaultVars, {versions, title: 'New API'}));
     });
   } else {
-    res.render('index', defaultVars);
+    res.redirect(baseURL + '/');
   }
 });
 
@@ -108,9 +108,9 @@ api.results = {
 // list //
 router.get('/list', (req, res, next) => {
   if (req.session.loggedin) {
-    res.render('new/list', defaultVars);
+    res.render('new/list', _.merge(defaultVars, {title: 'New List'}));
   } else {
-    res.render('index', defaultVars);
+    res.redirect(baseURL + '/');
   }
 });
 

@@ -23,13 +23,13 @@ router.get('/api/:ref?', (req, res, next) => {
         res.redirect(baseURL + '/view/api');
       } else {
         doc.code = fs.readFileSync('./data/apis/' + doc.id + '.api'); // Read api src into this...
-        res.render('edit/api', _.merge(defaultVars, {api: doc, socket: ':' + settings.general.socket}));
+        res.render('edit/api', _.merge(defaultVars, {api: doc, socket: ':' + settings.general.socket, title: 'Edit API ' + doc.ref}));
       }
     }).catch(err => {
       res.redirect(baseURL + '/view/api');
     });
   } else {
-    res.render('index', defaultVars);
+    res.redirect(baseURL + '/');
   }
 });
 
@@ -52,10 +52,10 @@ router.post('/api/:ref', (req, res, next) => {
 router.get('/list/:ref', (req, res, next) => {
   if (req.session.loggedin) {
     List.getCond({ref: req.params.ref}).then(doc => {
-      res.render('edit/list', _.merge(defaultVars, {list: doc}));
+      res.render('edit/list', _.merge(defaultVars, {list: doc, title: 'Editing list ' + doc.ref}));
     });
   } else {
-    res.render('index', defaultVars);
+    res.redirect(baseURL + '/');
   }
 });
 
