@@ -5,6 +5,7 @@ const async   = require('async');
 const _       = require('lodash');
 const EventEmitter = require('events').EventEmitter;
 const logger  = require('../../utils').logger;
+const fs      = require('fs');
 
 const API  = require('../../models/API');
 const List = require('../../models/List');
@@ -60,7 +61,7 @@ const GeneratorForker = function(options) {
           task.res.setHeader('Content-Type', 'text/plain');
         }
         if (error !== null) {
-          task.res.status(403).send(error);
+          task.res.status(403).send(error.formatted);
         } else {
           task.res.status(200).send(results);
         }
@@ -93,10 +94,27 @@ GeneratorForker.prototype.fork = function() {
           self.generator.send({type: 'response', mode: 'user', data: doc});
         });
       } else if (msg.mode === 'list') {
-        List.getCond({ref: msg.data}).then(doc => {
-          //if ()
-          self.generator.send({type: 'response', mode: 'list', data: doc});
-        });
+        if (msg.data.ref in self.info.listCache) {
+          self.info.listCache[msg.data.ref].lastUsed = new Date().getTime();
+          self.generator.send({type: 'response', mode: 'list', data: self.info.listCache[msg.data.ref]});
+        } else {
+          List.getCond({ref: msg.data.ref, owner: msg.data.user}).then(doc => {
+            if (doc === null) {
+              self.generator.send({type: 'response', mode: 'list', data: false});
+            } else {
+              fs.readFile(process.cwd() + '/data/lists/' + doc.id + '.list', 'utf8', (err, file) => {
+                self.info.listCache[doc.ref] = {
+                  added: new Date().getTime(),
+                  size: file.length,
+                  content: file.split('\n').slice(0, -1),
+                  owner: doc.owner
+                };
+                self.info.listCache[msg.data.ref].lastUsed = new Date().getTime();
+                self.generator.send({type: 'response', mode: 'list', data: self.info.listCache[doc.ref]});
+              });
+            }
+          });
+        }
       }
     } else if (msg.type === 'done') {
       self.emit('taskFinished', {error: msg.data.error, results: msg.data.results, fmt: msg.data.fmt});

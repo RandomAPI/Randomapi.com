@@ -22,9 +22,7 @@ const Generator = function(name, options) {
   this.info    = {
     execTime: options.execTime,
     memory:   options.memory * 1024 * 1024,
-    results:  options.results,
-    listCache: options.listCache,
-    apiCache: options.apiCache
+    results:  options.results
   };
   this.context = vm.createContext(this.availableFuncs());
   this.originalContext = ['random', 'list', 'hash', 'timestamp', 'require', '_APIgetVars', '_APIresults', '_APIstack', '_APIerror', 'getVar'];
@@ -102,8 +100,8 @@ Generator.prototype.instruct = function(options, done) {
   if (this.results === undefined) this.results = Number(this.options.results);
   if (this.seed === undefined)    this.seed    = this.options.seed || '';
   if (this.format === undefined)  this.format  = (this.options.format || this.options.fmt || 'json').toLowerCase();
-  if (this.noInfo === undefined)  this.results = typeof this.options.noinfo !== 'undefined';
-  if (this.page === undefined)    this.results = Number(this.options.page) || 1;
+  if (this.noInfo === undefined)  this.noInfo  = typeof this.options.noinfo !== 'undefined';
+  if (this.page === undefined)    this.page    = Number(this.options.page) || 1;
   if (this.mode === undefined)    this.mode    = options.mode || "generator";
 
   // Sanitize values
@@ -134,6 +132,7 @@ Generator.prototype.instruct = function(options, done) {
     cb => {
       process.send({type: 'lookup', mode: 'user', data: self.doc.owner});
       self.once('userResponse', data => {
+        self.options.userID = data.id;
 
         if (data.apikey !== self.options.key) {
           cb('You are not the owner of this API.');
@@ -290,16 +289,42 @@ Generator.prototype.availableFuncs = function() {
       if (num === '') num = undefined;
 
       if (Array.isArray(obj)) {
-        if (num !== undefined) {
-          return obj[num];
+        if (num < 0 || num > obj.length-1) {
+          throw new Error(`Index ${num} is out of range for array ${obj}`);
         } else {
-          return obj[range(0, obj.length-1)];
+          if (num !== undefined) {
+            return obj[num];
+          } else {
+            return obj[range(0, obj.length-1)];
+          }
         }
       } else {
         // Check if list is in list cache
         // If not, fetch contents and add it to the cache
         // Also, make sure we don't overflow max memory in list cache
-        process.send({type: 'lookup', mode: 'list', data: {ref: obj, user: 'adf'}});
+        process.send({type: 'lookup', mode: 'list', data: {ref: obj, num: num, randomItem, user: self.options.userID}});
+        var done = false;
+        var item = null;
+        self.once('listResponse', data => {
+          if (data === false) {
+            throw new Error(`You aren't authorized to access list ${obj}`);
+          } else {
+            if (data.owner == self.options.userID) {
+              if (num !== undefined) {
+                if (num < 1 || num > data.content.length) {
+                  throw new Error(`Line ${num} is out of range for list ${obj}`);
+                } else {
+                  item = data.content[num-1];
+                }
+              } else {
+                item = randomItem(data.content);
+              }
+            }
+          }
+          done = true;
+        });
+        require('deasync').loopWhile(function(){return !done;});
+        return item;
       }
     },
     hash: {
