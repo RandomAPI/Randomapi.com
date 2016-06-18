@@ -1,4 +1,5 @@
 const moment = require('moment');
+const _      = require('lodash');
 
 module.exports = {
   pad(n, width, z) {
@@ -48,5 +49,17 @@ module.exports = {
   },
   range(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
+  },
+  andify(cond) {
+    const db = require('./models/db');
+    var formatted = "";
+    if (Object.keys(cond).length > 1) {
+      _.each(cond, function(value, key) {
+        formatted += "`" + key + "` = " + db.escape(value) + " AND ";
+      });
+      return {query: formatted.slice(0, -5)};
+    } else {
+      return cond;
+    }
   }
 };

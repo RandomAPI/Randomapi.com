@@ -1,6 +1,7 @@
 const random  = require('../utils').random;
 const range   = require('../utils').range;
 const logger  = require('../utils').logger;
+const andify  = require('../utils').andify;
 const db      = require('./db');
 const Promise = require('bluebird');
 
@@ -45,11 +46,20 @@ module.exports = {
   },
   getCond(cond) {
     return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM `List` WHERE ?', cond, (err, data) => {
-        if (err) reject(err);
-        else if (data.length === 0) resolve(null);
-        else resolve(data[0]);
-      });
+      cond = andify(cond);
+      if (cond.query !== undefined) {
+        db.query('SELECT * FROM `List` WHERE ' + cond.query, (err, data) => {
+          if (err) reject(err);
+          else if (data.length === 0) resolve(null);
+          else resolve(data[0]);
+        });
+      } else {
+        db.query('SELECT * FROM `List` WHERE ?', cond, (err, data) => {
+          if (err) reject(err);
+          else if (data.length === 0) resolve(null);
+          else resolve(data[0]);
+        });
+      }
     });
   },
   getLists(owner) {

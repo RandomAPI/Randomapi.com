@@ -2,6 +2,7 @@ const bcrypt  = require('bcrypt-nodejs');
 const random  = require('../utils').random;
 const range   = require('../utils').range;
 const logger  = require('../utils').logger;
+const andify  = require('../utils').andify;
 const db      = require('./db');
 const Promise = require('bluebird');
 
