@@ -4,7 +4,6 @@ const YAML         = require('yamljs');
 const js2xmlparser = require('js2xmlparser');
 const converter    = require('json-2-csv');
 const fs           = require('fs');
-const deasync      = require('deasync');
 const vm           = require('vm');
 const async        = require('async');
 const util         = require('util');
@@ -18,23 +17,17 @@ const Generator = function(name, options) {
   process.title = 'RandomAPI_Generator ' + name;
   this.parentReplied = true;
 
-  options = JSON.parse(options);
-  this.version   = '0.1';
-  this.limits    = {
+  options      = JSON.parse(options);
+  this.version = '0.1';
+  this.info    = {
     execTime: options.execTime,
     memory:   options.memory * 1024 * 1024,
-    results:  options.results
+    results:  options.results,
+    listCache: options.listCache,
+    apiCache: options.apiCache
   };
   this.context = vm.createContext(this.availableFuncs());
   this.originalContext = ['random', 'list', 'hash', 'timestamp', 'require', '_APIgetVars', '_APIresults', '_APIstack', '_APIerror', 'getVar'];
-  this.listsResults = {}; // Hold cache of list results
-
-  // Lists that were added to cache within last minute.
-  // Structure: {Key: list.length}
-  // Every 60 seconds, perform a check for any lists that
-  // are greater than 1/4 the size of the memory limit and remove
-  // them if they are.
-  this.listsAdded = {};
 
   process.on('message', msg => {
     if (msg.type === 'task') {
@@ -49,14 +42,15 @@ const Generator = function(name, options) {
           }
         });
       } else if (msg.mode === 'lint') {
-        let a = _.merge({
-          seed: String('linter' + ~~(Math.random() * 100)),
-          format: 'pretty',
-          noinfo: true,
-          page: 1,
-          mode: 'lint'
-        }, msg.data);
-        self.instruct(a, err => {
+        // Inject linter settings
+        self.seed   = String('linter' + ~~(Math.random() * 100));
+        self.format = 'pretty';
+        self.noinfo = true;
+        self.page   = 1;
+        self.mode   = 'lint';
+        self.src    = msg.data.src;
+        delete msg.data.src;
+        self.instruct(msg.data, err => {
           self.generate((error, results, fmt) => {
             process.send({type: 'done', data: {error, results, fmt}});
           });
@@ -73,22 +67,13 @@ const Generator = function(name, options) {
     } else if (msg.type === 'cmd') {
       if (msg.data === 'getMemory') {
         process.send({type: 'cmdComplete', mode: 'memory', content: process.memoryUsage().heapUsed});
-      } else if (msg.data === 'getLists') {
-        process.send({type: 'cmdComplete', mode: 'lists', content: String(Object.keys(self.listsResults))});
       } else if (msg.data === 'gc') {
         global.gc();
-      } else if (msg.data === 'clearLists') {
-        self.listsResults = {};
       }
     } else if (msg.type === 'pong') {
       self.emit('pong');
     }
   });
-
-  // Remove lists that shouldn't be cached
-  setInterval(() => {
-    self.checkLists();
-  }, 60000);
 
   // Commit sudoku if parent process doesn't reply during 5 second check
   setInterval(() => {
@@ -114,16 +99,15 @@ Generator.prototype.instruct = function(options, done) {
   let self = this;
 
   this.options = options || {};
-  this.results = Number(this.options.results);
-  this.seed    = this.options.seed || '';
-  this.format  = (this.options.format || this.options.fmt || 'json').toLowerCase();
-  this.noInfo  = typeof this.options.noinfo !== 'undefined';
-  this.page    = Number(this.options.page) || 1;
-  this.mode    = options.mode;
-  this.src     = options.src;
+  if (this.results === undefined) this.results = Number(this.options.results);
+  if (this.seed === undefined)    this.seed    = this.options.seed || '';
+  if (this.format === undefined)  this.format  = (this.options.format || this.options.fmt || 'json').toLowerCase();
+  if (this.noInfo === undefined)  this.results = typeof this.options.noinfo !== 'undefined';
+  if (this.page === undefined)    this.results = Number(this.options.page) || 1;
+  if (this.mode === undefined)    this.mode    = options.mode || "generator";
 
   // Sanitize values
-  if (isNaN(this.results) || this.results < 0 || this.results > this.limits.results || this.results === '') this.results = 1;
+  if (isNaN(this.results) || this.results < 0 || this.results > this.info.results || this.results === '') this.results = 1;
 
   if (this.seed === '') {
     this.defaultSeed();
@@ -150,23 +134,20 @@ Generator.prototype.instruct = function(options, done) {
     cb => {
       process.send({type: 'lookup', mode: 'user', data: self.doc.owner});
       self.once('userResponse', data => {
-        self.keyOwner = data;
 
-        if (self.keyOwner.apikey !== self.options.key) {
+        if (data.apikey !== self.options.key) {
           cb('You are not the owner of this API.');
         } else {
           cb(null);
         }
+
       });
     },
     cb => {
-      if (self.mode === "lint") {
-        self.src = options.src;
-      } else {
+      if (self.mode !== "lint") {
         // Get API src
         self.src = fs.readFileSync('./data/apis/' + self.doc.id + '.api', 'utf8');
       }
-
       cb(null);
     }
   ], (err, results) => {
@@ -201,13 +182,13 @@ ${self.src}
         }
       })();
       function getVar(key) {
-        return key in _APIgetVars ? _APIgetVars[key] : undefined;
+        return key in _APIgetVars ? _APIgetVars[key] : null;
       }
     `);
 
     this.sandBox.runInContext(this.context, {
       displayErrors: true,
-      timeout: self.limits.execTime * 1000
+      timeout: self.info.execTime * 1000
     });
     //evalmachine\.:(\d+):(\d+)
 
@@ -266,7 +247,7 @@ ${self.src}
 
         parseStack = `${err.error.toString().split(':').join(':\n-')} on line ${line}${col === undefined ? "." : " column " + col}`;
       } catch(e) {
-        parseStack = e.toString();
+        parseStack = err.error;
       }
       err.formatted = parseStack;
       cb(err, JSON.stringify({results: [{}]}), null);
@@ -315,42 +296,10 @@ Generator.prototype.availableFuncs = function() {
           return obj[range(0, obj.length-1)];
         }
       } else {
-        let done = false;
-        if (!(obj in self.listsResults)) {
-          process.send({type: 'lookup', mode: 'list', data: obj});
-          self.once('listResponse', data => {
-            if (data === null) {
-              self.listsAdded[obj] = 0;
-              self.listsResults[obj] = {
-                added: new Date().getTime()
-              };
-              self.listsResults[obj].content = [null];
-              done = true;
-            } else {
-              let res = data;
-              let file = fs.readFileSync(process.cwd() + '/data/lists/' + res.id + '.list', 'utf8');
-
-              // Add filesize to listAdded object to check later
-              self.listsAdded[obj] = file.length;
-              self.listsResults[obj] = {
-                added: new Date().getTime()
-              };
-
-              self.listsResults[obj].content = file.split('\n').slice(0, -1);
-              done = true;
-            }
-          });
-        } else {
-          done = true;
-        }
-
-        require('deasync').loopWhile(function(){return !done;});
-        self.listsResults[obj].lastUsed = new Date().getTime();
-        if (num !== undefined) {
-          return self.listsResults[obj].content[num-1];
-        } else {
-          return randomItem(self.listsResults[obj].content);
-        }
+        // Check if list is in list cache
+        // If not, fetch contents and add it to the cache
+        // Also, make sure we don't overflow max memory in list cache
+        process.send({type: 'lookup', mode: 'list', data: {ref: obj, user: 'adf'}});
       }
     },
     hash: {
@@ -391,57 +340,6 @@ Generator.prototype.availableFuncs = function() {
     require: () => null//lib  => funcs.require(lib)
   };
 };
-
-Generator.prototype.checkLists = function() {
-  let self = this;
-  let keys = Object.keys(this.listsAdded);
-  let listsDeleted = false;
-
-  // Remove list from cache if it is bigger than 1/4 the cache
-  for (let i = 0; i < keys.length; i++) {
-    if (this.listsAdded[keys[i]] > ~~(this.limits.memory/4)) {
-      delete this.listsResults[keys[i]];
-      listsDeleted = true;
-    }
-  }
-
-  // Keep removing oldest lists until cache size is back to default
-  while (this.getCacheSize > this.limits.memory) {
-    delete this.listResults[this.getOldestList().ref];
-    listsDeleted = true;
-  }
-
-  this.listsAdded = {};
-  //if (listsDeleted) global.gc();
-};
-
-Generator.prototype.getOldestList = function() {
-  let self = this;
-  let keys = Object.keys(this.listsAdded);
-  let listsDeleted = false;
-  let oldest = {
-    ref: null,
-    lastUsed: Infinity
-  };
-  for (let i = 0; i < keys.length; i++) {
-    if (this.listsResults[keys[i]].lastUsed < oldest.lastUsed) {
-      oldest.ref = keys[i];
-      oldest.lastUsed = this.listsResults[keys[i]].lastUsed;
-    }
-  }
-
-  return oldest;
-}
-
-Generator.prototype.getCacheSize = function() {
-  let size = 0;
-
-  for (let i = 0; i < keys.length; i++) {
-    size += this.listResults[keys[i]].content.length;
-  }
-
-  return size;
-}
 
 const random = (mode = 1, length = 10, charset = "") => {
   if (!Number.isInteger(mode) || !Number.isInteger(length)) throw new TypeError('Non numeric arguments provided');

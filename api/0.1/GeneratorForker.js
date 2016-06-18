@@ -13,10 +13,12 @@ const User = require('../../models/User');
 const GeneratorForker = function(options) {
   let self = this;
 
-  this.limits = {
+  this.info = {
     execTime: options.execTime,
     memory:   options.memory,
-    results:  options.results
+    results:  options.results,
+    listCache: options.listCache,
+    apiCache: options.apiCache
   };
 
   this.name      = options.name;
@@ -29,11 +31,11 @@ const GeneratorForker = function(options) {
 
     // Realtime or Speedtest
     if (task.socket !== undefined) {
-      self.generate({mode: 'lint', options: {apikey: task.data.apikey, src: task.data.src}}, (error, results, fmt) => {
+      self.generate({mode: 'lint', options: {key: task.data.owner.apikey, src: task.data.src, ref: task.data.ref}}, (error, results, fmt) => {
         if (results.length > 65535) {
           results = "Warning: Output has been truncated\n---------------\n" + results.slice(0, 65535);
         }
-        task.socket.emit('codeLinted', {error, results: JSON.parse(results).results[0]});
+        task.socket.emit('codeLinted', {error, results: JSON.parse(results).results[0], fmt});
         callback();
       });
     } else {
@@ -57,7 +59,11 @@ const GeneratorForker = function(options) {
         } else {
           task.res.setHeader('Content-Type', 'text/plain');
         }
-        task.res.send(results);
+        if (error !== null) {
+          task.res.status(403).send(error);
+        } else {
+          task.res.status(200).send(results);
+        }
         callback();
       });
     }
@@ -71,8 +77,8 @@ util.inherits(GeneratorForker, EventEmitter);
 GeneratorForker.prototype.fork = function() {
   let self = this;
 
-  // Fork new Generator with provided limits
-  this.generator = fork(__dirname + '/Generator', [this.name, JSON.stringify(this.limits)]);
+  // Fork new Generator with provided info
+  this.generator = fork(__dirname + '/Generator', [this.name, JSON.stringify(this.info)]);
 
   // Handle all events
   // {type, mode, data}
@@ -88,6 +94,7 @@ GeneratorForker.prototype.fork = function() {
         });
       } else if (msg.mode === 'list') {
         List.getCond({ref: msg.data}).then(doc => {
+          //if ()
           self.generator.send({type: 'response', mode: 'list', data: doc});
         });
       }
@@ -154,28 +161,6 @@ GeneratorForker.prototype.gc = function() {
   this.generator.send({
     type: 'cmd',
     data: 'gc'
-  });
-};
-
-GeneratorForker.prototype.getCacheSize = function() {
-  this.generator.send({
-    type: 'cmd',
-    data: 'getLists'
-  });
-  let lists, done = false;
-  this.once('listsComplete', data => {
-    lists = data;
-    done  = true;
-  });
-
-  require('deasync').loopWhile(function(){return !done;});
-  return lists;
-};
-
-GeneratorForker.prototype.clearLists = function() {
-  this.generator.send({
-    type: 'cmd',
-    data: 'clearLists'
   });
 };
 

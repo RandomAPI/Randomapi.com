@@ -30,7 +30,9 @@ Object.keys(settings.generators).forEach(generator => {
       name: generator + '_' + v,
       execTime: settings.generators[generator].execTime,
       memory: settings.generators[generator].memory,
-      results: settings.generators[generator].results
+      results: settings.generators[generator].results,
+      listCache,
+      apiCache
     });
   });
 });

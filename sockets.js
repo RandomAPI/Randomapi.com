@@ -18,7 +18,7 @@ io.use((socket, next) => {
 
 io.on('connection', socket => {
   socket.on('lintCode', msg => {
-    Generators.realtime[0].queue.push({socket, data: {src: msg.code, apikey: JSON.parse(socket.session).user.key}});
+    Generators.realtime[0].queue.push({socket, data: {src: msg.code, ref: msg.ref, owner: JSON.parse(socket.session).user}});
   });
 });
 

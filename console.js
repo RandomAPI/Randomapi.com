@@ -197,23 +197,6 @@ screen.key(['C-c'], (ch, key) => {
   logger(true);
 });
 
-screen.key(['C-k'], (ch, key) => {
-  Generators.basic.forEach(gen => (gen.clearLists(), gen.gc()));
-  Generators.standard.forEach(gen => (gen.clearLists(), gen.gc()));
-  Generators.premium.forEach(gen => (gen.clearLists(), gen.gc()));
-  Generators.realtime.forEach(gen => (gen.clearLists(), gen.gc()));
-  Generators.speedtest.forEach(gen => (gen.clearLists(), gen.gc()));
-  logger('Lists cleared!');
-});
-
-screen.key(['C-l'], (ch, key) => {
-  Generators.basic.forEach(gen => logger(gen.getCacheSize()));
-  Generators.standard.forEach(gen => logger(gen.getCacheSize()));
-  Generators.premium.forEach(gen => logger(gen.getCacheSize()));
-  Generators.realtime.forEach(gen => logger(gen.getCacheSize()));
-  Generators.speedtest.forEach(gen => logger(gen.getCacheSize()));
-});
-
 //////////
 
 screen.render();

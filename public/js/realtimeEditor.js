@@ -1,4 +1,5 @@
 socket = io($('server').html());
+ref = $('ref').html();
 
 var editor = ace.edit("aceEditor");
 editor.setTheme("ace/theme/twilight");
@@ -35,6 +36,5 @@ socket.on('codeLinted', function(msg) {
 });
 
 function lintCode() {
-  console.log("Sending code to lint");
-  socket.emit('lintCode', {code: editor.getValue()});
+  socket.emit('lintCode', {code: editor.getValue(), ref});
 };
