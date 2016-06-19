@@ -106,13 +106,13 @@ app.use('*', (req, res, next) => {
 
     if (firstRun) {
       firstRun = false;
+      app.set('baseURL', baseURL);
+      app.set('basehref', basehref);
       if (settings.general.behindReverseProxy) {
-        res.redirect(req.headers.uri.replace(/(\/)+$/,''));
+        res.redirect(req.params[0]);
       } else {
         res.redirect(req.originalUrl);
       }
-      app.set('baseURL', baseURL);
-      app.set('basehref', basehref);
     } else {
       next();
     }
