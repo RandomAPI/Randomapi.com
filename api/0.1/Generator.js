@@ -97,16 +97,15 @@ Generator.prototype.instruct = function(options, done) {
   let self = this;
 
   this.options = options || {};
-  if (this.results === undefined) this.results = Number(this.options.results);
-  if (this.seed === undefined)    this.seed    = this.options.seed || '';
-  if (this.format === undefined)  this.format  = (this.options.format || this.options.fmt || 'json').toLowerCase();
-  if (this.noInfo === undefined)  this.noInfo  = typeof this.options.noinfo !== 'undefined';
-  if (this.page === undefined)    this.page    = Number(this.options.page) || 1;
-  if (this.mode === undefined)    this.mode    = options.mode || "generator";
+  this.results = Number(this.options.results);
+  this.seed = this.options.seed || '';
+  this.format  = (this.options.format || this.options.fmt || 'json').toLowerCase();
+  this.noInfo = typeof this.options.noinfo !== 'undefined';
+  this.page = Number(this.options.page) || 1;
+  if (this.mode === undefined) this.mode = options.mode || "generator";
 
   // Sanitize values
   if (isNaN(this.results) || this.results < 0 || this.results > this.info.results || this.results === '') this.results = 1;
-
   if (this.seed === '') {
     this.defaultSeed();
   }
