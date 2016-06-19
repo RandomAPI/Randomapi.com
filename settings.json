@@ -14,9 +14,11 @@
     },
     "db": {
         "host": "localhost",
+        "socketPath": "",
         "username": "randomapi",
         "password": "randomapi",
-        "database": "randomapi"
+        "database": "randomapi",
+        "keepAliveInterval": 5000
     },
     "generators": {
         "basic": {
