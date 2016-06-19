@@ -11,14 +11,14 @@ module.exports = {
       let self = this;
       data.ref = this.genRandomRef();
 
-      db.query('INSERT INTO `List` SET ?', data, (err, result) => {
+      db.query('INSERT INTO `list` SET ?', data, (err, result) => {
         err ? reject(err) : resolve({id: result.insertId});
       });
     });
   },
   remove(cond) {
     return new Promise((resolve, reject) => {
-      db.query('DELETE FROM `List` WHERE ?', cond, (err, data) => {
+      db.query('DELETE FROM `list` WHERE ?', cond, (err, data) => {
         if (err) reject(err);
         else resolve();
       });
@@ -38,7 +38,7 @@ module.exports = {
   },
   refExists(ref) {
     return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM `List` WHERE ?', {ref}, (err, data) => {
+      db.query('SELECT * FROM `list` WHERE ?', {ref}, (err, data) => {
         if (err) reject(err);
         else resolve(data.length !== 0);
       });
@@ -48,13 +48,13 @@ module.exports = {
     return new Promise((resolve, reject) => {
       cond = andify(cond);
       if (cond.query !== undefined) {
-        db.query('SELECT * FROM `List` WHERE ' + cond.query, (err, data) => {
+        db.query('SELECT * FROM `list` WHERE ' + cond.query, (err, data) => {
           if (err) reject(err);
           else if (data.length === 0) resolve(null);
           else resolve(data[0]);
         });
       } else {
-        db.query('SELECT * FROM `List` WHERE ?', cond, (err, data) => {
+        db.query('SELECT * FROM `list` WHERE ?', cond, (err, data) => {
           if (err) reject(err);
           else if (data.length === 0) resolve(null);
           else resolve(data[0]);
@@ -64,7 +64,7 @@ module.exports = {
   },
   getLists(owner) {
     return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM `List` WHERE ?', {owner}, (err, data) => {
+      db.query('SELECT * FROM `list` WHERE ?', {owner}, (err, data) => {
         if (err) reject(err);
         else if (data.length === 0) resolve(null);
         else resolve(data);

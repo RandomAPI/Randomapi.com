@@ -5,7 +5,7 @@ const Promise   = require('bluebird');
 module.exports = {
   getByID(id) {
     return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM `Generator` WHERE ?', {id}, (err, data) => {
+      db.query('SELECT * FROM `generator` WHERE ?', {id}, (err, data) => {
         if (err) reject(err);
         else resolve(data);
       });
@@ -13,7 +13,7 @@ module.exports = {
   },
   getByVersion(version) {
     return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM `Generator` WHERE ?', {version}, (err, data) => {
+      db.query('SELECT * FROM `generator` WHERE ?', {version}, (err, data) => {
         if (err) reject(err);
         else resolve(data);
       });
@@ -21,7 +21,7 @@ module.exports = {
   },
   getLatestVersion() {
     return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM `Generator` ORDER BY `id` DESC LIMIT 1', (err, data) => {
+      db.query('SELECT * FROM `generator` ORDER BY `id` DESC LIMIT 1', (err, data) => {
         if (err) reject(err);
         else resolve(data[0]);
       });
@@ -29,7 +29,7 @@ module.exports = {
   },
   getAvailableVersions() {
     return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM `Generator` ORDER BY `id` DESC', (err, data) => {
+      db.query('SELECT * FROM `generator` ORDER BY `id` DESC', (err, data) => {
         if (err) reject(err);
         else {
           let versions = [];

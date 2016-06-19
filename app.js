@@ -20,8 +20,6 @@ const redisStore   = require('connect-redis')(session);
 
 // Initialize generators and list/api caches
 const GeneratorForker = require('./api/0.1/GeneratorForker');
-let listCache  = {};
-let apiCache   = {};
 let Generators = {};
 
 Object.keys(settings.generators).forEach(generator => {

@@ -30,7 +30,7 @@ module.exports = {
   },
   keyExists(apikey) {
     return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM `User` WHERE ?', {apikey}, (err, data) => {
+      db.query('SELECT * FROM `user` WHERE ?', {apikey}, (err, data) => {
         if (err) reject(err);
         else resolve(data.length !== 0);
       });
@@ -52,7 +52,7 @@ module.exports = {
   },
   getCond(cond) {
     return new Promise((resolve, reject) => {
-      db.query('SELECT u.*, t.name AS tierName FROM `User` u INNER JOIN `Tier` t WHERE ?', cond, (err, data) => {
+      db.query('SELECT u.*, t.name AS tierName FROM `user` u INNER JOIN `tier` t WHERE ?', cond, (err, data) => {
         if (err) reject(err);
         else if (data.length === 0) resolve(null);
         else resolve(data[0]);
@@ -77,7 +77,7 @@ module.exports = {
       data.password = bcrypt.hashSync(data.password);
       data.apikey   = this.genRandomKey();
 
-      db.query('INSERT INTO `User` SET ?', data, (err, result) => {
+      db.query('INSERT INTO `user` SET ?', data, (err, result) => {
         err ? reject(err) : resolve({['u.id']: result.insertId});
       });
     });
