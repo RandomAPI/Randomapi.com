@@ -1,11 +1,13 @@
 'use strict'
-const fork    = require('child_process').fork;
-const util    = require('util');
-const async   = require('async');
-const _       = require('lodash');
+const fork     = require('child_process').fork;
+const util     = require('util');
+const async    = require('async');
+const _        = require('lodash');
 const EventEmitter = require('events').EventEmitter;
-const logger  = require('../../utils').logger;
-const fs      = require('fs');
+const logger   = require('../../utils').logger;
+const redis    = require('../../utils').redis;
+const settings = require('../../settings');
+const fs       = require('fs');
 
 const API  = require('../../models/API');
 const List = require('../../models/List');
@@ -17,9 +19,7 @@ const GeneratorForker = function(options) {
   this.info = {
     execTime: options.execTime,
     memory:   options.memory,
-    results:  options.results,
-    listCache: options.listCache,
-    apiCache: options.apiCache
+    results:  options.results
   };
 
   this.name      = options.name;
@@ -94,27 +94,59 @@ GeneratorForker.prototype.fork = function() {
           self.generator.send({type: 'response', mode: 'user', data: doc});
         });
       } else if (msg.mode === 'list') {
-        if (msg.data.ref in self.info.listCache) {
-          self.info.listCache[msg.data.ref].lastUsed = new Date().getTime();
-          self.generator.send({type: 'response', mode: 'list', data: self.info.listCache[msg.data.ref]});
-        } else {
-          List.getCond({ref: msg.data.ref, owner: msg.data.user}).then(doc => {
-            if (doc === null) {
-              self.generator.send({type: 'response', mode: 'list', data: false});
-            } else {
-              fs.readFile(process.cwd() + '/data/lists/' + doc.id + '.list', 'utf8', (err, file) => {
-                self.info.listCache[doc.ref] = {
-                  added: new Date().getTime(),
-                  size: file.length,
-                  content: file.split('\n').slice(0, -1),
-                  owner: doc.owner
-                };
-                self.info.listCache[msg.data.ref].lastUsed = new Date().getTime();
-                self.generator.send({type: 'response', mode: 'list', data: self.info.listCache[doc.ref]});
-              });
-            }
-          });
-        }
+        // Check if list exists in the cache
+        redis.exists("list:" + msg.data.ref, (err, result) => {
+
+          // List exists in the cache
+          if (result === 1) {
+
+            // Update TTL
+            redis.expire("list:" + msg.data.ref, settings.redis.ttl);
+            redis.expire("list:contents:" + msg.data.ref, settings.redis.ttl);
+
+            redis.hgetall("list:" + msg.data.ref, function(err, obj) {
+
+              // Verify user has permission to access this list
+              if (Number(obj.owner) === msg.data.user) {
+
+                // Update lastUsed time
+                redis.hset("list" + obj.ref, "lastUsed", new Date().getTime(), () => {
+                  self.generator.send({type: 'response', mode: 'list', data: true});
+                });
+              } else {
+                self.generator.send({type: 'response', mode: 'list', data: false});
+              }
+            });
+
+          // Add list to cache if user has permission
+          } else {
+            List.getCond({ref: msg.data.ref, owner: msg.data.user}).then(doc => {
+              if (doc === null) {
+                self.generator.send({type: 'response', mode: 'list', data: false});
+              } else {
+                fs.readFile(process.cwd() + '/data/lists/' + doc.id + '.list', 'utf8', (err, file) => {
+                  redis.hmset("list:" + doc.ref, {
+                    added: new Date().getTime(),
+                    size: file.length,
+                    //content: file,
+                    //content: JSON.stringify(file.split('\n').slice(0, -1)),
+                    owner: doc.owner,
+                    lastUsed: new Date().getTime()
+                  }, (err, res) => {
+                    redis.SADD("list:contents:" + doc.ref, file.split('\n').slice(0, -1), () => {
+
+                      // Add TTL
+                      redis.expire("list:" + doc.ref, settings.redis.ttl);
+                      redis.expire("list:contents:" + doc.ref, settings.redis.ttl);
+
+                      self.generator.send({type: 'response', mode: 'list', data: true});
+                    });
+                  });
+                });
+              }
+            });
+          }
+        });
       }
     } else if (msg.type === 'done') {
       self.emit('taskFinished', {error: msg.data.error, results: msg.data.results, fmt: msg.data.fmt});

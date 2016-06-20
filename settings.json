@@ -20,6 +20,9 @@
         "database": "randomapi",
         "keepAliveInterval": 5000
     },
+    "redis": {
+        "ttl": 900
+    },
     "generators": {
         "basic": {
             "count": 1,

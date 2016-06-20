@@ -9,6 +9,7 @@ const async        = require('async');
 const util         = require('util');
 const _            = require('lodash');
 const logger       = require('../../utils').logger;
+const redis        = require('../../utils').redis;
 const EventEmitter = require('events').EventEmitter;
 
 const Generator = function(name, options) {
@@ -24,6 +25,7 @@ const Generator = function(name, options) {
     memory:   options.memory * 1024 * 1024,
     results:  options.results
   };
+  this.cache = {};
   this.context = vm.createContext(this.availableFuncs());
   this.originalContext = ['random', 'list', 'hash', 'timestamp', 'require', '_APIgetVars', '_APIresults', '_APIstack', '_APIerror', 'getVar'];
 
@@ -301,29 +303,47 @@ Generator.prototype.availableFuncs = function() {
         // Check if list is in list cache
         // If not, fetch contents and add it to the cache
         // Also, make sure we don't overflow max memory in list cache
-        process.send({type: 'lookup', mode: 'list', data: {ref: obj, num: num, randomItem, user: self.options.userID}});
-        var done = false;
-        var item = null;
-        self.once('listResponse', data => {
-          if (data === false) {
-            throw new Error(`You aren't authorized to access list ${obj}`);
-          } else {
-            if (data.owner == self.options.userID) {
-              if (num !== undefined) {
-                if (num < 1 || num > data.content.length) {
-                  throw new Error(`Line ${num} is out of range for list ${obj}`);
-                } else {
-                  item = data.content[num-1];
-                }
-              } else {
-                item = randomItem(data.content);
-              }
+        if (obj in self.cache) {
+          if (num !== undefined) {
+            if (num < 1 || num > self.cache[obj].length) {
+              throw new Error(`Line ${num} is out of range for list ${obj}`);
+            } else {
+              item = self.cache[obj][num-1];
             }
+          } else {
+            item = randomItem(self.cache[obj]);
           }
-          done = true;
-        });
-        require('deasync').loopWhile(function(){return !done;});
-        return item;
+          return item;
+        } else {
+          process.send({type: 'lookup', mode: 'list', data: {ref: obj, user: self.options.userID}});
+          var done = false;
+          var item = null;
+          self.once('listResponse', result => {
+            if (result === false) {
+              throw new Error(`You aren't authorized to access list ${obj}`);
+              done = true;
+            } else {
+              redis.SMEMBERS("list:contents:" + obj, (err, data) => {
+                self.cache[obj] = data;
+                //data = data.split('\n').slice(0, -1);
+                //data = JSON.parse(data);
+                //console.log(data);
+                if (num !== undefined) {
+                  if (num < 1 || num > data.length) {
+                    throw new Error(`Line ${num} is out of range for list ${obj}`);
+                  } else {
+                    item = data[num-1];
+                  }
+                } else {
+                  item = randomItem(data);
+                }
+                done = true;
+              });
+            }
+          });
+          require('deasync').loopWhile(function(){return !done;});
+          return item;
+        }
       }
     },
     hash: {

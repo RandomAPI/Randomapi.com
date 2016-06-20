@@ -1,8 +1,7 @@
-const cookie    = require('cookie');
-const redis     = require('redis');
-const sessionDB = redis.createClient();
-const pad       = require('./utils').pad;
-const logger    = require('./utils').logger;
+const cookie     = require('cookie');
+const pad        = require('./utils').pad;
+const logger     = require('./utils').logger;
+const sessionDB  = require('./utils').redis;
 
 const server = require('./app').server;
 const app    = require('./app').app;

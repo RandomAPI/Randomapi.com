@@ -12,7 +12,7 @@ const app          = express();
 const server       = http.createServer(app);
 const _            = require('lodash');
 const settings     = require('./settings.json');
-const logger  = require('./utils').logger;
+const logger       = require('./utils').logger;
 
 // Redis Session Store
 const session      = require('express-session');
@@ -28,9 +28,7 @@ Object.keys(settings.generators).forEach(generator => {
       name: generator + '_' + v,
       execTime: settings.generators[generator].execTime,
       memory: settings.generators[generator].memory,
-      results: settings.generators[generator].results,
-      listCache,
-      apiCache
+      results: settings.generators[generator].results
     });
   });
 });

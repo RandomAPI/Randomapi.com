@@ -1,5 +1,6 @@
 const moment = require('moment');
 const _      = require('lodash');
+const redis  = require('redis').createClient();
 
 module.exports = {
   pad(n, width, z) {
@@ -61,5 +62,6 @@ module.exports = {
     } else {
       return cond;
     }
-  }
+  },
+  redis
 };
