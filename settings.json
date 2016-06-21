@@ -20,34 +20,41 @@
         "database": "randomapi",
         "keepAliveInterval": 5000
     },
-    "redis": {
-        "ttl": 900
-    },
     "generators": {
         "basic": {
             "count": 1,
-            "execTime": 1,
-            "results": 25
+            "execTime": 5,
+            "results": 100,
+            "localTTL": 60,
+            "redisTTL": 120
         },
         "standard": {
             "count": 2,
-            "execTime": 5,
-            "results": 250
+            "execTime": 10,
+            "results": 1000,
+            "localTTL": 240,
+            "redisTTL": 480
         },
         "premium": {
             "count": 3,
-            "execTime": 10,
-            "results": 2500
+            "execTime": 20,
+            "results": 10000,
+            "localTTL": 960,
+            "redisTTL": 1920
         },
         "realtime": {
-            "count": 1,
+            "count": 3,
             "execTime": 1,
-            "results": 1
+            "results": 1,
+            "localTTL": 60,
+            "redisTTL": 120
         },
         "speedtest": {
             "count": 1,
             "execTime": 5,
-            "results": 0
+            "results": 0,
+            "localTTL": 1,
+            "redisTTL": 1
         }
     }
 }

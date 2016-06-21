@@ -25,7 +25,7 @@ let Generators = {};
 Object.keys(settings.generators).forEach(generator => {
   Generators[generator] = new Array(settings.generators[generator].count).fill().map((k, v) => {
     return new GeneratorForker({
-      name: generator + '_' + v,
+      name: generator,
       execTime: settings.generators[generator].execTime,
       results: settings.generators[generator].results
     });

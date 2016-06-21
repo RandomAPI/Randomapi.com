@@ -10,12 +10,13 @@ const util         = require('util');
 const _            = require('lodash');
 const logger       = require('../../utils').logger;
 const redis        = require('../../utils').redis;
+const settings     = require('../../settings');
 const EventEmitter = require('events').EventEmitter;
 
 const Generator = function(name, options) {
   let self = this;
-  name = name || 'generator';
-  process.title = 'RandomAPI_Generator ' + name;
+  this.name = name || 'generator';
+  process.title = 'RandomAPI_Generator ' + this.name;
   this.parentReplied = true;
 
   options      = JSON.parse(options);
@@ -88,6 +89,9 @@ const Generator = function(name, options) {
     self.once('pong', () => {
       self.parentReplied = true;
     });
+
+    // See if any lists have expired
+    self.checkCache();
   }, 5000)
 };
 
@@ -132,7 +136,8 @@ Generator.prototype.instruct = function(options, done) {
     cb => {
       process.send({type: 'lookup', mode: 'user', data: self.doc.owner});
       self.once('userResponse', data => {
-        self.options.userID = data.id;
+        self.options.userID   = data.id;
+        self.options.userTier = data.tier;
 
         if (data.apikey !== self.options.key) {
           cb('UNAUTHORIZED_USER');
@@ -299,22 +304,27 @@ Generator.prototype.availableFuncs = function() {
           }
         }
       } else {
-        // Check if list is in list cache
-        // If not, fetch contents and add it to the cache
-        // Also, make sure we don't overflow max memory in list cache
+        // Check if list is in local generator cache
+        // If not, fetch from redis cache and add it to the local cache
         if (obj in self.cache) {
+
+          // Update local cache lastUsed date
+          // Also update redis cache lastUsed date
+          self.cache[obj].lastUsed = new Date().getTime();
+          redis.hmset("list:" + obj, 'lastUsed', new Date().getTime());
+
           if (num !== undefined) {
-            if (num < 1 || num > self.cache[obj].length) {
+            if (num < 1 || num > self.cache[obj].contents.length) {
               throw new Error(`Line ${num} is out of range for list ${obj}`);
             } else {
-              item = self.cache[obj][num-1];
+              item = self.cache[obj].contents[num-1];
             }
           } else {
-            item = randomItem(self.cache[obj]);
+            item = randomItem(self.cache[obj].contents);
           }
           return item;
         } else {
-          process.send({type: 'lookup', mode: 'list', data: {ref: obj, user: self.options.userID}});
+          process.send({type: 'lookup', mode: 'list', data: {ref: obj, user: {id: self.options.userID, tier: self.options.userTier}}});
           var done = false;
           var item = null;
           self.once('listResponse', result => {
@@ -322,21 +332,29 @@ Generator.prototype.availableFuncs = function() {
               throw new Error(`You aren't authorized to access list ${obj}`);
               done = true;
             } else {
-              redis.SMEMBERS("list:contents:" + obj, (err, data) => {
-                self.cache[obj] = data;
-                //data = data.split('\n').slice(0, -1);
-                //data = JSON.parse(data);
-                //console.log(data);
-                if (num !== undefined) {
-                  if (num < 1 || num > data.length) {
-                    throw new Error(`Line ${num} is out of range for list ${obj}`);
+              redis.SMEMBERS("list:" + obj + ":contents", (err, file) => {
+
+                // Fetch metadata for list and store in local generator cache
+                redis.hgetall("list:" + obj, (err, info) => {
+                  self.cache[obj] = {
+                    added: new Date().getTime(),
+                    contents: file,
+                    size: info.size,
+                    owner: info.owner,
+                    lastUsed: new Date().getTime(),
+                  };
+
+                  if (num !== undefined) {
+                    if (num < 1 || num > file.length) {
+                      throw new Error(`Line ${num} is out of range for list ${obj}`);
+                    } else {
+                      item = file[num-1];
+                    }
                   } else {
-                    item = data[num-1];
+                    item = randomItem(file);
                   }
-                } else {
-                  item = randomItem(data);
-                }
-                done = true;
+                  done = true;
+                });
               });
             }
           });
@@ -382,6 +400,15 @@ Generator.prototype.availableFuncs = function() {
     timestamp: () => funcs.timestamp(),
     require: () => null//lib  => funcs.require(lib)
   };
+};
+
+Generator.prototype.checkCache = function() {
+  let self = this;
+  _.each(this.cache, (obj, ref) => {
+    if (new Date().getTime() - obj.lastUsed > settings.generators[self.name].localTTL * 1000) {
+      delete self.cache[ref];
+    }
+  });
 };
 
 const random = (mode = 1, length = 10, charset = "") => {

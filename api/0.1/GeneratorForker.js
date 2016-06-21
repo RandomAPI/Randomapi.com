@@ -106,13 +106,13 @@ GeneratorForker.prototype.fork = function() {
           if (result === 1) {
 
             // Update TTL
-            redis.expire("list:" + msg.data.ref, settings.redis.ttl);
-            redis.expire("list:contents:" + msg.data.ref, settings.redis.ttl);
+            redis.expire("list:" + msg.data.ref, settings.generators[self.name].redisTTL);
+            redis.expire("list:" + msg.data.ref + ":contents", settings.generators[self.name].redisTTL);
 
             redis.hgetall("list:" + msg.data.ref, function(err, obj) {
 
               // Verify user has permission to access this list
-              if (Number(obj.owner) === msg.data.user) {
+              if (Number(obj.owner) === msg.data.user.id) {
 
                 // Update lastUsed time
                 redis.hset("list" + obj.ref, "lastUsed", new Date().getTime(), () => {
@@ -125,7 +125,7 @@ GeneratorForker.prototype.fork = function() {
 
           // Add list to cache if user has permission
           } else {
-            List.getCond({ref: msg.data.ref, owner: msg.data.user}).then(doc => {
+            List.getCond({ref: msg.data.ref, owner: msg.data.user.id}).then(doc => {
               if (doc === null) {
                 self.generator.send({type: 'response', mode: 'list', data: false});
               } else {
@@ -138,11 +138,11 @@ GeneratorForker.prototype.fork = function() {
                     owner: doc.owner,
                     lastUsed: new Date().getTime()
                   }, (err, res) => {
-                    redis.SADD("list:contents:" + doc.ref, file.split('\n').slice(0, -1), () => {
+                    redis.SADD("list:" + doc.ref + ":contents", file.split('\n').slice(0, -1), () => {
 
                       // Add TTL
-                      redis.expire("list:" + doc.ref, settings.redis.ttl);
-                      redis.expire("list:contents:" + doc.ref, settings.redis.ttl);
+                      redis.expire("list:" + doc.ref, settings.generators[self.name].redisTTL);
+                      redis.expire("list:" + doc.ref + ":contents", settings.generators[self.name].redisTTL);
 
                       self.generator.send({type: 'response', mode: 'list', data: true});
                     });
