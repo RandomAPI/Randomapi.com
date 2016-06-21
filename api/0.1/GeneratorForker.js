@@ -60,7 +60,13 @@ const GeneratorForker = function(options) {
           task.res.setHeader('Content-Type', 'text/plain');
         }
         if (error !== null) {
-          task.res.status(403).send(error.formatted);
+          if (error === "INVALID_API") {
+            task.res.status(404).send({error});
+          } else if (error === "UNAUTHORIZED_USER") {
+            task.res.status(401).send({error});
+          } else {
+            task.res.status(403).send(error.formatted);
+          }
         } else {
           task.res.status(200).send(results);
         }

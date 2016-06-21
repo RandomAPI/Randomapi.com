@@ -8,6 +8,10 @@ router.get('/:ref?', (req, res, next) => {
   const Generators = req.app.get('Generators');
   let type = Math.floor(Math.random() * 100);
   User.getCond({apikey: req.query.key}).then(user => {
+    if (user === null) {
+      return res.status(401).send({error: "INVALID_API_KEY"});
+    }
+
     if (user.tier === 1) {
       type = 'basic';
     } else if (user.tier === 2) {

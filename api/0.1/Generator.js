@@ -123,7 +123,7 @@ Generator.prototype.instruct = function(options, done) {
         self.doc = data;
 
         if (!self.doc) {
-          cb('This API doesn\'t exist.');
+          cb('INVALID_API');
         } else {
           cb(null);
         }
@@ -135,7 +135,7 @@ Generator.prototype.instruct = function(options, done) {
         self.options.userID = data.id;
 
         if (data.apikey !== self.options.key) {
-          cb('You are not the owner of this API.');
+          cb('UNAUTHORIZED_USER');
         } else {
           cb(null);
         }
