@@ -44,7 +44,7 @@
         },
         "realtime": {
             "count": 3,
-            "execTime": 1,
+            "execTime": 5,
             "results": 1,
             "localTTL": 60,
             "redisTTL": 120
