@@ -8,12 +8,18 @@ const Generators = app.get('Generators');
 
 io.use((socket, next) => {
   let data = socket.handshake || socket.request;
-  let sessionID = cookie.parse(data.headers.cookie)[settings.session.key].slice(2, 34);
-  sessionDB.get('sess:' + sessionID, (err, session) => {
-    if (err) console.log(err);
-    socket.session = session;
+
+  try {
+    let sessionID = cookie.parse(data.headers.cookie)[settings.session.key].slice(2, 34);
+    sessionDB.get('sess:' + sessionID, (err, session) => {
+      if (err) console.log(err);
+      socket.session = session;
+      next();
+    });
+  } catch(e) {
+    socket.session = null;
     next();
-  });
+  }
 });
 
 io.on('connection', socket => {
