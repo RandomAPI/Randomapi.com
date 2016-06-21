@@ -5,6 +5,7 @@ const blessed  = require('blessed');
 const contrib  = require('blessed-contrib');
 const pad      = require('./utils').pad;
 const logger   = require('./utils').logger;
+const redis    = require('./utils').redis;
 const app      = require('./app').app;
 const settings = require('./settings.json');
 
@@ -73,7 +74,7 @@ generateTables();
 
 const totalQueues = grid.set(4, 0, 3, 4, contrib.line, {
   showNthLabel: 5,
-  label: 'Total Queues',
+  label: 'Generator Queues',
   showLegend: true,
   legend: {width: 10},
   wholeNumbersOnly: true,
@@ -85,7 +86,7 @@ const totalQueues = grid.set(4, 0, 3, 4, contrib.line, {
 
 const totalMemory = grid.set(4, 4, 3, 4, contrib.line, {
   showNthLabel: 5,
-  label: 'Total Memory Usage',
+  label: 'Memory Usage',
   showLegend: true,
   legend: {width: 10},
   wholeNumbersOnly: true,
@@ -113,11 +114,12 @@ let premiumStats = { title: '', style: {line: 'cyan'}, y: [] };
 let botline = { title: '', style: {line: 'white'}, x:[], y: [] };
 
 let memoryLine = { title: '', style: {line: 'green'}, x:[], y: [] };
+let redisLine = { title: '', style: {line: 'red'}, x:[], y: [] };
 
 let eventLine = { title: 'eventLine', style: {line: 'green'}, x:[], y: [] };
 
 totalQueues.setData([botline, basicStats, standardStats, premiumStats]);
-totalMemory.setData([botline, memoryLine]);
+totalMemory.setData([botline, memoryLine, redisLine]);
 
 let time = Math.floor(new Date().getTime()/1000);
 let elapsed;
@@ -141,7 +143,7 @@ let loads = {
 };
 
 let instructions = grid.set(11, 0, 1, 12, contrib.markdown, {
-  markdown: '**^G** Manual GC\t**^V** Rebuild views\n**^Q** Quit\t\t **^C** Clear log'
+  markdown: '**^G** Manual GC\t**^V** Rebuild views\t**^R** Empty Redis List Cache\n**^Q** Quit\t\t **^C** Clear log\t\t**^L** Empty Generator List Cache'
 });
 
 const updateDonut = () => {
@@ -183,6 +185,24 @@ screen.key(['C-g'], (ch, key) => {
   Generators.premium.forEach(gen => gen.gc());
   Generators.realtime.forEach(gen => gen.gc());
   Generators.speedtest.forEach(gen => gen.gc());
+});
+
+screen.key(['C-r'], (ch, key) => {
+  logger('Emptying Redis List Cache');
+  redis.keys("*", (err, lists) => {
+    lists
+      .filter(item => item.match(/list\:/) !== null)
+      .map(list => redis.del(list));
+  });
+});
+
+screen.key(['C-l'], (ch, key) => {
+  logger('Emptying Generator List Cache');
+  Generators.basic.forEach(gen => gen.emptyListCache());
+  Generators.standard.forEach(gen => gen.emptyListCache());
+  Generators.premium.forEach(gen => gen.emptyListCache());
+  Generators.realtime.forEach(gen => gen.emptyListCache());
+  Generators.speedtest.forEach(gen => gen.emptyListCache());
 });
 
 screen.key(['C-v'], (ch, key) => {
@@ -248,6 +268,10 @@ setInterval(() => {
   let memSum = _.sum([_.sum(memStats.basic), _.sum(memStats.standard), _.sum(memStats.premium)]);
   memoryLine.y.push(memSum);
   memoryLine.title = String(memSum + ' MB');
+  redis.info('memory', (err, info) => {
+    redisLine.y.push(Math.floor(info.split('\r\n')[1].slice(12)/1024/1024));
+    redisLine.title = String(Math.floor(info.split('\r\n')[1].slice(12)/1024/1024) + ' MB');
+  });
 
   eventLine.y.push(tmp - oldEventTime);
   eventLine.title = String(tmp - oldEventTime + ' ms');
@@ -262,10 +286,11 @@ setInterval(() => {
     standardStats.y.shift();
     premiumStats.y.shift();
     memoryLine.y.shift();
+    redisLine.y.shift();
     eventLine.y.shift();
   }
   totalQueues.setData([botline, basicStats, standardStats, premiumStats]);
-  totalMemory.setData([botline, memoryLine]);
+  totalMemory.setData([botline, memoryLine, redisLine]);
   eventLoopResponseAvg.setData([botline, eventLine]);
   oldEventTime = tmp;
   screen.render();

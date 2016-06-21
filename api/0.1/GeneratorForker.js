@@ -147,7 +147,7 @@ GeneratorForker.prototype.fork = function() {
               if (Number(obj.owner) === msg.data.user.id) {
 
                 // Update lastUsed time
-                redis.hset("list" + obj.ref, "lastUsed", new Date().getTime(), () => {
+                redis.hset("list:" + obj.ref, "lastUsed", new Date().getTime(), () => {
                   self.generator.send({type: 'response', mode: 'list', data: true});
                 });
               } else {
@@ -238,6 +238,13 @@ GeneratorForker.prototype.gc = function() {
   this.send({
     type: 'cmd',
     data: 'gc'
+  });
+};
+
+GeneratorForker.prototype.emptyListCache = function() {
+  this.send({
+    type: 'cmd',
+    data: 'emptyListCache'
   });
 };
 

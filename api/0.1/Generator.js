@@ -69,6 +69,8 @@ const Generator = function(name, options) {
         process.send({type: 'cmdComplete', mode: 'memory', content: process.memoryUsage().heapUsed});
       } else if (msg.data === 'gc') {
         global.gc();
+      } else if (msg.data === 'emptyListCache') {
+        self.emptyListCache();
       }
     } else if (msg.type === 'pong') {
       self.emit('pong');
@@ -315,7 +317,11 @@ Generator.prototype.availableFuncs = function() {
           // Update local cache lastUsed date
           // Also update redis cache lastUsed date
           self.cache[obj].lastUsed = new Date().getTime();
-          redis.hmset("list:" + obj, 'lastUsed', new Date().getTime());
+          redis.exists("list:" + obj + ":contents", (err, result) => {
+            if (result === 1) {
+              redis.hmset("list:" + obj, 'lastUsed', new Date().getTime());
+            }
+          });
 
           if (num !== undefined) {
             if (num < 1 || num > self.cache[obj].contents.length) {
@@ -413,6 +419,10 @@ Generator.prototype.checkCache = function() {
       delete self.cache[ref];
     }
   });
+};
+
+Generator.prototype.emptyListCache = function() {
+  this.cache = {};
 };
 
 const random = (mode = 1, length = 10, charset = "") => {
