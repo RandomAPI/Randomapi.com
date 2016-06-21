@@ -8,41 +8,44 @@ const app    = require('./app').app;
 
 const GUI = true;
 
-// GUI - can be commented out if not required or too much overhead
-if (GUI) require('./console.js');
-require('./sockets.js');
+const db = require('./models/db').init(() => {
 
-// Attach db reference to app
-// Conenct to database
-const db = require('./models/db');
-app.set('db', db);
+  // GUI - can be commented out if not required or too much overhead
+  if (GUI) require('./console.js');
+  require('./sockets.js');
 
-server.listen(app.get('port'));
-server.on('error', error => {
-  let bind = app.get('port');
-  switch (error.code) {
-    case 'EACCES':
-      logger('[server]: ' + bind + ' requires elevated privileges');
-      process.exit(1);
-      break;
-    case 'EADDRINUSE':
-      logger('[server]: ' + bind + ' is already in use');
-      process.exit(1);
-      break;
-    default:
-      throw error;
-  }
+  // Attach db reference to app
+  // Conenct to database
+  app.set('db', db);
+
+  server.listen(app.get('port'));
+  server.on('error', error => {
+    let bind = app.get('port');
+    switch (error.code) {
+      case 'EACCES':
+        logger('[server]: ' + bind + ' requires elevated privileges');
+        process.exit(1);
+        break;
+      case 'EADDRINUSE':
+        logger('[server]: ' + bind + ' is already in use');
+        process.exit(1);
+        break;
+      default:
+        throw error;
+    }
+  });
+
+  server.on('listening', () => {
+    let addr = server.address();
+    let bind = typeof addr === 'string'
+      ? 'pipe ' + addr
+      : 'port ' + addr.port;
+    logger('[server]: Listening on ' + bind);
+  });
+
+  var elapsedTime = 0;
+  setInterval(() => {
+    process.title = "RandomAPI_Server | Uptime: " + elapsedTime++;
+  }, 1000);
+
 });
-
-server.on('listening', () => {
-  let addr = server.address();
-  let bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  logger('[server]: Listening on ' + bind);
-});
-
-var elapsedTime = 0;
-setInterval(() => {
-  process.title = "RandomAPI_Server | Uptime: " + elapsedTime++;
-}, 1000);

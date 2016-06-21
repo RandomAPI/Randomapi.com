@@ -52,7 +52,7 @@ module.exports = {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   },
   andify(cond) {
-    const db = require('./models/db');
+    const db = require('./models/db').connection;
     var formatted = "";
     if (Object.keys(cond).length > 1) {
       _.each(cond, function(value, key) {

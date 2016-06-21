@@ -1,5 +1,5 @@
 const bcrypt    = require('bcrypt-nodejs');
-const db        = require('./db');
+const db        = require('./db').connection;
 const Promise   = require('bluebird');
 
 module.exports = {

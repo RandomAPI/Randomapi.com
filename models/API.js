@@ -2,7 +2,7 @@ const random  = require('../utils').random;
 const range   = require('../utils').range;
 const logger  = require('../utils').logger;
 const andify  = require('../utils').andify;
-const db      = require('./db');
+const db      = require('./db').connection;
 const Promise = require('bluebird');
 
 module.exports = {

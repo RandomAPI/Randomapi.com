@@ -2,7 +2,7 @@ const mysql    = require('mysql');
 const settings = require('../settings.json');
 const logger   = require('../utils').logger;
 
-const connection = mysql.createConnection({
+var connection = mysql.createConnection({
   host:       settings.db.host,
   socketPath: settings.db.socketPath,
   database:   settings.db.database,
@@ -10,17 +10,21 @@ const connection = mysql.createConnection({
   password:   settings.db.password
 });
 
-connection.connect(err => {
-  if (err) {
-    logger('[db]: error connecting: ' + err.stack);
-    return;
-  }
-  logger('[db]: connected as id ' + connection.threadId);
-});
+module.exports.init = function(cb) {
 
-// Keep connection alive
-setInterval(function () {
-    connection.query('SELECT 1');
-}, settings.db.keepAliveInterval);
+  connection.connect(err => {
+    if (err) {
+      logger('[db]: error connecting: ' + err.stack);
+      return;
+    }
+    logger('[db]: connected as id ' + connection.threadId);
+    cb();
+  });
 
-module.exports = connection;
+  // Keep connection alive
+  setInterval(function () {
+      connection.query('SELECT 1');
+  }, settings.db.keepAliveInterval);
+};
+
+module.exports.connection = connection;
