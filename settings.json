@@ -27,31 +27,26 @@
         "basic": {
             "count": 1,
             "execTime": 1,
-            "memory": 5,
             "results": 25
         },
         "standard": {
             "count": 2,
             "execTime": 5,
-            "memory": 10,
             "results": 250
         },
         "premium": {
             "count": 3,
             "execTime": 10,
-            "memory": 25,
             "results": 2500
         },
         "realtime": {
             "count": 1,
             "execTime": 1,
-            "memory": 1,
             "results": 1
         },
         "speedtest": {
             "count": 1,
             "execTime": 5,
-            "memory": 5,
             "results": 0
         }
     }

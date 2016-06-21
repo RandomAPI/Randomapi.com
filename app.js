@@ -27,7 +27,6 @@ Object.keys(settings.generators).forEach(generator => {
     return new GeneratorForker({
       name: generator + '_' + v,
       execTime: settings.generators[generator].execTime,
-      memory: settings.generators[generator].memory,
       results: settings.generators[generator].results
     });
   });

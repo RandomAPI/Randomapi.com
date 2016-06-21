@@ -18,7 +18,6 @@ const GeneratorForker = function(options) {
 
   this.info = {
     execTime: options.execTime,
-    memory:   options.memory,
     results:  options.results
   };
 

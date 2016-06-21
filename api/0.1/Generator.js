@@ -22,7 +22,6 @@ const Generator = function(name, options) {
   this.version = '0.1';
   this.info    = {
     execTime: options.execTime,
-    memory:   options.memory * 1024 * 1024,
     results:  options.results
   };
   this.cache = {};
