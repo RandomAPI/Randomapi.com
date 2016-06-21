@@ -24,7 +24,11 @@ io.on('connection', socket => {
       }
     }
 
-    Generators.realtime[shortest].queue.push({socket, data: {src: msg.code, ref: msg.ref, owner: JSON.parse(socket.session).user}});
+    if (!Generators.realtime[shortest].generator.connected) {
+      socket.emit('codeLinted', {error: {formatted: "Something bad has happened...please try again later."}, results: [], fmt: null});
+    } else {
+      Generators.realtime[shortest].queue.push({socket, data: {src: msg.code, ref: msg.ref, owner: JSON.parse(socket.session).user}});
+    }
   });
 });
 

@@ -24,6 +24,7 @@ const GeneratorForker = function(options) {
   this.name      = options.name;
   this.startTime = new Date().getTime();
   this.jobCount  = 0;
+  this.killed = false;
 
   // Queue to push generate requests into
   this.queue = async.queue((task, callback) => {
@@ -76,6 +77,23 @@ const GeneratorForker = function(options) {
   }, 1);
 
   this.fork();
+
+  // See if child process is alive during 5 second check
+  setInterval(() => {
+    self.childReplied = false;
+    setTimeout(() => {
+      if (!self.childReplied) {
+        self.generator = null;
+        self.fork();
+      }
+    }, 5000)
+    try {
+      self.send({type: 'ping'});
+    } catch(e) {}
+    self.once('pong', () => {
+      self.childReplied = true;
+    });
+  }, 5000)
 };
 
 util.inherits(GeneratorForker, EventEmitter);
@@ -161,8 +179,10 @@ GeneratorForker.prototype.fork = function() {
       } else if (msg.mode === 'lists') {
         self.emit('listsComplete', msg.content);
       }
+    } else if (msg.type === 'pong') {
+      self.emit('pong');
     } else if (msg.type === 'ping') {
-      this.generator.send({
+      self.send({
         type: 'pong'
       });
     }
@@ -175,7 +195,7 @@ GeneratorForker.prototype.generate = function(opts, cb) {
   let self = this;
 
   // Send generator a new task using the given mode and options
-  this.generator.send({
+  self.send({
     type: 'task',
     mode: opts.mode,
     data: opts.options
@@ -197,26 +217,34 @@ GeneratorForker.prototype.totalJobs = function() {
 };
 
 GeneratorForker.prototype.memUsage = function() {
-  this.generator.send({
-    type: 'cmd',
-    data: 'getMemory'
-  });
+  // this.send({
+  //   type: 'cmd',
+  //   data: 'getMemory'
+  // });
 
-  let memory, done = false;
-  this.once('memComplete', data => {
-    memory = data;
-    done   = true;
-  });
+  // let memory, done = false;
+  // this.once('memComplete', data => {
+  //   memory = data;
+  //   done   = true;
+  // });
 
-  require('deasync').loopWhile(function(){return !done;});
-  return Math.floor(memory/1024/1024);
+  // require('deasync').loopWhile(function(){return !done;});
+  return 0;
 };
 
 GeneratorForker.prototype.gc = function() {
-  this.generator.send({
+  this.send({
     type: 'cmd',
     data: 'gc'
   });
 };
+
+GeneratorForker.prototype.send = function(obj) {
+  try {
+    this.generator.send(obj);
+  } catch(e) {
+    //this.killed = true;
+  }
+}
 
 module.exports = GeneratorForker;

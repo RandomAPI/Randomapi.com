@@ -27,7 +27,11 @@ router.get('/:ref?', (req, res, next) => {
       }
     }
 
-    Generators[type][shortest].queue.push({req, res});
+    if (!Generators[type][shortest].generator.connected) {
+      res.send({error: "Something bad has happened...please try again later."});
+    } else {
+      Generators[type][shortest].queue.push({req, res});
+    }
   });
 });
 

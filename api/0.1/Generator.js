@@ -72,6 +72,10 @@ const Generator = function(name, options) {
       }
     } else if (msg.type === 'pong') {
       self.emit('pong');
+    } else if (msg.type === 'ping') {
+      process.send({
+        type: 'pong'
+      });
     }
   });
 
