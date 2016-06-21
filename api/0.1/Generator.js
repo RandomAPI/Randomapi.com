@@ -260,6 +260,7 @@ ${self.src}
         parseStack = err.error;
       }
       err.formatted = parseStack;
+      delete err.stack;
       cb(err, JSON.stringify({results: [{}]}), null);
     }
   }

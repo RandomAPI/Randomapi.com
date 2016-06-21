@@ -33,7 +33,15 @@ const GeneratorForker = function(options) {
 
     // Realtime or Speedtest
     if (task.socket !== undefined) {
-      self.generate({mode: 'lint', options: {key: task.data.owner.apikey, src: task.data.src, ref: task.data.ref}}, (error, results, fmt) => {
+
+      // Check to see if we are linting a logged in user or guest trying out the linter
+      var options;
+      if (task.data.owner === null) {
+        options = {key: null, src: task.data.src, ref: null};
+      } else {
+        options = {key: task.data.owner.apikey, src: task.data.src, ref: task.data.ref};
+      }
+      self.generate({mode: 'lint', options}, (error, results, fmt) => {
         if (results.length > 65535) {
           results = "Warning: Output has been truncated\n---------------\n" + results.slice(0, 65535);
         }

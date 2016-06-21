@@ -10,6 +10,7 @@ io.use((socket, next) => {
   let data = socket.handshake || socket.request;
   let sessionID = cookie.parse(data.headers.cookie)[settings.session.key].slice(2, 34);
   sessionDB.get('sess:' + sessionID, (err, session) => {
+    if (err) console.log(err);
     socket.session = session;
     next();
   });
@@ -27,7 +28,11 @@ io.on('connection', socket => {
     if (!Generators.realtime[shortest].generator.connected) {
       socket.emit('codeLinted', {error: {formatted: "Something bad has happened...please try again later."}, results: [], fmt: null});
     } else {
-      Generators.realtime[shortest].queue.push({socket, data: {src: msg.code, ref: msg.ref, owner: JSON.parse(socket.session).user}});
+      if (socket.session === null) {
+        Generators.realtime[shortest].queue.push({socket, data: {src: msg.code, ref: null, owner: null}});
+      } else {
+        Generators.realtime[shortest].queue.push({socket, data: {src: msg.code, ref: msg.ref, owner: JSON.parse(socket.session).user}});
+      }
     }
   });
 });
