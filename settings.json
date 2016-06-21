@@ -32,15 +32,15 @@
             "count": 2,
             "execTime": 10,
             "results": 1000,
-            "localTTL": 240,
-            "redisTTL": 480
+            "localTTL": 120,
+            "redisTTL": 240
         },
         "premium": {
             "count": 3,
             "execTime": 20,
             "results": 10000,
-            "localTTL": 960,
-            "redisTTL": 1920
+            "localTTL": 240,
+            "redisTTL": 480
         },
         "realtime": {
             "count": 3,

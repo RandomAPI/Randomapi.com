@@ -71,6 +71,12 @@ const Generator = function(name, options) {
         global.gc();
       } else if (msg.data === 'emptyListCache') {
         self.emptyListCache();
+      } else if (msg.data === 'getListCache') {
+        var listCache = 0;
+        _.each(self.cache, item => {
+          listCache += Number(item.size);
+        });
+        process.send({type: 'cmdComplete', mode: 'listCache', content: listCache});
       }
     } else if (msg.type === 'pong') {
       self.emit('pong');
@@ -343,7 +349,8 @@ Generator.prototype.availableFuncs = function() {
               throw new Error(`You aren't authorized to access list ${obj}`);
               done = true;
             } else {
-              redis.SMEMBERS("list:" + obj + ":contents", (err, file) => {
+              //redis.SMEMBERS("list:" + obj + ":contents", (err, file) => {
+              redis.hvals("list:" + obj + ":contents", (err, file) => {
 
                 // Fetch metadata for list and store in local generator cache
                 redis.hgetall("list:" + obj, (err, info) => {

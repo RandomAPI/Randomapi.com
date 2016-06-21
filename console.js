@@ -18,6 +18,7 @@ const types      = Object.keys(settings.generators);
 // For graphing stats
 let queueStats = {};
 let memStats   = {};
+let listCacheStats = {};
 let jobStats   = {};
 
 // Shared bar options
@@ -113,13 +114,14 @@ let standardStats = { title: '', style: {line: 'green'}, y: [] };
 let premiumStats = { title: '', style: {line: 'cyan'}, y: [] };
 let botline = { title: '', style: {line: 'white'}, x:[], y: [] };
 
-let memoryLine = { title: '', style: {line: 'green'}, x:[], y: [] };
 let redisLine = { title: '', style: {line: 'red'}, x:[], y: [] };
+let memoryLine = { title: '', style: {line: 'green'}, x:[], y: [] };
+let listCacheLine = { title: '', style: {line: 'cyan'}, x:[], y: [] };
 
 let eventLine = { title: 'eventLine', style: {line: 'green'}, x:[], y: [] };
 
 totalQueues.setData([botline, basicStats, standardStats, premiumStats]);
-totalMemory.setData([botline, memoryLine, redisLine]);
+totalMemory.setData([botline, redisLine, memoryLine, listCacheLine]);
 
 let time = Math.floor(new Date().getTime()/1000);
 let elapsed;
@@ -228,6 +230,7 @@ setInterval(() => {
   types.forEach(type => {
     queueStats[type] = new Array(Generators[type].length).fill().map((v, k) => Generators[type][k].queueLength());
     memStats[type] = new Array(Generators[type].length).fill().map((v, k) => Generators[type][k].memUsage());
+    listCacheStats[type] = new Array(Generators[type].length).fill().map((v, k) => Generators[type][k].listCacheUsage());
     jobStats[type] = new Array(Generators[type].length).fill().map((v, k) => Generators[type][k].totalJobs());
 
     if (type === 'speedtest' || type === 'realtime') return;
@@ -265,13 +268,16 @@ setInterval(() => {
   premiumStats.y.push(_.sum(queueStats.premium));
   premiumStats.title = String(_.sum(queueStats.premium));
 
-  let memSum = _.sum([_.sum(memStats.basic), _.sum(memStats.standard), _.sum(memStats.premium)]);
+  let memSum   = _.sum([_.sum(memStats.basic), _.sum(memStats.standard), _.sum(memStats.premium)]);
+  let cacheSum = _.sum([_.sum(listCacheStats.basic), _.sum(listCacheStats.standard), _.sum(listCacheStats.premium)]);
   memoryLine.y.push(memSum);
   memoryLine.title = String(memSum + ' MB');
   redis.info('memory', (err, info) => {
     redisLine.y.push(Math.floor(info.split('\r\n')[1].slice(12)/1024/1024));
     redisLine.title = String(Math.floor(info.split('\r\n')[1].slice(12)/1024/1024) + ' MB');
   });
+  listCacheLine.y.push(cacheSum);
+  listCacheLine.title = String(cacheSum + ' MB');
 
   eventLine.y.push(tmp - oldEventTime);
   eventLine.title = String(tmp - oldEventTime + ' ms');
@@ -287,10 +293,11 @@ setInterval(() => {
     premiumStats.y.shift();
     memoryLine.y.shift();
     redisLine.y.shift();
+    listCacheLine.y.shift();
     eventLine.y.shift();
   }
   totalQueues.setData([botline, basicStats, standardStats, premiumStats]);
-  totalMemory.setData([botline, memoryLine, redisLine]);
+  totalMemory.setData([botline, memoryLine, redisLine, listCacheLine]);
   eventLoopResponseAvg.setData([botline, eventLine]);
   oldEventTime = tmp;
   screen.render();
