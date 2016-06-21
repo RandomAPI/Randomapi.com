@@ -17,7 +17,14 @@ io.use((socket, next) => {
 
 io.on('connection', socket => {
   socket.on('lintCode', msg => {
-    Generators.realtime[0].queue.push({socket, data: {src: msg.code, ref: msg.ref, owner: JSON.parse(socket.session).user}});
+    let shortest = Math.floor(Math.random() * Generators.realtime.length);
+    for (let i = 0; i < Generators.realtime.length; i++) {
+      if (Generators.realtime[i].queueLength() < Generators.realtime[shortest].queueLength()) {
+        shortest = i;
+      }
+    }
+
+    Generators.realtime[shortest].queue.push({socket, data: {src: msg.code, ref: msg.ref, owner: JSON.parse(socket.session).user}});
   });
 });
 
