@@ -104,7 +104,7 @@ app.use('*', (req, res, next) => {
       app.set('baseURL', baseURL);
       app.set('basehref', basehref);
       if (settings.general.behindReverseProxy) {
-        res.redirect(req.params[0]);
+        res.redirect(baseURL + req.params[0]);
       } else {
         res.redirect(req.originalUrl);
       }
