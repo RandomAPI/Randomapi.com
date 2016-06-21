@@ -25,6 +25,7 @@ const GeneratorForker = function(options) {
   this.startTime = new Date().getTime();
   this.jobCount  = 0;
   this.killed = false;
+  this.memory = 0;
 
   // Queue to push generate requests into
   this.queue = async.queue((task, callback) => {
@@ -78,8 +79,12 @@ const GeneratorForker = function(options) {
 
   this.fork();
 
+  generatorChecks();
+
   // See if child process is alive during 5 second check
-  setInterval(() => {
+  setInterval(generatorChecks, 5000);
+
+  function generatorChecks() {
     self.childReplied = false;
     setTimeout(() => {
       if (!self.childReplied) {
@@ -93,7 +98,16 @@ const GeneratorForker = function(options) {
     self.once('pong', () => {
       self.childReplied = true;
     });
-  }, 5000)
+
+    self.send({
+      type: 'cmd',
+      data: 'getMemory'
+    });
+
+    self.once('memComplete', data => {
+      self.memory = Math.floor(data/1024/1024);
+    });
+  }
 };
 
 util.inherits(GeneratorForker, EventEmitter);
@@ -217,19 +231,7 @@ GeneratorForker.prototype.totalJobs = function() {
 };
 
 GeneratorForker.prototype.memUsage = function() {
-  // this.send({
-  //   type: 'cmd',
-  //   data: 'getMemory'
-  // });
-
-  // let memory, done = false;
-  // this.once('memComplete', data => {
-  //   memory = data;
-  //   done   = true;
-  // });
-
-  // require('deasync').loopWhile(function(){return !done;});
-  return 0;
+  return this.memory;
 };
 
 GeneratorForker.prototype.gc = function() {
