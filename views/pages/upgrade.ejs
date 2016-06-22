@@ -8,9 +8,82 @@
 
   <div class="container main">
     <section class="hero">
-      <h3>Simplify your testing</h3>
-      <h5 id="subtitle">Easily generate mock data for testing your application</h5>
+      <h3>Choose from our 3 simple plans</h3>
+      <h5 id="subtitle"></h5>
     </section>
+    <div class="row">
+      <table class="table table-striped pricingTable" style="width: 75%">
+        <thead>
+          <tr>
+            <th><h3>Free</h3></th>
+            <th><h3>Standard</h3></th>
+            <th><h3>Premium</h3></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class='price'>$0.00</span> <span class='subprice'>/ month</span></td>
+            <td><span class='price'>$2.50</span> <span class='subprice'>/ month</span></td>
+            <td><span class='price'>$5.00</span> <span class='subprice'>/ month</span></td>
+          </tr>
+          <tr>
+            <td><span class='price'>1,000</span> <span class='subprice'> daily results</span></td>
+            <td><span class='price'>100,000</span> <span class='subprice'> daily results</span></td>
+            <td><span class='price'>unlimited</span> <span class='subprice'> daily results</span></td>
+          </tr>
+          <tr>
+            <td><span class='price'>10</span> <span class='subprice'> results / request</span></td>
+            <td><span class='price'>500</span> <span class='subprice'> results / request</span></td>
+            <td><span class='price'>5,000</span> <span class='subprice'> results / request</span></td>
+          </tr>
+          <tr>
+            <td><span class='price'>256 KB</span> <span class='subprice'> list data</span></td>
+            <td><span class='price'>5 MB</span> <span class='subprice'> list data</span></td>
+            <td><span class='price'>50 MB</span> <span class='subprice'> list data</span></td>
+          </tr>
+          <tr>
+            <td><span class='price'>1</span> <span class='subprice'> API</span></td>
+            <td><span class='price'>10</span> <span class='subprice'> APIs</span></td>
+            <td><span class='price'>unlimited</span> <span class='subprice'> APIs</span></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>
+              <form action="charge" method="POST">
+                <script 
+                  src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                  data-key="pk_test_Kz9PkZwjRRlC4g6vMqzIRHGk"
+                  data-amount="250"
+                  data-name="RandomAPI"
+                  data-description="RandomAPI Standard Tier (Beta)"
+                  data-image="https://s3.amazonaws.com/stripe-uploads/acct_102bx12y2KIUsl34merchant-icon-499777-logo.png"
+                  data-locale="auto"
+                  data-label="Upgrade"
+                  data-zip-code="true">
+                </script>
+                <input type="hidden" name="plan" value="standard_beta">
+              </form>
+            </td>
+            <td>
+              <form action="/charge" method="POST">
+                <script 
+                  src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                  data-key="pk_test_Kz9PkZwjRRlC4g6vMqzIRHGk"
+                  data-amount="500"
+                  data-name="RandomAPI"
+                  data-description="RandomAPI Premium Tier (Beta)"
+                  data-image="https://s3.amazonaws.com/stripe-uploads/acct_102bx12y2KIUsl34merchant-icon-499777-logo.png"
+                  data-locale="auto"
+                  data-label="Upgrade"
+                  data-zip-code="true">
+                </script>
+                <input type="hidden" name="plan" value="premium_beta">
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
   <% include ../snippets/footer %>
 </body>

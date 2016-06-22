@@ -116,6 +116,7 @@ app.use('*', (req, res, next) => {
 
 // Routes
 app.use('/', require('./routes/index'));
+app.use('/charge', require('./routes/charge'));
 app.use('/new', require('./routes/new'));
 app.use('/view', require('./routes/view'));
 app.use('/edit', require('./routes/edit'));
