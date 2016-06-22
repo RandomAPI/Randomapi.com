@@ -2,6 +2,7 @@ const moment = require('moment');
 const _      = require('lodash');
 const redis  = require('redis').createClient();
 
+redis.on('error',function(err){ module.exports.logger(err)})
 module.exports = {
   pad(n, width, z) {
     z = z || '0';

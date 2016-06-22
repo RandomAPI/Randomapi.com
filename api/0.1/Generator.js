@@ -349,8 +349,8 @@ Generator.prototype.availableFuncs = function() {
               throw new Error(`You aren't authorized to access list ${obj}`);
               done = true;
             } else {
-              //redis.SMEMBERS("list:" + obj + ":contents", (err, file) => {
-              redis.hvals("list:" + obj + ":contents", (err, file) => {
+              redis.SMEMBERS("list:" + obj + ":contents", (err, file) => {
+              //redis.hvals("list:" + obj + ":contents", (err, file) => {
 
                 // Fetch metadata for list and store in local generator cache
                 redis.hgetall("list:" + obj, (err, info) => {

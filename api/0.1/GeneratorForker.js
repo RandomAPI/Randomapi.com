@@ -189,8 +189,8 @@ GeneratorForker.prototype.fork = function() {
                     owner: doc.owner,
                     lastUsed: new Date().getTime()
                   }, (err, res) => {
-                    //redis.SADD("list:" + doc.ref + ":contents", file.split('\n').slice(0, -1), () => {
-                    redis.hmset("list:" + doc.ref + ":contents", Object.assign({}, file.split('\n').slice(0, -1)), () => {
+                    redis.SADD("list:" + doc.ref + ":contents", file.split('\n').slice(0, -1), () => {
+                    //redis.hmset("list:" + doc.ref + ":contents", Object.assign({}, file.split('\n').slice(0, -1)), () => {
 
                       // Add TTL
                       redis.expire("list:" + doc.ref, settings.generators[self.name].redisTTL);
