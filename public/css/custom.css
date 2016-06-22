@@ -170,6 +170,11 @@ section.login .flash {
   color: #0CB863;
 }
 
+.docGreen {
+  color: #0CB863;
+  font-weight: bold;
+}
+
 .red {
   color: red;
 }

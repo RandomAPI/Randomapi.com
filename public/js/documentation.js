@@ -12,4 +12,26 @@ $(function() {
       }
     }
   });
+
+  $(window).scroll(scrollHighlight);
+  scrollHighlight();
+
+  function scrollHighlight() {
+    var found = false;
+    var namedHrefs = $('a').filter((key, item) => $(item).attr('name') !== undefined);
+
+    namedHrefs.each((key, val) => {
+      if (($(val).offset().top - $(window).scrollTop() >= 0 && !found) || (!found && namedHrefs.length-1 === key)) {
+        found = $(val);
+      }
+    });
+
+    $('a').each((item, val) => {
+      if ($(val).attr('href') === "documentation#" + found.attr('name')) {
+        $(val).addClass('docGreen');
+      } else {
+        $(val).removeClass('docGreen');
+      }
+    });
+  }
 });
