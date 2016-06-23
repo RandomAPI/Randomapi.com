@@ -10,8 +10,6 @@ try {
 
 switch(path) {
   case '/upgrade':
-    selected['upgrade'] = style;
-    break;
   case '/pricing':
     selected['pricing'] = style;
     break;
@@ -35,7 +33,7 @@ switch(path) {
     <ul>
       <% if (session.loggedin === true) { %>
         <a href=""><li <%- selected['home'] %>>Home</li></a>
-        <a href="upgrade"><li <%- selected['upgrade'] %>>Upgrade</li></a>
+        <a href="upgrade"><li <%- selected['pricing'] %>>Upgrade</li></a>
         <a href="documentation"><li <%- selected['documentation'] %>>Documentation</li></a>
         <a href="settings"><li <%- selected['settings'] %>>Settings</li></a>
         <a href="logout"><li>Logout</li></a>
