@@ -306,3 +306,7 @@ section.login .flash {
   text-align: center;
   border: none;
 }
+
+.subpricing {
+  font-size: 10pt;
+}

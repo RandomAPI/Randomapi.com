@@ -44,11 +44,20 @@ router.get('/documentation', (req, res, next) => {
 
 router.get('/settings', (req, res, next) => {
   if (req.session.loggedin) {
-    res.render('settings', _.merge(defaultVars, {title: 'Settings'}));
+    res.render('settings/general', _.merge(defaultVars, {title: 'Settings'}));
   } else {
     res.redirect(baseURL + '/');
   }
 });
+
+router.get('/settings/subscription', (req, res, next) => {
+  if (req.session.loggedin) {
+    res.render('settings/subscription', _.merge(defaultVars, {title: 'Subscription'}));
+  } else {
+    res.redirect(baseURL + '/');
+  }
+});
+
 
 // Login //
 router.get('/login', (req, res, next) => {

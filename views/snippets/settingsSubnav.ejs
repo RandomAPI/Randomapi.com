@@ -1,0 +1,25 @@
+<%
+var selected = {};
+var style = "class='selected'";
+var path;
+try {
+  path = originalUrl.match(/(?:^(\/\w+\/\w+)(?:$|.*)|(\/))/)[1];
+} catch(e) {
+  path = "/";
+}
+
+switch(path) {
+  case '/settings/subscription':
+    selected['subscription'] = style;
+    break;
+  case '/settings':
+  default:
+    selected['general'] = style;
+}
+%>
+<div id="subnav">
+  <ul>
+    <li <%- selected['general'] %>><a href="/settings">General</a></li>
+    <li <%- selected['subscription'] %>><a href="settings/subscription">Subscription</a></li>
+  </ul>
+</div>

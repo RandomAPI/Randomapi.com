@@ -50,6 +50,7 @@ router.get('/:ref?', (req, res, next) => {
             req.query.results = tier.results - user.results;
           }
           User.incVal('results', req.query.results, user.username);
+          User.incVal('lifetime', req.query.results, user.username);
           Generators[type][shortest].queue.push({req, res});
         }
       }

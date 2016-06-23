@@ -1,7 +1,9 @@
-const User = require('./models/User');
+const db = require('./models/db').connection;
 
 let target = currentMidnight();
-console.log(target);
+db.query('UPDATE `user` SET `results` = 0 WHERE ?', {timezone: target}, (a, b) => {
+  process.exit();
+});
 function currentMidnight() {
   function calcTime(offset) {
     var d = new Date();
