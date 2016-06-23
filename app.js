@@ -14,6 +14,9 @@ const _            = require('lodash');
 const settings     = require('./settings.json');
 const logger       = require('./utils').logger;
 
+const User = require('./models/User');
+const Tier = require('./models/Tier');
+
 // Redis Session Store
 const session      = require('express-session');
 const redisStore   = require('connect-redis')(session);
@@ -81,7 +84,7 @@ app.use('*', (req, res, next) => {
   else {
     if (baseURL === null && basehref === null) firstRun = true;
 
-    defaultVars = { messages: req.flash('info'), session: req.session, basehref, title: null, originalUrl: req.originalUrl };
+    defaultVars = {messages: req.flash('info'), session: req.session, basehref, title: null, originalUrl: req.originalUrl };
     if (settings.general.behindReverseProxy) {
       let uri  = req.headers.uri.replace(/(\/)+$/,'');
       let path = req.originalUrl.replace(/(\/)+$/,'');
@@ -109,7 +112,22 @@ app.use('*', (req, res, next) => {
         res.redirect(req.originalUrl);
       }
     } else {
-      next();
+      if (req.session.loggedin) {
+        User.getCond({username: req.session.user.username}).then(data => {
+          Tier.getCond({id: data.tier}).then(tier => {
+            if (data === null) {
+              delete req.session.loggedin;
+              res.redirect(baseURL + '/logout');
+            } else {
+              req.session.user = data;
+              req.session.tier = tier;
+              next();
+            }
+          });
+        });
+      } else {
+        next();
+      }
     }
   }
 });

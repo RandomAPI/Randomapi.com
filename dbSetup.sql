@@ -73,20 +73,24 @@ CREATE TABLE IF NOT EXISTS `list` (
 -- Table structure for table `tier`
 --
 
-CREATE TABLE IF NOT EXISTS `tier` (
+CREATE TABLE `tier` (
   `id` int(11) NOT NULL,
   `name` varchar(16) NOT NULL,
-  `price` decimal(4,2) NOT NULL
+  `price` decimal(4,2) NOT NULL,
+  `memory` int(11) NOT NULL,
+  `results` int(11) NOT NULL,
+  `per` int(11) NOT NULL,
+  `apis` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `tier`
 --
 
-INSERT INTO `tier` (`id`, `name`, `price`) VALUES
-(1, 'Free', '0.00'),
-(2, 'Standard', '2.37'),
-(3, 'Premium', '5.46');
+INSERT INTO `tier` (`id`, `name`, `price`, `memory`, `results`, `per`, `apis`) VALUES
+(1, 'Free', '0.00', 262144, 1000, 10, 1),
+(2, 'Standard', '2.50', 5242880, 100000, 500, 10),
+(3, 'Premium', '5.00', 52428800, 0, 5000, 0);
 
 -- --------------------------------------------------------
 

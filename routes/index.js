@@ -4,6 +4,7 @@ const router  = express.Router();
 const logger  = require('../utils').logger;
 
 const User = require('../models/User');
+const Tier = require('../models/Tier');
 
 // Setup defaultVars and baseURL for all routes
 let defaultVars, baseURL;
@@ -63,10 +64,13 @@ router.post('/login', (req, res, next) => {
     res.redirect(baseURL + '/');
   } else {
     User.login({username: req.body.username, password: req.body.password}).then(data => {
-      req.session.loggedin = true;
-      req.session.user = data.user;
-      req.flash('info', data.flash);
-      res.redirect(baseURL + data.redirect);
+      Tier.getCond({id: data.user.tier}).then(tier => {
+        req.session.loggedin = true;
+        req.session.user = data.user;
+        req.session.tier = tier;
+        req.flash('info', data.flash);
+        res.redirect(baseURL + data.redirect);
+      });
     }, err => {
       req.flash('info', err.flash);
       res.redirect(baseURL + err.redirect);

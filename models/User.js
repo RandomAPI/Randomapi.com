@@ -52,7 +52,7 @@ module.exports = {
   },
   getCond(cond) {
     return new Promise((resolve, reject) => {
-      db.query('SELECT u.*, t.name AS tierName FROM `user` u INNER JOIN `tier` t WHERE ?', cond, (err, data) => {
+      db.query('SELECT u.*, t.results AS tierResults, t.name AS tierName FROM `user` u INNER JOIN `tier` t ON (t.id=u.tier) WHERE ?', cond, (err, data) => {
         if (err) reject(err);
         else if (data.length === 0) resolve(null);
         else resolve(data[0]);
@@ -73,7 +73,6 @@ module.exports = {
   },
   addUser(data) {
     return new Promise((resolve, reject) => {
-      let self = this;
       data.password = bcrypt.hashSync(data.password);
       data.apikey   = this.genRandomKey();
 
@@ -81,5 +80,47 @@ module.exports = {
         err ? reject(err) : resolve({['u.id']: result.insertId});
       });
     });
+  },
+  update(vals, username) {
+    return new Promise((resolve, reject) => {
+      db.query('UPDATE `user` SET ? WHERE ?', [vals, {username}], (err, result) => {
+        resolve({err: err, result: result});
+      });
+    });
+  },
+  getVal(key, username) {
+    return new Promise((resolve, reject) => {
+      db.query('SELECT * FROM `user` WHERE ?', {username}, (err, data) => {
+        if (err) reject(err);
+        else if (data.length === 0) resolve(null);
+        else resolve(data[0][key]);
+      });
+    });
+  },
+  setVal(key, value, username) {
+    return new Promise((resolve, reject) => {
+      db.query('UPDATE `user` SET ? WHERE ?', [{[key]: value}, {username}], (err, data) => {
+        if (err) reject(err);
+        else if (data.length === 0) resolve(null);
+        else resolve(value);
+      });
+    });
+  },
+  incVal(key, value, username) {
+    value = Number(value);
+    return new Promise((resolve, reject) => {
+      this.getVal(key, username).then(previous => {
+        previous += value;
+        db.query('UPDATE `user` SET ? WHERE ?', [{[key]: previous}, {username}], (err, data) => {
+          if (err) reject(err);
+          else if (data.length === 0) resolve(null);
+          else resolve(previous);
+        });
+      });
+    });
+  },
+  decVal(key, value, username) {
+    value = Number(value);
+    return this.incVal(key, -value, username);
   }
 };

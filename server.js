@@ -15,7 +15,7 @@ const db = require('./models/db').init(() => {
   require('./sockets.js');
 
   // Attach db reference to app
-  // Conenct to database
+  // Connect to database
   app.set('db', db);
 
   server.listen(app.get('port'));

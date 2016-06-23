@@ -11,6 +11,7 @@ const _            = require('lodash');
 const logger       = require('../../utils').logger;
 const redis        = require('../../utils').redis;
 const settings     = require('../../settings');
+const numeral      = require('numeral')
 const EventEmitter = require('events').EventEmitter;
 
 const Generator = function(name, options) {
@@ -148,8 +149,9 @@ Generator.prototype.instruct = function(options, done) {
     cb => {
       process.send({type: 'lookup', mode: 'user', data: self.doc.owner});
       self.once('userResponse', data => {
-        self.options.userID   = data.id;
-        self.options.userTier = data.tier;
+        self.user = data;
+        self.options.userID      = data.id;
+        self.options.userTier    = data.tier;
 
         if (data.apikey !== self.options.key) {
           cb('UNAUTHORIZED_USER');
@@ -227,10 +229,16 @@ ${self.src}
         results: output,
         info: {
           seed: String(self.seed),
-          results: self.results,
-          page: self.page,
+          results: numeral(self.results).format('0,0'),
+          page: numeral(self.page).format('0,0'),
           version: self.version
         }
+      };
+      json.info.user = {
+        username: self.user.username,
+        tier: self.user.tierName + ` [${self.user.tier}]`,
+        results: numeral(self.user.results).format('0,0') + " / " + numeral(self.user.tierResults).format('0,0'),
+        remaining: numeral(self.user.tierResults - self.user.results).format('0,0')
       };
 
       if (self.noInfo) delete json.info;
