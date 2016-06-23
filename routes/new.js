@@ -117,6 +117,7 @@ router.get('/list', (req, res, next) => {
 router.post('/list', upload.any(), (req, res, next) => {
   if (req.body.name === undefined || req.files.length === 0 || req.files[0].originalname.match(/(?:\.([^.]+))?$/)[1] !== 'txt') {
     req.flash('info', 'Looks like you provided an invalid file...please try again.');
+    fs.unlink('./'+ req.files[0].path);
     res.redirect(baseURL + '/new/list');
   } else {
     List.add({name: req.body.name, owner: req.session.user.id}).then(List.getCond).then(model => {
