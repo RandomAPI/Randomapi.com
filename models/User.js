@@ -73,6 +73,12 @@ module.exports = {
   },
   addUser(data) {
     return new Promise((resolve, reject) => {
+      let timezones = [
+      -12.0, -11.0, -10.0, -9.0, -8.0, -7.0, -6.0,
+      -5.0, -4.0, -3.5, -3.0, -2.0, -1.0, 0.0, 1.0,
+      2.0, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 5.75, 6.0,
+      7.0, 8.0, 9.0, 9.5, 10.0, 11.0, 12.0];
+      if (timezones.indexOf(Number(data.timezone)) === -1) data.timezone = 0.0;
       data.password = bcrypt.hashSync(data.password);
       data.apikey   = this.genRandomKey();
 

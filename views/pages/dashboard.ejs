@@ -17,7 +17,7 @@
         <h3>Dashboard</h3>
         Your api key is <input style="color: green" onClick="this.select();" value="<%= session.user.apikey %>" readonly size="23"><br>
         Your tier is <span style="color: green"><%= session.user.tierName %></span><br>
-        Your have used <span id='results' style="color: green"><%= session.user.results %></span> of your daily <span id='tierResults' style="color: green"><%= session.tier.results %></span> results.<br>
+        Your have used <span id='results' style="color: green"><%= session.user.results %></span> of your daily <span id='tierResults' style="color: green"><%= session.tier.results === 0 ? 'unlimited' : session.tier.results %></span> results.<br>
       </div>
     </div>
   </div>

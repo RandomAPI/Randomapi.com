@@ -114,6 +114,11 @@ app.use('*', (req, res, next) => {
     } else {
       if (req.session.loggedin) {
         User.getCond({username: req.session.user.username}).then(data => {
+          if (data === null) {
+            delete req.session.loggedin;
+            res.redirect(baseURL + '/logout');
+            return;
+          }
           Tier.getCond({id: data.tier}).then(tier => {
             if (data === null) {
               delete req.session.loggedin;

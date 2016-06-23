@@ -12,7 +12,81 @@
       <h5 id="subtitle"></h5>
     </section>
     <div class="row">
-      <table class="table table-striped pricingTable" style="width: 75%">
+      <div class="container">
+        <h2 id="title">Plans & Pricing</h2>
+        <div class="pricingTable">
+          <div class="card">
+            <div class="title">Free</div>
+            <div class="pricing">$0.00</div>
+            <div class="info">
+              <ul>
+                <li><span id="main">1,000</span> daily requests</li>
+                <li><span id="main">10</span> results / request</li>
+                <li><span id="main">256 KB</span> list data</li>
+                <li><span id="main">1</span> API</li>
+                <li id='upgradeButton'></li>
+              </ul>
+            </div>
+          </div>
+          <div class="card selectedCard">
+            <div class="title">Standard</div>
+            <div class="pricing">$2.50</div>
+            <div class="info">
+              <ul>
+                <li><span id="main">100,000</span> daily requests</li>
+                <li><span id="main">500</span> results / request</li>
+                <li><span id="main">5 MB</span> list data</li>
+                <li><span id="main">10</span> APIs</li>
+                <li id='upgradeButton'>
+                  <form action="charge" method="POST">
+                    <script 
+                      src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                      data-key="pk_test_Kz9PkZwjRRlC4g6vMqzIRHGk"
+                      data-amount="250"
+                      data-name="RandomAPI"
+                      data-description="RandomAPI Standard Tier (Beta)"
+                      data-image="https://s3.amazonaws.com/stripe-uploads/acct_102bx12y2KIUsl34merchant-icon-499777-logo.png"
+                      data-locale="auto"
+                      data-label="Upgrade"
+                      data-zip-code="true">
+                    </script>
+                    <input type="hidden" name="plan" value="standard_beta">
+                  </form>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="card">
+            <div class="title">Premium</div>
+            <div class="pricing">$5.00</div>
+            <div class="info">
+              <ul>
+                <li><span id="main">unlimited</span> daily requests</li>
+                <li><span id="main">5,000</span> results / request</li>
+                <li><span id="main">50 MB</span> list data</li>
+                <li><span id="main">unlimited</span> APIs</li>
+                <li id='upgradeButton'>
+                  <form action="/charge" method="POST">
+                    <script 
+                      src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                      data-key="pk_test_Kz9PkZwjRRlC4g6vMqzIRHGk"
+                      data-amount="500"
+                      data-name="RandomAPI"
+                      data-description="RandomAPI Premium Tier (Beta)"
+                      data-image="https://s3.amazonaws.com/stripe-uploads/acct_102bx12y2KIUsl34merchant-icon-499777-logo.png"
+                      data-locale="auto"
+                      data-label="Upgrade"
+                      data-zip-code="true">
+                    </script>
+                    <input type="hidden" name="plan" value="premium_beta">
+                  </form>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- <table class="table table-striped pricingTable" style="width: 75%">
         <thead>
           <tr>
             <th><h3>Free</h3></th>
@@ -82,7 +156,7 @@
             </td>
           </tr>
         </tbody>
-      </table>
+      </table> -->
     </div>
   </div>
   <% include ../snippets/footer %>
