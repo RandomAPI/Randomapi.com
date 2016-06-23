@@ -166,6 +166,7 @@ a:hover {
 /* Buttons
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .button,
+#lintButton,
 input[type="submit"],
 input[type="reset"],
 input[type="button"] {
