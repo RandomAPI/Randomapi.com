@@ -18,16 +18,16 @@ router.get('/:ref?', (req, res, next) => {
     if (user === null) {
       return res.status(401).send({error: "INVALID_API_KEY"});
     }
-    Tier.getCond({id: user.tier}).then(tier => {
+    Tier.getCond({id: user.tierID}).then(tier => {
       if (user.results >= tier.results && tier.results !== 0) {
         return res.status(403).send({error: "API_QUOTA_EXCEEDED"});
       } else {
 
-        if (user.tier === 1) {
+        if (user.tierID === 1) {
           type = 'basic';
-        } else if (user.tier === 2) {
+        } else if (user.tierID === 2) {
           type = 'standard';
-        } else if (user.tier === 3) {
+        } else if (user.tierID === 3) {
           type = 'premium';
         }
 

@@ -119,7 +119,7 @@ app.use('*', (req, res, next) => {
             res.redirect(baseURL + '/logout');
             return;
           }
-          Tier.getCond({id: data.tier}).then(tier => {
+          Tier.getCond({id: data.tierID}).then(tier => {
             if (data === null) {
               delete req.session.loggedin;
               res.redirect(baseURL + '/logout');

@@ -96,7 +96,7 @@ router.post('/login', (req, res, next) => {
     res.redirect(baseURL + '/');
   } else {
     User.login({username: req.body.username, password: req.body.password}).then(data => {
-      Tier.getCond({id: data.user.tier}).then(tier => {
+      Tier.getCond({id: data.user.tierID}).then(tier => {
         req.session.loggedin = true;
         req.session.user = data.user;
         req.session.tier = tier;

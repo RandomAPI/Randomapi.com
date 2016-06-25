@@ -25,8 +25,17 @@ router.post('/', (req, res, next) => {
     plan: req.body.plan,
     email: req.body.stripeEmail
   }, function(err, customer) {
-    console.log(err, customer);
-    res.redirect(baseURL + "/");
+    console.log(err, JSON.stringify(customer));
+    // customer.id, customer.email, customer.created
+    // customer.subscriptions.data[0].id, customer.subscriptions.data[0].id, customer.subscriptions.data[0].current_period_end
+    // customer.subscriptions.data[0].plan.id, customer.subscriptions.data[0].plan.amount, customer.subscriptions.data[0].plan.name
+    if (err) {
+      req.flash('info', 'There was a problem upgrading your account');
+      res.redirect(baseURL + '/');
+    } else {
+      req.flash('info', 'Your account was upgraded successfully!');
+      res.redirect(baseURL + '/');
+    }
   });
 });
 

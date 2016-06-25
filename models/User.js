@@ -6,6 +6,8 @@ const andify  = require('../utils').andify;
 const db      = require('./db').connection;
 const Promise = require('bluebird');
 
+const Subscription = require('./Subscription');
+
 module.exports = {
   register(data, cb) {
     return new Promise((resolve, reject) => {
@@ -17,7 +19,7 @@ module.exports = {
             if (user !== null) {
               reject({flash: 'This username is already in use!', redirect: '/register'});
             } else {
-              this.addUser(data).then(this.getCond).then(user => {
+              this.addUser(data).then(Subscription.add).then(this.getCond).then(user => {
                 resolve({user, redirect: '/'});
               });
             }
@@ -55,7 +57,11 @@ module.exports = {
   },
   getCond(cond) {
     return new Promise((resolve, reject) => {
-      db.query('SELECT u.*, t.results AS tierResults, t.name AS tierName FROM `user` u INNER JOIN `tier` t ON (t.id=u.tier) WHERE ?', cond, (err, data) => {
+      db.query('SELECT u.*, t.id AS tierID, \
+        t.results AS tierResults, t.name AS tierName FROM `user` u \
+        INNER JOIN `Subscription` s ON (u.id=s.uid) \
+        INNER JOIN `Plan` p ON (s.plan=p.id) \
+        INNER JOIN `Tier` t ON (p.tier=t.id) WHERE ?', cond, (err, data) => {
         if (err) reject(err);
         else if (data.length === 0) resolve(null);
         else resolve(data[0]);
@@ -86,7 +92,7 @@ module.exports = {
       data.apikey   = this.genRandomKey();
 
       db.query('INSERT INTO `user` SET ?', data, (err, result) => {
-        err ? reject(err) : resolve({['u.id']: result.insertId});
+        err ? reject(err) : resolve({id: result.insertId});
       });
     });
   },
