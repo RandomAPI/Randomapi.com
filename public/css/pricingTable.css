@@ -20,16 +20,6 @@
   box-shadow: 0px 0px 5px #888888;
 }
 
-.selectedCard {
-  position: absolute;
-  top: 0px;
-  width: 280px;
-  height: 305px;
-  margin-left: -15px;
-  margin-top: -15px;
-  box-shadow: 0px 0px 15px #888888;
-}
-
 .card .title {
   color: #B2BB91;
   font-size: 22pt;
@@ -39,11 +29,7 @@
 
 .card:first-child {
   position: relative;
-  top: -40px;
-}
-
-.card:last-child {
-  margin-left: 250px;
+  top: -38px;
 }
 
 .card .pricing {
@@ -56,10 +42,6 @@
 
 .card .info {
   padding-left: 25px;
-}
-
-.card.selectedCard .info {
-  padding-left: 20px;
 }
 
 .card .info ul {
@@ -76,9 +58,3 @@
 #upgradeButton {
   text-align: center;
 }
-
-.selectedCard #upgradeButton {
-  margin-top: 35px;
-  text-align: center;
-}
-

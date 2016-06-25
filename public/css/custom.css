@@ -243,43 +243,6 @@ section.login .flash {
   height: 1px;
 }
 
-#preview {
-  margin-top: -25px;
-  position: relative;
-  float: right;
-  width: 35%;
-  height: 500px;
-}
-
-#results {
-  white-space: pre-wrap;       /* Since CSS 2.1 */
-  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-  white-space: -pre-wrap;      /* Opera 4-6 */
-  white-space: -o-pre-wrap;    /* Opera 7 */
-  word-wrap: break-word;       /* Internet Explorer 5.5+ */
-  height: 425px;
-}
-
-#aceEditor {
-  float: left;
-  width: 60%;
-  height: 500px;
-}
-
-#submit {
-  background-color: #0CB863;
-  color: white;
-}
-
-#submit:hover {
-  background-color: #09A459;
-  -webkit-transition: background-color 0.2s ease-in-out;
-  -moz-transition: background-color 0.2s ease-in-out;
-  -ms-transition: background-color 0.2s ease-in-out;
-  -o-transition: background-color 0.2s ease-in-out;
-  transition: background-color 0.2s ease-in-out;
-}
-
 .caption {
   display: block;
   text-align: center;
@@ -295,16 +258,6 @@ section.login .flash {
 
 .subprice {
   font-size: 10pt;
-}
-
-
-.pricingTable {
-  margin: 0 auto;
-}
-
-.pricingTable th,td {
-  text-align: center;
-  border: none;
 }
 
 .subpricing {

@@ -50,6 +50,29 @@ router.get('/settings', (req, res, next) => {
   }
 });
 
+router.post('/settings', (req, res, next) => {
+  if (req.session.loggedin) {
+    User.getVal('password', req.session.user.username).then(curPass => {
+      if (User.validPass(req.body.current, curPass)) {
+        if (req.body.new !== req.body.confirm) {
+          req.flash('info', 'New and confirm password did not match!');
+          res.redirect(baseURL + '/settings');
+        } else {
+          User.update({password: User.genPassHash(req.body.new)}, req.session.user.username).then(() => {
+            req.flash('info', 'Password updated successfully!');
+            res.redirect(baseURL + '/settings');
+          });
+        }
+      } else {
+        req.flash('info', 'Current password did not match!');
+        res.redirect(baseURL + '/settings');
+      }
+    });
+  } else {
+    res.redirect(baseURL + '/');
+  }
+});
+
 router.get('/settings/subscription', (req, res, next) => {
   if (req.session.loggedin) {
     res.render('settings/subscription', _.merge(defaultVars, {title: 'Subscription'}));

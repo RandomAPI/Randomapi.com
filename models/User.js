@@ -28,6 +28,9 @@ module.exports = {
       }
     });
   },
+  genPassHash(password) {
+    return bcrypt.hashSync(password);
+  },
   keyExists(apikey) {
     return new Promise((resolve, reject) => {
       db.query('SELECT * FROM `user` WHERE ?', {apikey}, (err, data) => {
@@ -100,15 +103,6 @@ module.exports = {
         if (err) reject(err);
         else if (data.length === 0) resolve(null);
         else resolve(data[0][key]);
-      });
-    });
-  },
-  setVal(key, value, username) {
-    return new Promise((resolve, reject) => {
-      db.query('UPDATE `user` SET ? WHERE ?', [{[key]: value}, {username}], (err, data) => {
-        if (err) reject(err);
-        else if (data.length === 0) resolve(null);
-        else resolve(value);
       });
     });
   },

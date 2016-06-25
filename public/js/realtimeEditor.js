@@ -12,6 +12,7 @@ $("#submit").click(function() {
   });
 });
 
+updateCharCount();
 lintCode();
 
 var typingTimer;
@@ -19,6 +20,7 @@ var codeArea = $(editor.textInput.getElement());
 codeArea.keyup(function(){
   clearTimeout(typingTimer);
   typingTimer = setTimeout(lintCode, 250);
+  updateCharCount();
 });
 
 codeArea.keydown(function(){
@@ -26,7 +28,6 @@ codeArea.keydown(function(){
 });
 
 socket.on('codeLinted', function(msg) {
-  console.log(msg);
   if (msg.error === null) {
     $('#results').html(JSON.stringify(msg.results, null, 2));
   } else {
@@ -38,3 +39,7 @@ socket.on('codeLinted', function(msg) {
 function lintCode() {
   socket.emit('lintCode', {code: editor.getValue(), ref});
 };
+
+function updateCharCount() {
+  $("#currentCharCount").html(editor.getValue().length);
+}

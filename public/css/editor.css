@@ -1,0 +1,42 @@
+#preview {
+  margin-top: -25px;
+  position: relative;
+  float: right;
+  width: 35%;
+  height: 500px;
+}
+
+#results {
+  white-space: pre-wrap;       /* Since CSS 2.1 */
+  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+  white-space: -pre-wrap;      /* Opera 4-6 */
+  white-space: -o-pre-wrap;    /* Opera 7 */
+  word-wrap: break-word;       /* Internet Explorer 5.5+ */
+  height: 425px;
+}
+
+#aceEditor {
+  float: left;
+  width: 60%;
+  height: 500px;
+}
+
+#submit {
+  background-color: #0CB863;
+  color: white;
+}
+
+#submit:hover {
+  background-color: #09A459;
+  -webkit-transition: background-color 0.2s ease-in-out;
+  -moz-transition: background-color 0.2s ease-in-out;
+  -ms-transition: background-color 0.2s ease-in-out;
+  -o-transition: background-color 0.2s ease-in-out;
+  transition: background-color 0.2s ease-in-out;
+}
+
+#charCount {
+  float: left;
+  position: absolute;
+  margin-top: -15px;
+}

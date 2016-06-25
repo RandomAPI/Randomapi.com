@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <% include ../../snippets/header %>
+  <link rel="stylesheet" href="css/editor.css">
 </head>
 <body>
   <server hidden><%=socket%></server>
@@ -17,6 +18,7 @@
           <%=messages%>
         </div>
         <h3>Editing API <%=api.ref%></h3>
+        <span id='charCount'><span id='currentCharCount'>0</span> / 8,192 chars</span>
         <pre id="aceEditor" name="code"><%=api.code%></pre>
         <div id="preview">
           <input type="submit" id="submit" value="Save"> <button id="lintButton" onClick="lintCode()">Test API</button>
