@@ -40,6 +40,7 @@ router.post('/', (req, res, next) => {
       Plan.getCond({name: req.body.plan,}).then(plan => {
         Subscription.upgrade({uid: req.session.user.id}, {
           cid: customer.id,
+          sid: customer.subscriptions.data[0].id,
           email: customer.email,
           created: moment(customer.created*1000).format("YYYY-MM-DD HH:mm:ss"),
           current_period_end: moment(customer.subscriptions.data[0].current_period_end*1000).format("YYYY-MM-DD HH:mm:ss"),
