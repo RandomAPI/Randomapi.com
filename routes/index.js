@@ -4,7 +4,9 @@ const router  = express.Router();
 const logger  = require('../utils').logger;
 
 const User = require('../models/User');
+const Subscription = require('../models/Subscription');
 const Tier = require('../models/Tier');
+const Plan = require('../models/Plan');
 
 // Setup defaultVars and baseURL for all routes
 let defaultVars, baseURL;
@@ -75,7 +77,19 @@ router.post('/settings', (req, res, next) => {
 
 router.get('/settings/subscription', (req, res, next) => {
   if (req.session.loggedin) {
-    res.render('settings/subscription', _.merge(defaultVars, {title: 'Subscription'}));
+    Subscription.getCond({uid: req.session.user.id}).then(subscription => {
+      Plan.getCond({id: subscription.plan}).then(plan => {
+        Tier.getCond({id: plan.tier}).then(tier => {
+          res.render('settings/subscription', _.merge(defaultVars, {title: 'Subscription', plan, tier, subscription}));
+        }, (err) => {
+          console.log(err);
+        });
+      }, (err) => {
+        console.log(err);
+      });
+    }, (err) => {
+      console.log(err);
+    });
   } else {
     res.redirect(baseURL + '/');
   }

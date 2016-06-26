@@ -15,9 +15,26 @@
           <%=messages%>
         </div>
         <h3>Subscription</h3>
+        <% if (session.user.tierID === 1) { %>
+        <p>You don't currently have an active subscription.</p>
+        <% } else {
+          if (tier.results === 0) tier.results = "unlimited";
+          if (tier.apis === 0) tier.apis = "unlimited";
+        %>
+        <p>Your are currently in the <span class='green'><%= tier.name %></span> tier.<br>
+        This plan gives you<br>
+        -<span class='green'><%= tier.memory/1024/1024 %></span> MB of list memory<br>
+        -<span class='green' id="dailyResults"><%= tier.results %></span> daily results<br>
+        -<span class='green' id="resultsPerRequest"><%= tier.per %></span> results per request<br>
+        -<span class='green'><%= tier.apis %></span> APIs at a rate of <span class='green' id="price">$<%= tier.price %></span> per month.<br><br>
+        Your current subscription will be renewed on <span class='green' id="renewalDate"><%= subscription.current_period_end %></span></p>
+
+        <% } %>
       </div>
     </div>
   </div>
   <% include ../../snippets/footer %>
+  <script src="js/moment.min.js"></script>
+  <script src="js/subscription.js"></script>
 </body>
 </html>

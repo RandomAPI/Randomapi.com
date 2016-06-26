@@ -237,8 +237,8 @@ ${self.src}
       json.info.user = {
         username: self.user.username,
         tier: self.user.tierName + ` [${self.user.tierID}]`,
-        results: numeral(self.user.results).format('0,0') + " / " + numeral(self.user.tierResults).format('0,0'),
-        remaining: numeral(self.user.tierResults - self.user.results).format('0,0')
+        results: numeral(self.user.results).format('0,0') + " / " + String(self.user.tierResults !== 0 ? numeral(self.user.tierResults).format('0,0') : "unlimited"),
+        remaining: self.user.tierResults !== 0 ? numeral(self.user.tierResults - self.user.results).format('0,0') : "unlimited"
       };
 
       if (self.noInfo) delete json.info;
