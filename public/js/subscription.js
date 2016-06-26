@@ -23,4 +23,16 @@ $(function() {
       window.location.replace('settings/subscription');
     });
   });
+
+  $("#renewSubscription").click(() => {
+    $.get('settings/subscription/renew', function() {
+      window.location.replace('settings/subscription');
+    });
+  });
+
+  $("#upgradeSubscription").click(() => {
+    $.get('settings/subscription/upgrade', function() {
+      window.location.replace('settings/subscription');
+    });
+  });
 });

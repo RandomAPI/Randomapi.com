@@ -264,7 +264,7 @@ section.login .flash {
   font-size: 10pt;
 }
 
-#upgrade {
+#upgradeSubscription {
   background: #1275ff;
   color: white;
   background-image: -webkit-linear-gradient(#7dc5ee,#008cdd 85%,#30a2e4);
@@ -273,4 +273,14 @@ section.login .flash {
   height: 30px;
   line-height: 30px;
   text-shadow: 0 -1px 0 rgba(0,0,0,0.25);
+}
+
+.greenButton {
+  background-color: #0CB863 !important;
+  color: white !important;
+}
+
+.redButton {
+  background-color: #9E0909 !important;
+  color: white !important;
 }

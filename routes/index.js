@@ -115,6 +115,60 @@ router.get('/settings/subscription/cancel', (req, res, next) => {
   }
 });
 
+router.get('/settings/subscription/renew', (req, res, next) => {
+  if (req.session.loggedin) {
+    Subscription.getCond({uid: req.session.user.id}).then(subscription => {
+      if (subscription.status !== 2) {
+        req.flash('info', 'There was a problem renewing your subscription!');
+        res.sendStatus(200);
+      } else {
+        Plan.getCond({id: subscription.plan}).then(plan => {
+          stripe.subscriptions.update(subscription.sid, {plan: plan.name}, (err, confirmation) => {
+            if (err) {
+              req.flash('info', 'There was a problem renewing your subscription!');
+              res.sendStatus(200);
+            } else {
+              Subscription.upgrade(req.session.user.id, {canceled: null, status: 1}).then(subscription => {
+                req.flash('info', 'Your subscription was renewed successfully!');
+                res.sendStatus(200);
+              });
+            }
+          });
+        });
+      }
+    });
+  } else {
+    res.redirect(baseURL + '/');
+  }
+});
+
+router.get('/settings/subscription/upgrade', (req, res, next) => {
+  if (req.session.loggedin) {
+    Subscription.getCond({uid: req.session.user.id}).then(subscription => {
+      if (subscription.status > 2) {
+        req.flash('info', 'There was a problem upgrading your subscription!');
+        res.sendStatus(200);
+      } else {
+        Plan.getCond({id: 4}).then(plan => {
+          stripe.subscriptions.update(subscription.sid, {plan: plan.name}, (err, confirmation) => {
+            if (err) {
+              req.flash('info', 'There was a problem upgrading your subscription!');
+              res.sendStatus(200);
+            } else {
+              Subscription.upgrade(req.session.user.id, {canceled: null, status: 1, plan: 4}).then(subscription => {
+                req.flash('info', 'Your subscription was upgraded successfully!');
+                res.sendStatus(200);
+              });
+            }
+          });
+        });
+      }
+    });
+  } else {
+    res.redirect(baseURL + '/');
+  }
+});
+
 // Login //
 router.get('/login', (req, res, next) => {
   if (req.session.loggedin) {

@@ -16,7 +16,7 @@
         </div>
         <h3>Subscription</h3>
         <% if (session.user.tierID === 1) { %>
-          <p>You don't currently have an active subscription.</p>
+          <p>You don't currently have an active subscription.<br>Check out the available upgrade options <a href="upgrade" class='green'>here</a>.</p>
           <% } else {
             if (tier.results === 0) tier.results = "unlimited";
             if (tier.apis === 0) tier.apis = "unlimited";
@@ -27,8 +27,10 @@
           -<span class='green' id="dailyResults"><%= tier.results %></span> daily results<br>
           -<span class='green' id="resultsPerRequest"><%= tier.per %></span> results per request<br>
           -<span class='green'><%= tier.apis %></span> APIs at a rate of <span class='green' id="price">$<%= tier.price %></span> per month.<br><br>
+          <%- subscription.status === 2 ? "Your account will be downgraded to the <span class='green'>free</span> tier at the end of your subscription period.<br>" : "" %>
           Your current subscription will <%= subscription.status === 2 ? " end " : " be renewed on " %> <span class='green' id="renewalDate"><%= subscription.current_period_end %></span>.<br><br>
-          <%- subscription.status !== 2 ? "<input type='button' id='cancelSubscription' value='Cancel Subscription'>" : "" %>
+          <%- subscription.status === 2 ? "<input type='button' class='greenButton' id='renewSubscription' value='Renew Subscription'>" : "" %>
+          <%- subscription.status !== 2 ? "<input type='button' class='redButton' id='cancelSubscription' value='Cancel Subscription'>" : "" %>
           </p>
           <% if (tier.name !== "Premium") { %>
             <h4>Available upgrades</h4>
@@ -42,7 +44,7 @@
                   <li><span id="main">25 MB</span> list data</li>
                   <li><span id="main">unlimited</span> APIs</li>
                   <li id='upgradeButton'>
-                    <input type="button" onClick="premiumUpgrade()" id="upgrade" value="Upgrade">
+                    <input type="button" id="upgradeSubscription" value="Upgrade">
                   </li>
                 </ul>
               </div>
