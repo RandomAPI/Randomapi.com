@@ -43,10 +43,8 @@ function lintCode() {
 
 function updateCharCount() {
   let len = editor.getValue().length;
-  if (len > 8192) {
-    $("#currentCharCount").css('color', 'red');
-  } else {
-    $("#currentCharCount").css('color', 'black');
+  if (len >= 8192) {
+    editor.setValue(editor.getValue().slice(0, 8192), 1);
   }
   $("#currentCharCount").html(numeral(len).format(','));
 }
