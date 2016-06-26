@@ -216,6 +216,11 @@ router.get('/register', (req, res, next) => {
   }
 });
 
+router.get('/register/guest', (req, res, next) => {
+  req.flash('info', "Please create an account first before you upgrade to a subscription plan.");
+  res.redirect(baseURL + '/register');
+});
+
 router.post('/register', (req, res, next) => {
   if (!req.session.loggedin) {
     User.register(req.body).then(data => {

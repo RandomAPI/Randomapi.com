@@ -5,54 +5,65 @@
 </head>
 <body>
   <% include ../snippets/navbar %>
-
   <div class="container main">
     <section class="hero">
       <h3>Choose from our 3 simple plans</h3>
       <h5 id="subtitle"></h5>
     </section>
     <div class="row">
-      <table class="table table-striped pricingTable" style="width: 75%">
-        <thead>
-          <tr>
-            <th><h3>Free</h3></th>
-            <th><h3>Standard</h3></th>
-            <th><h3>Premium</h3></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><span class='price'>$0.00</span> <span class='subprice'>/ month</span></td>
-            <td><span class='price'>$2.50</span> <span class='subprice'>/ month</span></td>
-            <td><span class='price'>$5.00</span> <span class='subprice'>/ month</span></td>
-          </tr>
-          <tr>
-            <td><span class='price'>1,000</span> <span class='subprice'> daily results</span></td>
-            <td><span class='price'>100,000</span> <span class='subprice'> daily results</span></td>
-            <td><span class='price'>unlimited</span> <span class='subprice'> daily results</span></td>
-          </tr>
-          <tr>
-            <td><span class='price'>10</span> <span class='subprice'> results / request</span></td>
-            <td><span class='price'>500</span> <span class='subprice'> results / request</span></td>
-            <td><span class='price'>5,000</span> <span class='subprice'> results / request</span></td>
-          </tr>
-          <tr>
-            <td><span class='price'>256 KB</span> <span class='subprice'> list data</span></td>
-            <td><span class='price'>5 MB</span> <span class='subprice'> list data</span></td>
-            <td><span class='price'>50 MB</span> <span class='subprice'> list data</span></td>
-          </tr>
-          <tr>
-            <td><span class='price'>1</span> <span class='subprice'> API</span></td>
-            <td><span class='price'>10</span> <span class='subprice'> APIs</span></td>
-            <td><span class='price'>unlimited</span> <span class='subprice'> APIs</span></td>
-          </tr>
-          <tr>
-            <td colspan='3'>Please sign up first before upgrading.</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="container">
+        <div class="pricingTable">
+          <div class="card">
+            <div class="title" style="color:#012212">Free</div>
+            <div class="pricing">$0.00<span class='subpricing'> / month</span></div>
+            <div class="info">
+              <ul>
+                <li><span id="main">1,000</span> daily results</li>
+                <li><span id="main">10</span> results / request</li>
+                <li><span id="main">256 KB</span> list data</li>
+                <li><span id="main">1</span> API</li>
+                <li id='upgradeButton'>
+                  <input type="button" id="selectPlan" onClick="selectPlan()" value="Select Plan">
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="card">
+            <div class="title" style="color: #056335">Standard</div>
+            <div class="pricing">$2.50<span class='subpricing'> / month</span></div>
+            <div class="info">
+              <ul>
+                <li><span id="main">100,000</span> daily results</li>
+                <li><span id="main">500</span> results / request</li>
+                <li><span id="main">5 MB</span> list data</li>
+                <li><span id="main">10</span> APIs</li>
+                <li id='upgradeButton'>
+                  <input type="button" id="selectPlan" onClick="selectPlan()" value="Select Plan">
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="card">
+            <div class="title" style="color: #0CB863">Premium</div>
+            <div class="pricing">$5.00<span class='subpricing'> / month</span></div>
+            <div class="info">
+              <ul>
+                <li><span id="main">unlimited</span> daily results</li>
+                <li><span id="main">2,500</span> results / request</li>
+                <li><span id="main">25 MB</span> list data</li>
+                <li><span id="main">unlimited</span> APIs</li>
+                <li id='upgradeButton'>
+                  <input type="button" id="selectPlan" onClick="selectPlan()" value="Select Plan">
+                </li>
+              </ul>
+            </div>
+          </div>
+          <p><br><b><span style="color: orange">Beta users</span></b>: These are the current prices and perks. If you purchase a subscription during the beta period, it'll carry over when RandomAPI releases with the same monthly charge. Beta prices will most likely increase and perk values will <b>definitely</b> increase in the final version.</p>
+        </div>
+      </div>
     </div>
   </div>
   <% include ../snippets/footer %>
+  <script src="js/pricing.js"></script>
 </body>
 </html>
