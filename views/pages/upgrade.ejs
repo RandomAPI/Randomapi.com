@@ -5,10 +5,6 @@
 </head>
 <body>
   <% include ../snippets/navbar %>
-  <%
-    let selected = {[session.tier.name.toLowerCase()]: 'disabled'};
-  %>
-
   <div class="container main">
     <section class="hero">
       <h3>Choose from our 3 simple plans</h3>
@@ -27,24 +23,7 @@
                 <li><span id="main">256 KB</span> list data</li>
                 <li><span id="main">1</span> API</li>
                 <li id='upgradeButton'>
-                  <% if (selected['free'] === 'disabled') { %>
-                    <button type="submit" class="stripe-button-el <%= selected['free'] %>" style="visibility: visible;"><span style="display: block; min-height: 30px;">Current Plan</span></button>
-                  <% } else { %>
-                    <form action="charge" method="POST">
-                      <script 
-                        src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-                        data-key="pk_test_Kz9PkZwjRRlC4g6vMqzIRHGk"
-                        data-amount="250"
-                        data-name="RandomAPI"
-                        data-description="RandomAPI Standard Tier (Beta)"
-                        data-image="https://s3.amazonaws.com/stripe-uploads/acct_102bx12y2KIUsl34merchant-icon-499777-logo.png"
-                        data-locale="auto"
-                        data-label="Upgrade"
-                        data-zip-code="true">
-                      </script>
-                      <input type="hidden" name="plan" value="standard_beta">
-                    </form>
-                  <% } %>
+                  <button type="submit" class="stripe-button-el disabled" style="visibility: visible;"><span style="display: block; min-height: 30px;">Unavailable</span></button>
                 </li>
               </ul>
             </div>
@@ -59,12 +38,9 @@
                 <li><span id="main">5 MB</span> list data</li>
                 <li><span id="main">10</span> APIs</li>
                 <li id='upgradeButton'>
-                <% if (selected['standard'] === 'disabled') { %>
-                  <button type="submit" class="stripe-button-el <%= selected['standard'] %>" style="visibility: visible;"><span style="display: block; min-height: 30px;">Current Plan</span></button>
-                <% } else { %>
                   <form action="charge" method="POST">
                     <script 
-                      src="https://checkout.stripe.com/checkout.js" class="stripe-button <%= selected['standard'] %>"
+                      src="https://checkout.stripe.com/checkout.js" class="stripe-button"
                       data-key="pk_test_Kz9PkZwjRRlC4g6vMqzIRHGk"
                       data-amount="250"
                       data-name="RandomAPI"
@@ -76,7 +52,6 @@
                     </script>
                     <input type="hidden" name="plan" value="standard_beta">
                   </form>
-                <% } %>
                 </li>
               </ul>
             </div>
@@ -91,10 +66,7 @@
                 <li><span id="main">25 MB</span> list data</li>
                 <li><span id="main">unlimited</span> APIs</li>
                 <li id='upgradeButton'>
-                  <% if (selected['premium'] === 'disabled') { %>
-                    <button type="submit" class="stripe-button-el <%= selected['premium'] %>" style="visibility: visible;"><span style="display: block; min-height: 30px;">Current Plan</span></button>
-                  <% } else { %>
-                    <form action="/charge" method="POST">
+                  <form action="/charge" method="POST">
                     <script 
                       src="https://checkout.stripe.com/checkout.js" class="stripe-button"
                       data-key="pk_test_Kz9PkZwjRRlC4g6vMqzIRHGk"
@@ -108,7 +80,6 @@
                     </script>
                     <input type="hidden" name="plan" value="premium_beta">
                   </form>
-                  <% } %>
                 </li>
               </ul>
             </div>

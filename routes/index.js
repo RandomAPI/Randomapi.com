@@ -26,7 +26,11 @@ router.get('/', (req, res, next) => {
 
 router.get('/upgrade', (req, res, next) => {
   if (req.session.loggedin) {
-    res.render('upgrade', _.merge(defaultVars, {title: 'Upgrade'}));
+    if (req.session.user.tierName === 'Free') {
+      res.render('upgrade', _.merge(defaultVars, {title: 'Upgrade'}));
+    } else {
+      res.redirect(baseURL + 'settings/subscription');
+    }
   } else {
     res.redirect(baseURL + '/');
   }

@@ -25,6 +25,13 @@ switch(path) {
   default:
     selected['home'] = style;
 }
+
+let upgrade;
+if (session.user.tierName === 'Free') {
+  upgrade = "upgrade";
+} else {
+  upgrade = "settings/subscription";
+}
 %>
 
 <div id="navbar" class="scroll">
@@ -33,7 +40,7 @@ switch(path) {
     <ul>
       <% if (session.loggedin === true) { %>
         <a href=""><li <%- selected['home'] %>>Home</li></a>
-        <a href="upgrade"><li <%- selected['pricing'] %>>Upgrade</li></a>
+        <a href="<%= upgrade %>"><li <%- selected['pricing'] %>>Upgrade</li></a>
         <a href="documentation"><li <%- selected['documentation'] %>>Documentation</li></a>
         <a href="settings"><li <%- selected['settings'] %>>Settings</li></a>
         <a href="logout"><li>Logout</li></a>
