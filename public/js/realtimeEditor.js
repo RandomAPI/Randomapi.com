@@ -20,12 +20,13 @@ var codeArea = $(editor.textInput.getElement());
 codeArea.keyup(function(){
   clearTimeout(typingTimer);
   typingTimer = setTimeout(lintCode, 250);
-  updateCharCount();
 });
 
 codeArea.keydown(function(){
   clearTimeout(typingTimer);
 });
+
+codeArea.bind('change keyup paste', updateCharCount);
 
 socket.on('codeLinted', function(msg) {
   if (msg.error === null) {
@@ -41,5 +42,11 @@ function lintCode() {
 };
 
 function updateCharCount() {
-  $("#currentCharCount").html(editor.getValue().length);
+  let len = editor.getValue().length;
+  if (len > 8192) {
+    $("#currentCharCount").css('color', 'red');
+  } else {
+    $("#currentCharCount").css('color', 'black');
+  }
+  $("#currentCharCount").html(numeral(len).format(','));
 }

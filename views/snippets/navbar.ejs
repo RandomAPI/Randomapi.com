@@ -27,7 +27,7 @@ switch(path) {
 }
 
 let upgrade;
-if (session.user.tierName === 'Free') {
+if (session.user !== undefined && session.user.tierName === 'Free') {
   upgrade = "upgrade";
 } else {
   upgrade = "settings/subscription";
