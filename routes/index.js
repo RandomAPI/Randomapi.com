@@ -6,13 +6,13 @@ const stripe  = require('../utils').stripe;
 const moment  = require('moment');
 
 const User = require('../models/User');
-const Subscription = require('../models/Subscription');
 const Tier = require('../models/Tier');
 const Plan = require('../models/Plan');
+const Subscription = require('../models/Subscription');
 
 // Setup defaultVars and baseURL for all routes
 let defaultVars, baseURL;
-router.all('*', function(req, res, next) {
+router.all('*', (req, res, next) => {
   defaultVars = req.app.get('defaultVars');
   baseURL     = req.app.get('baseURL');
   next();
@@ -115,21 +115,21 @@ router.get('/settings/subscription/cancel', (req, res, next) => {
   }
 });
 
-router.get('/settings/subscription/renew', (req, res, next) => {
+router.get('/settings/subscription/restart', (req, res, next) => {
   if (req.session.loggedin) {
     Subscription.getCond({uid: req.session.user.id}).then(subscription => {
       if (subscription.status !== 2) {
-        req.flash('info', 'There was a problem renewing your subscription!');
+        req.flash('info', 'There was a problem restarting your subscription!');
         res.sendStatus(200);
       } else {
         Plan.getCond({id: subscription.plan}).then(plan => {
           stripe.subscriptions.update(subscription.sid, {plan: plan.name}, (err, confirmation) => {
             if (err) {
-              req.flash('info', 'There was a problem renewing your subscription!');
+              req.flash('info', 'There was a problem restarting your subscription!');
               res.sendStatus(200);
             } else {
               Subscription.upgrade(req.session.user.id, {canceled: null, status: 1}).then(subscription => {
-                req.flash('info', 'Your subscription was renewed successfully!');
+                req.flash('info', 'Your subscription was restarted successfully!');
                 res.sendStatus(200);
               });
             }

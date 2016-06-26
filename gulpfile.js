@@ -1,9 +1,9 @@
-var gulp       = require('gulp');
-var mocha      = require('gulp-mocha');
-var uglify     = require('gulp-uglifyjs');
-var concat     = require('gulp-concat');
-var ejsmin     = require('gulp-ejsmin');
-var through    = require('through2')
+var gulp    = require('gulp');
+var mocha   = require('gulp-mocha');
+var uglify  = require('gulp-uglifyjs');
+var concat  = require('gulp-concat');
+var ejsmin  = require('gulp-ejsmin');
+var through = require('through2')
 
 gulp.task('minify-ejs-pages', () => {
   // Save the pre tag contents

@@ -29,7 +29,7 @@ const GeneratorForker = function(options) {
 
   // Queue to push generate requests into
   this.queue = async.queue((task, callback) => {
-    self.jobCount++;
+    this.jobCount++;
 
     // Realtime or Speedtest
     if (task.socket !== undefined) {
@@ -41,7 +41,7 @@ const GeneratorForker = function(options) {
       } else {
         options = {key: task.data.owner.apikey, src: task.data.src, ref: task.data.ref};
       }
-      self.generate({mode: 'lint', options}, (error, results, fmt) => {
+      this.generate({mode: 'lint', options}, (error, results, fmt) => {
         if (results.length > 65535) {
           results = "Warning: Output has been truncated\n---------------\n" + results.slice(0, 65535);
         }
@@ -57,7 +57,7 @@ const GeneratorForker = function(options) {
       }
       _.merge(task.req.query, {ref});
 
-      self.generate({mode: 'generate', options: task.req.query}, (error, results, fmt) => {
+      this.generate({mode: 'generate', options: task.req.query}, (error, results, fmt) => {
         if (fmt === 'json') {
           task.res.setHeader('Content-Type', 'application/json');
         } else if (fmt === 'xml') {
@@ -130,8 +130,6 @@ const GeneratorForker = function(options) {
 util.inherits(GeneratorForker, EventEmitter);
 
 GeneratorForker.prototype.fork = function() {
-  let self = this;
-
   // Fork new Generator with provided info
   this.generator = fork(__dirname + '/Generator', [this.name, JSON.stringify(this.info)]);
 
@@ -141,11 +139,11 @@ GeneratorForker.prototype.fork = function() {
     if (msg.type === 'lookup') {
       if (msg.mode === 'api') {
         API.getCond({ref: msg.data}).then(doc => {
-          self.generator.send({type: 'response', mode: 'api', data: doc});
+          this.generator.send({type: 'response', mode: 'api', data: doc});
         });
       } else if (msg.mode === 'user') {
         User.getCond({["u.id"]: msg.data}).then(doc => {
-          self.generator.send({type: 'response', mode: 'user', data: doc});
+          this.generator.send({type: 'response', mode: 'user', data: doc});
         });
       } else if (msg.mode === 'list') {
         // Check if list exists in the cache
@@ -155,10 +153,10 @@ GeneratorForker.prototype.fork = function() {
           if (result === 1) {
 
             // Update TTL
-            redis.expire("list:" + msg.data.ref, settings.generators[self.name].redisTTL);
-            redis.expire("list:" + msg.data.ref + ":contents", settings.generators[self.name].redisTTL);
+            redis.expire("list:" + msg.data.ref, settings.generators[this.name].redisTTL);
+            redis.expire("list:" + msg.data.ref + ":contents", settings.generators[this.name].redisTTL);
 
-            redis.hgetall("list:" + msg.data.ref, function(err, obj) {
+            redis.hgetall("list:" + msg.data.ref, (err, obj) => {
 
               // Verify user has permission to access this list
               if (Number(obj.owner) === msg.data.user.id) {
@@ -168,9 +166,9 @@ GeneratorForker.prototype.fork = function() {
                   redis.hset("list:" + obj.ref, "lastUsed", new Date().getTime());
                 }
 
-                self.generator.send({type: 'response', mode: 'list', data: true});
+                this.generator.send({type: 'response', mode: 'list', data: true});
               } else {
-                self.generator.send({type: 'response', mode: 'list', data: false});
+                this.generator.send({type: 'response', mode: 'list', data: false});
               }
             });
 
@@ -178,25 +176,22 @@ GeneratorForker.prototype.fork = function() {
           } else {
             List.getCond({ref: msg.data.ref, owner: msg.data.user.id}).then(doc => {
               if (doc === null) {
-                self.generator.send({type: 'response', mode: 'list', data: false});
+                this.generator.send({type: 'response', mode: 'list', data: false});
               } else {
                 fs.readFile(process.cwd() + '/data/lists/' + doc.id + '.list', 'utf8', (err, file) => {
                   redis.hmset("list:" + doc.ref, {
                     added: new Date().getTime(),
                     size: file.length,
-                    //content: file,
-                    //content: JSON.stringify(file.split('\n').slice(0, -1)),
                     owner: doc.owner,
                     lastUsed: new Date().getTime()
                   }, (err, res) => {
                     redis.SADD("list:" + doc.ref + ":contents", file.split('\n').slice(0, -1), () => {
-                    //redis.hmset("list:" + doc.ref + ":contents", Object.assign({}, file.split('\n').slice(0, -1)), () => {
 
                       // Add TTL
-                      redis.expire("list:" + doc.ref, settings.generators[self.name].redisTTL);
-                      redis.expire("list:" + doc.ref + ":contents", settings.generators[self.name].redisTTL);
+                      redis.expire("list:" + doc.ref, settings.generators[this.name].redisTTL);
+                      redis.expire("list:" + doc.ref + ":contents", settings.generators[this.name].redisTTL);
 
-                      self.generator.send({type: 'response', mode: 'list', data: true});
+                      this.generator.send({type: 'response', mode: 'list', data: true});
                     });
                   });
                 });
@@ -206,19 +201,19 @@ GeneratorForker.prototype.fork = function() {
         });
       }
     } else if (msg.type === 'done') {
-      self.emit('taskFinished', {error: msg.data.error, results: msg.data.results, fmt: msg.data.fmt});
+      this.emit('taskFinished', {error: msg.data.error, results: msg.data.results, fmt: msg.data.fmt});
     } else if (msg.type === 'cmdComplete') {
       if (msg.mode === 'memory') {
-        self.emit('memComplete', msg.content);
+        this.emit('memComplete', msg.content);
       } else if (msg.mode === 'lists') {
-        self.emit('listsComplete', msg.content);
+        this.emit('listsComplete', msg.content);
       } else if (msg.mode === 'listCache') {
-        self.emit('listCacheComplete', msg.content);
+        this.emit('listCacheComplete', msg.content);
       }
     } else if (msg.type === 'pong') {
-      self.emit('pong');
+      this.emit('pong');
     } else if (msg.type === 'ping') {
-      self.send({
+      this.send({
         type: 'pong'
       });
     }
@@ -228,10 +223,8 @@ GeneratorForker.prototype.fork = function() {
 // Opts contains options and mode
 // cb(err, results, fmt)
 GeneratorForker.prototype.generate = function(opts, cb) {
-  let self = this;
-
   // Send generator a new task using the given mode and options
-  self.send({
+  this.send({
     type: 'task',
     mode: opts.mode,
     data: opts.options
@@ -275,6 +268,7 @@ GeneratorForker.prototype.emptyListCache = function() {
 };
 
 GeneratorForker.prototype.send = function(obj) {
+  // Prevent crashes if the Generator is in the middle of restarting
   try {
     this.generator.send(obj);
   } catch(e) {}

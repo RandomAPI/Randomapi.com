@@ -6,8 +6,8 @@ const contrib  = require('blessed-contrib');
 const pad      = require('./utils').pad;
 const logger   = require('./utils').logger;
 const redis    = require('./utils').redis;
+const settings = require('./utils').settings;
 const app      = require('./app').app;
-const settings = require('./settings.json');
 
 const screen  = blessed.screen();
 const grid    = new contrib.grid({rows: 12, cols: 12, screen: screen});
@@ -16,10 +16,10 @@ const Generators = app.get('Generators');
 const types      = Object.keys(settings.generators);
 
 // For graphing stats
-let queueStats = {};
-let memStats   = {};
+let queueStats     = {};
+let memStats       = {};
 let listCacheStats = {};
-let jobStats   = {};
+let jobStats       = {};
 
 // Shared bar options
 const barOpts = {
@@ -30,9 +30,9 @@ const barOpts = {
 };
 
 const bars = {
-  basic: grid.set(0, 0, 2, 1, contrib.bar, _.merge(barOpts, {label: 'Basic Queue', barBgColor: 'red'})),
-  standard: grid.set(0, 1, 2, 1, contrib.bar, _.merge(barOpts, {label: 'Standard Queue', barBgColor: 'green'})),
-  premium: grid.set(0, 2, 2, 1, contrib.bar, _.merge(barOpts, {label: 'Premium Queue', barBgColor: 'cyan'}))
+  basic:    grid.set(0, 0, 2, 1, contrib.bar, _.merge(barOpts, {label: 'Basic', barBgColor: 'red'})),
+  standard: grid.set(0, 1, 2, 1, contrib.bar, _.merge(barOpts, {label: 'Standard', barBgColor: 'green'})),
+  premium:  grid.set(0, 2, 2, 1, contrib.bar, _.merge(barOpts, {label: 'Premium', barBgColor: 'cyan'}))
 };
 
 _.each(bars, bar => screen.append(bar));
@@ -44,16 +44,16 @@ const tableOpts = {
 };
 
 const tables = {
-  basic: grid.set(0, 3, 2, 1, contrib.table, _.merge(tableOpts, {fg: 'red', label: 'Basic Gens'})),
-  standard: grid.set(0, 4, 2, 1, contrib.table, _.merge(tableOpts, {fg: 'green', label: 'Standard Gens'})),
-  premium: grid.set(0, 5, 2, 1, contrib.table, _.merge(tableOpts, {fg: 'cyan', label: 'Premium Gens'})),
+  basic:    grid.set(0, 3, 2, 1, contrib.table, _.merge(tableOpts, {label: 'Basic', fg: 'red'})),
+  standard: grid.set(0, 4, 2, 1, contrib.table, _.merge(tableOpts, {label: 'Standard', fg: 'green'})),
+  premium:  grid.set(0, 5, 2, 1, contrib.table, _.merge(tableOpts, {label: 'Premium', fg: 'cyan'})),
 };
 
 const generateTables = () => {
   let data = {
-    basic: [],
+    basic:    [],
     standard: [],
-    premium: []
+    premium:  []
   };
 
   for (let j = 0; j < 3; j++) {
@@ -109,13 +109,13 @@ const eventLoopResponseAvg = grid.set(4, 8, 3, 4, contrib.line, {
   }
 });
 
-let basicStats = { title: '', style: {line: 'red'}, y: [] };
+let basicStats    = { title: '', style: {line: 'red'}, y: [] };
 let standardStats = { title: '', style: {line: 'green'}, y: [] };
-let premiumStats = { title: '', style: {line: 'cyan'}, y: [] };
-let botline = { title: '', style: {line: 'white'}, x:[], y: [] };
+let premiumStats  = { title: '', style: {line: 'cyan'}, y: [] };
+let botline       = { title: '', style: {line: 'white'}, x:[], y: [] };
 
-let redisLine = { title: '', style: {line: 'red'}, x:[], y: [] };
-let memoryLine = { title: '', style: {line: 'green'}, x:[], y: [] };
+let redisLine     = { title: '', style: {line: 'red'}, x:[], y: [] };
+let memoryLine    = { title: '', style: {line: 'green'}, x:[], y: [] };
 let listCacheLine = { title: '', style: {line: 'cyan'}, x:[], y: [] };
 
 let eventLine = { title: 'eventLine', style: {line: 'green'}, x:[], y: [] };
@@ -138,10 +138,10 @@ let loadOpts = {
 };
 
 let loads = {
-  basic: grid.set(2, 0, 2, 1, contrib.donut, _.merge(loadOpts, {label: 'Basic Load', data: [{label: 'Basic Load', percent: 0}]})),
+  basic:    grid.set(2, 0, 2, 1, contrib.donut, _.merge(loadOpts, {label: 'Basic Load', data: [{label: 'Basic Load', percent: 0}]})),
   standard: grid.set(2, 1, 2, 1, contrib.donut, _.merge(loadOpts, {label: 'Standard Load', data: [{label: 'Standard Load', percent: 0}]})),
-  premium: grid.set(2, 2, 2, 1, contrib.donut, _.merge(loadOpts, {label: 'Premium Load', data: [{label: 'Premium Load', percent: 0}]})),
-  overall: grid.set(2, 3, 2, 1, contrib.donut, _.merge(loadOpts, {label: 'Overall Load', data: [{label: 'Overall Load', percent: 0}]})),
+  premium:  grid.set(2, 2, 2, 1, contrib.donut, _.merge(loadOpts, {label: 'Premium Load', data: [{label: 'Premium Load', percent: 0}]})),
+  overall:  grid.set(2, 3, 2, 1, contrib.donut, _.merge(loadOpts, {label: 'Overall Load', data: [{label: 'Overall Load', percent: 0}]})),
 };
 
 let instructions = grid.set(11, 0, 1, 12, contrib.markdown, {
@@ -177,7 +177,6 @@ const updateDonut = () => {
 }
 
 // Hotkeys
-
 screen.key(['C-q'], (ch, key) => process.exit(0));
 
 screen.key(['C-g'], (ch, key) => {
@@ -270,12 +269,15 @@ setInterval(() => {
 
   let memSum   = _.sum([_.sum(memStats.basic), _.sum(memStats.standard), _.sum(memStats.premium)]);
   let cacheSum = _.sum([_.sum(listCacheStats.basic), _.sum(listCacheStats.standard), _.sum(listCacheStats.premium)]);
+
   memoryLine.y.push(memSum);
   memoryLine.title = String(memSum + ' MB');
+
   redis.info('memory', (err, info) => {
     redisLine.y.push(Math.floor(info.split('\r\n')[1].slice(12)/1024/1024));
     redisLine.title = String(Math.floor(info.split('\r\n')[1].slice(12)/1024/1024) + ' MB');
   });
+
   listCacheLine.y.push(cacheSum);
   listCacheLine.title = String(cacheSum + ' MB');
 
@@ -298,8 +300,10 @@ setInterval(() => {
   }
   totalQueues.setData([botline, basicStats, standardStats, premiumStats]);
   totalMemory.setData([botline, memoryLine, redisLine, listCacheLine]);
+
   eventLoopResponseAvg.setData([botline, eventLine]);
   oldEventTime = tmp;
+
   screen.render();
 }, 1000)
 
@@ -308,5 +312,4 @@ setInterval(() => {
    updateDonut();
    screen.render()
 }, 250)
-
 ////////////

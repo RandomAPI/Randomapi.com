@@ -35,7 +35,6 @@
     "morgan": "~1.5.1",
     "multer": "^1.1.0",
     "mysql": "^2.11.1",
-    "mysql2": "^1.0.0-rc.4",
     "numeral": "^1.5.3",
     "redis": "~0.12.1",
     "serve-favicon": "~2.2.0",

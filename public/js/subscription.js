@@ -1,8 +1,8 @@
-$(function() {
-  var renewalDate = $('#renewalDate');
-  var dailyResults = $('#dailyResults');
-  var resultsPerRequest = $('#resultsPerRequest');
-  var price = $('#price');
+$(() => {
+  let renewalDate = $('#renewalDate');
+  let dailyResults = $('#dailyResults');
+  let resultsPerRequest = $('#resultsPerRequest');
+  let price = $('#price');
 
   renewalDate.html(moment(new Date(renewalDate.html())).format('LL'));
 
@@ -12,26 +12,26 @@ $(function() {
   resultsPerRequest.html(numeral(Number(resultsPerRequest.html())).format(','))
   price.html(numeral(price.html()).format('$0.00'))
 
-  $("#premiumUpgrade").click(function() {
-    $.post('', {code: editor.getValue()}, function(url) {
+  $("#premiumUpgrade").click(() => {
+    $.post('', {code: editor.getValue()}, url => {
       window.location.replace(url);
     });
   });
 
   $("#cancelSubscription").click(() => {
-    $.get('settings/subscription/cancel', function() {
+    $.get('settings/subscription/cancel', () => {
       window.location.replace('settings/subscription');
     });
   });
 
-  $("#renewSubscription").click(() => {
-    $.get('settings/subscription/renew', function() {
+  $("#restartSubscription").click(() => {
+    $.get('settings/subscription/restart', () => {
       window.location.replace('settings/subscription');
     });
   });
 
   $("#upgradeSubscription").click(() => {
-    $.get('settings/subscription/upgrade', function() {
+    $.get('settings/subscription/upgrade', () => {
       window.location.replace('settings/subscription');
     });
   });

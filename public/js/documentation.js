@@ -1,8 +1,8 @@
-$(function() {
+$(() => {
   hljs.initHighlightingOnLoad();
-  $('a[href*=\\#]:not([href=\\#])').click(function() {
+  $('a[href*=\\#]:not([href=\\#])').click(() => {
     if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') && location.hostname == this.hostname) {
-      var target = $(this.hash);
+      let target = $(this.hash);
       target = target.length ? target : $('[name=' + this.hash.slice(1) +']');
       if (target.length) {
         $('html,body').animate({
@@ -17,8 +17,8 @@ $(function() {
   scrollHighlight();
 
   function scrollHighlight() {
-    var found = false;
-    var namedHrefs = $('a').filter((key, item) => $(item).attr('name') !== undefined);
+    let found = false;
+    let namedHrefs = $('a').filter((key, item) => $(item).attr('name') !== undefined);
 
     namedHrefs.each((key, val) => {
       if (($(val).offset().top - $(window).scrollTop() >= 0 && !found) || (!found && namedHrefs.length-1 === key)) {

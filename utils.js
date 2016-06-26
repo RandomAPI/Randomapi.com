@@ -4,7 +4,7 @@ const redis    = require('redis').createClient();
 const settings = require('./settings.json');
 const stripe   = require("stripe")(settings.stripe.key);
 
-redis.on('error',function(err){ module.exports.logger(err)})
+redis.on('error', err => module.exports.logger(err));
 module.exports = {
   pad(n, width, z) {
     z = z || '0';
@@ -67,5 +67,6 @@ module.exports = {
     }
   },
   redis,
-  stripe
+  stripe,
+  settings
 };
