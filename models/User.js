@@ -61,9 +61,9 @@ module.exports = {
       if (cond.query !== undefined) {
         db.query('SELECT u.*, t.id AS tierID, \
         t.results AS tierResults, t.name AS tierName FROM `user` u \
-        INNER JOIN `Subscription` s ON (u.id=s.uid) \
-        INNER JOIN `Plan` p ON (s.plan=p.id) \
-        INNER JOIN `Tier` t ON (p.tier=t.id) WHERE ? ' + cond.query, (err, data) => {
+        INNER JOIN `subscription` s ON (u.id=s.uid) \
+        INNER JOIN `plan` p ON (s.plan=p.id) \
+        INNER JOIN `tier` t ON (p.tier=t.id) WHERE ? ' + cond.query, (err, data) => {
           if (err) reject(err);
           else if (data.length === 0) resolve(null);
           else if (data.length === 1) resolve(data[0]);
@@ -72,9 +72,9 @@ module.exports = {
       } else {
         db.query('SELECT u.*, t.id AS tierID, \
         t.results AS tierResults, t.name AS tierName FROM `user` u \
-        INNER JOIN `Subscription` s ON (u.id=s.uid) \
-        INNER JOIN `Plan` p ON (s.plan=p.id) \
-        INNER JOIN `Tier` t ON (p.tier=t.id) WHERE ?', cond, (err, data) => {
+        INNER JOIN `subscription` s ON (u.id=s.uid) \
+        INNER JOIN `plan` p ON (s.plan=p.id) \
+        INNER JOIN `tier` t ON (p.tier=t.id) WHERE ?', cond, (err, data) => {
           if (err) reject(err);
           else if (data.length === 0) resolve(null);
           else if (data.length === 1) resolve(data[0]);
