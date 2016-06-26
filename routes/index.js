@@ -2,6 +2,8 @@ const express = require('express');
 const _       = require('lodash');
 const router  = express.Router();
 const logger  = require('../utils').logger;
+const stripe  = require('../utils').stripe;
+const moment  = require('moment');
 
 const User = require('../models/User');
 const Subscription = require('../models/Subscription');
@@ -38,7 +40,7 @@ router.get('/upgrade', (req, res, next) => {
 
 router.get('/pricing', (req, res, next) => {
   if (req.session.loggedin) {
-    res.render('upgrade', _.merge(defaultVars, {title: 'Upgrade'}));
+    res.redirect(baseURL + 'upgrade');
   } else {
     res.render('pricing', _.merge(defaultVars, {title: 'Pricing'}));
   }
@@ -85,20 +87,33 @@ router.get('/settings/subscription', (req, res, next) => {
       Plan.getCond({id: subscription.plan}).then(plan => {
         Tier.getCond({id: plan.tier}).then(tier => {
           res.render('settings/subscription', _.merge(defaultVars, {title: 'Subscription', plan, tier, subscription}));
-        }, (err) => {
-          console.log(err);
         });
-      }, (err) => {
-        console.log(err);
       });
-    }, (err) => {
-      console.log(err);
     });
   } else {
     res.redirect(baseURL + '/');
   }
 });
 
+router.get('/settings/subscription/cancel', (req, res, next) => {
+  if (req.session.loggedin) {
+    Subscription.getCond({uid: req.session.user.id}).then(subscription => {
+      stripe.subscriptions.del(subscription.sid, {at_period_end: true}, (err, confirmation) => {
+        if (err) {
+          req.flash('info', 'There was a problem canceling your subscription!');
+          res.sendStatus(200);
+        } else {
+          Subscription.upgrade(req.session.user.id, {canceled: moment(new Date().getTime()).format("YYYY-MM-DD HH:mm:ss"), status: 2}).then(subscription => {
+            req.flash('info', 'Your subscription will be canceled at the end of your billing period!');
+            res.sendStatus(200);
+          });
+        }
+      });
+    });
+  } else {
+    res.redirect(baseURL + '/');
+  }
+});
 
 // Login //
 router.get('/login', (req, res, next) => {

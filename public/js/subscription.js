@@ -11,4 +11,16 @@ $(function() {
   }
   resultsPerRequest.html(numeral(Number(resultsPerRequest.html())).format(','))
   price.html(numeral(price.html()).format('$0.00'))
+
+  $("#premiumUpgrade").click(function() {
+    $.post('', {code: editor.getValue()}, function(url) {
+      window.location.replace(url);
+    });
+  });
+
+  $("#cancelSubscription").click(() => {
+    $.get('settings/subscription/cancel', function() {
+      window.location.replace('settings/subscription');
+    });
+  });
 });

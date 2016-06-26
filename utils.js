@@ -1,6 +1,8 @@
-const moment = require('moment');
-const _      = require('lodash');
-const redis  = require('redis').createClient();
+const moment   = require('moment');
+const _        = require('lodash');
+const redis    = require('redis').createClient();
+const settings = require('./settings.json');
+const stripe   = require("stripe")(settings.stripe.key);
 
 redis.on('error',function(err){ module.exports.logger(err)})
 module.exports = {
@@ -64,5 +66,6 @@ module.exports = {
       return cond;
     }
   },
-  redis
+  redis,
+  stripe
 };
