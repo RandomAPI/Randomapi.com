@@ -8,6 +8,7 @@ const Tier    = require('../models/Tier');
 router.get('/:ref?', (req, res, next) => {
   const Generators = req.app.get('Generators');
   let type = Math.floor(Math.random() * 100);
+
   if (req.query.key === undefined) {
     return res.status(404).send({error: "MISSING_API_KEY"});
   } else if (req.query.ref === undefined && req.params.ref === undefined) {

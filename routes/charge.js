@@ -12,7 +12,7 @@ const Tier = require('../models/Tier');
 
 // Setup defaultVars and baseURL for all routes
 let defaultVars, baseURL;
-router.all('*', function(req, res, next) {
+router.all('*', (req, res, next) => {
   defaultVars = req.app.get('defaultVars');
   baseURL     = req.app.get('baseURL');
   next();
@@ -27,15 +27,15 @@ router.post('/', (req, res, next) => {
     source: stripeToken,
     plan: req.body.plan,
     email: req.body.stripeEmail
-  }, function(err, customer) {
-    // customer.id, customer.email, customer.created
-    // customer.subscriptions.data[0].id, customer.subscriptions.data[0].id, customer.subscriptions.data[0].current_period_end
-    // customer.subscriptions.data[0].plan.id, customer.subscriptions.data[0].plan.amount, customer.subscriptions.data[0].plan.name
+  }, (err, customer) => {
+
     if (err) {
       req.flash('info', 'There was a problem upgrading your account');
       res.redirect(baseURL + '/');
+
     } else {
       Plan.getCond({name: req.body.plan,}).then(plan => {
+
         Subscription.upgrade({uid: req.session.user.id}, {
           cid: customer.id,
           sid: customer.subscriptions.data[0].id,
@@ -44,11 +44,13 @@ router.post('/', (req, res, next) => {
           current_period_end: moment(customer.subscriptions.data[0].current_period_end*1000).format("YYYY-MM-DD HH:mm:ss"),
           plan: plan.id
         }).then(() => {
+
           Tier.getCond({id: plan.tier}).then(tier => {
-            req.flash('info', 'Your account was upgraded successfully to the <span class="green">' + tier.name + "</span> tier!");
+            req.flash('info', `Your account was upgraded successfully to the <span class="green">${tier.name}</span> tier!`);
             res.redirect(baseURL + '/');
           });
         });
+
       }, () => {
         req.flash('info', 'There was a problem upgrading your account');
         res.redirect(baseURL + '/');

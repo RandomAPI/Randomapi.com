@@ -5,7 +5,7 @@ USE randomapi;
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jun 19, 2016 at 05:36 PM
+-- Generation Time: Jun 26, 2016 at 08:59 PM
 -- Server version: 5.7.13
 -- PHP Version: 5.5.36
 
@@ -28,7 +28,7 @@ SET time_zone = "+00:00";
 -- Table structure for table `api`
 --
 
-CREATE TABLE IF NOT EXISTS `api` (
+CREATE TABLE `api` (
   `id` int(11) NOT NULL,
   `ref` varchar(8) NOT NULL,
   `name` varchar(32) NOT NULL,
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS `api` (
 -- Table structure for table `generator`
 --
 
-CREATE TABLE IF NOT EXISTS `generator` (
+CREATE TABLE `generator` (
   `id` int(11) NOT NULL,
   `version` varchar(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -60,11 +60,55 @@ INSERT INTO `generator` (`id`, `version`) VALUES
 -- Table structure for table `list`
 --
 
-CREATE TABLE IF NOT EXISTS `list` (
+CREATE TABLE `list` (
   `id` int(11) NOT NULL,
   `ref` varchar(8) NOT NULL,
   `name` varchar(32) NOT NULL,
   `owner` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `plan`
+--
+
+CREATE TABLE `plan` (
+  `id` int(11) NOT NULL,
+  `name` varchar(32) NOT NULL,
+  `tier` int(11) NOT NULL DEFAULT '1'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `plan`
+--
+
+INSERT INTO `plan` (`id`, `name`, `tier`) VALUES
+(1, 'free', 1),
+(2, 'standard_beta', 2),
+(3, 'standard', 2),
+(4, 'premium_beta', 3),
+(5, 'premium', 3),
+(6, 'standard_legacy', 2),
+(7, 'premium_legacy', 3);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `subscription`
+--
+
+CREATE TABLE `subscription` (
+  `id` int(11) NOT NULL,
+  `cid` varchar(32) DEFAULT NULL,
+  `sid` varchar(32) DEFAULT NULL,
+  `uid` int(11) NOT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `created` timestamp NULL DEFAULT NULL,
+  `canceled` timestamp NULL DEFAULT NULL,
+  `plan` int(11) NOT NULL DEFAULT '1',
+  `current_period_end` timestamp NULL DEFAULT NULL,
+  `status` int(11) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -90,7 +134,7 @@ CREATE TABLE `tier` (
 INSERT INTO `tier` (`id`, `name`, `price`, `memory`, `results`, `per`, `apis`) VALUES
 (1, 'Free', '0.00', 262144, 1000, 10, 1),
 (2, 'Standard', '2.50', 5242880, 100000, 500, 10),
-(3, 'Premium', '5.00', 52428800, 0, 5000, 0);
+(3, 'Premium', '5.00', 26214400, 0, 2500, 0);
 
 -- --------------------------------------------------------
 
@@ -98,13 +142,20 @@ INSERT INTO `tier` (`id`, `name`, `price`, `memory`, `results`, `per`, `apis`) V
 -- Table structure for table `user`
 --
 
-CREATE TABLE IF NOT EXISTS `user` (
+CREATE TABLE `user` (
   `id` int(11) NOT NULL,
-  `username` varchar(16) NOT NULL,
+  `username` varchar(20) NOT NULL,
   `password` varchar(64) NOT NULL,
+  `joined` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `lastlogin` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `apikey` varchar(19) NOT NULL,
   `role` tinyint(4) NOT NULL DEFAULT '4',
-  `tier` tinyint(4) NOT NULL DEFAULT '1'
+  `memory` int(11) NOT NULL DEFAULT '0',
+  `apis` int(11) NOT NULL DEFAULT '0',
+  `timezone` double(3,1) NOT NULL,
+  `results` int(11) NOT NULL DEFAULT '0',
+  `lifetime` int(11) NOT NULL DEFAULT '0',
+  `referrer` text
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -131,6 +182,18 @@ ALTER TABLE `generator`
 ALTER TABLE `list`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `ref` (`ref`);
+
+--
+-- Indexes for table `plan`
+--
+ALTER TABLE `plan`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `subscription`
+--
+ALTER TABLE `subscription`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `tier`
@@ -164,6 +227,16 @@ ALTER TABLE `generator`
 -- AUTO_INCREMENT for table `list`
 --
 ALTER TABLE `list`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `plan`
+--
+ALTER TABLE `plan`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+--
+-- AUTO_INCREMENT for table `subscription`
+--
+ALTER TABLE `subscription`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `tier`

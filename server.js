@@ -14,20 +14,16 @@ const db = require('./models/db').init(() => {
   if (GUI) require('./console.js');
   require('./sockets.js');
 
-  // Attach db reference to app
-  // Connect to database
-  app.set('db', db);
-
   server.listen(app.get('port'));
   server.on('error', error => {
     let bind = app.get('port');
     switch (error.code) {
       case 'EACCES':
-        logger('[server]: ' + bind + ' requires elevated privileges');
+        logger(`[server]: ${bind} requires elevated privileges`);
         process.exit(1);
         break;
       case 'EADDRINUSE':
-        logger('[server]: ' + bind + ' is already in use');
+        logger(`[server]: ${bind} is already in use`);
         process.exit(1);
         break;
       default:
@@ -40,12 +36,8 @@ const db = require('./models/db').init(() => {
     let bind = typeof addr === 'string'
       ? 'pipe ' + addr
       : 'port ' + addr.port;
-    logger('[server]: Listening on ' + bind);
+    logger(`[server]: Listening on ${bind}`);
   });
 
-  var elapsedTime = 0;
-  setInterval(() => {
-    process.title = "RandomAPI_Server | Uptime: " + elapsedTime++;
-  }, 1000);
-
+  process.title = "RandomAPI_Server";
 });

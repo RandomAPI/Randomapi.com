@@ -11,8 +11,8 @@ const debug        = require('debug')('RandomAPI:server');
 const app          = express();
 const server       = http.createServer(app);
 const _            = require('lodash');
-const settings     = require('./settings.json');
 const logger       = require('./utils').logger;
+const settings     = require('./utils').settings;
 
 const User = require('./models/User');
 const Tier = require('./models/Tier');
@@ -68,8 +68,8 @@ app.use(flash());
 app.use(favicon(__dirname + '/public/img/favicon.png'));
 
 //app.use(logger('dev'));
-app.use(bodyParser.json({limit: '128mb'}));
-app.use(bodyParser.urlencoded({ limit: '128mb', extended: false }));
+app.use(bodyParser.json({limit: '8mb'}));
+app.use(bodyParser.urlencoded({ limit: '8mb', extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Determine relative URLs (behindProxy)

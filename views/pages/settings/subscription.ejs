@@ -21,7 +21,7 @@
             if (tier.results === 0) tier.results = "unlimited";
             if (tier.apis === 0) tier.apis = "unlimited";
           %>
-          <p>Your are currently in the <span class='green'><%= tier.name %></span> tier.<br>
+          <p>You are currently on the <span class='green'><%= tier.name %></span> tier.<br>
           This plan gives you<br>
           -<span class='green'><%= tier.memory/1024/1024 %></span> MB of list memory<br>
           -<span class='green' id="dailyResults"><%= tier.results %></span> daily results<br>
@@ -29,7 +29,7 @@
           -<span class='green'><%= tier.apis %></span> APIs at a rate of <span class='green' id="price">$<%= tier.price %></span> per month.<br><br>
           <%- subscription.status === 2 ? "Your account will be downgraded to the <span class='green'>free</span> tier at the end of your subscription period.<br>" : "" %>
           Your current subscription will <%= subscription.status === 2 ? " end " : " be renewed on " %> <span class='green' id="renewalDate"><%= subscription.current_period_end %></span>.<br><br>
-          <%- subscription.status === 2 ? "<input type='button' class='greenButton' id='renewSubscription' value='Renew Subscription'>" : "" %>
+          <%- subscription.status === 2 ? "<input type='button' class='greenButton' id='restartSubscription' value='Restart Subscription'>" : "" %>
           <%- subscription.status !== 2 ? "<input type='button' class='redButton' id='cancelSubscription' value='Cancel Subscription'>" : "" %>
           </p>
           <% if (tier.name !== "Premium") { %>

@@ -10,7 +10,6 @@ const storage = multer.diskStorage({
   },
   filename(req, file, cb) {
     crypto.pseudoRandomBytes(16, (err, raw) => {
-      // Extension:  + '.' + file.originalname.match(/.*\.(.*)/)[1]
       cb(null, raw.toString('hex') + Date.now());
     });
   }
@@ -23,7 +22,7 @@ const Generator = require('../models/Generator');
 
 // Setup defaultVars and baseURL for all routes
 let defaultVars, baseURL;
-router.all('*', function(req, res, next) {
+router.all('*', (req, res, next) => {
   defaultVars = req.app.get('defaultVars');
   baseURL     = req.app.get('baseURL');
   next();
@@ -49,7 +48,7 @@ router.post('/api', (req, res, next) => {
 // Documentation: http://localhost:3000/documentation
 // Your awesome API code here...
 `, 'utf8', err => {
-        req.flash('info', 'API ' + req.body.name + ' was added successfully!');
+        req.flash('info', `API ${req.body.name} was added successfully!`);
         res.redirect(baseURL + '/edit/api/' + model.ref);
       });
     });
@@ -73,7 +72,7 @@ router.post('/list', upload.any(), (req, res, next) => {
   } else {
     List.add({name: req.body.name, owner: req.session.user.id}).then(List.getCond).then(model => {
       fs.rename('./'+ req.files[0].path, './data/lists/' + model.id + '.list', err => {
-        req.flash('info', 'List ' + req.body.name + ' was added successfully!');
+        req.flash('info', `List ${req.body.name} was added successfully!`);
         res.redirect(baseURL + '/view/list');
       });
     });

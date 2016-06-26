@@ -8,7 +8,7 @@ const Generator = require('../models/Generator');
 
 // Setup defaultVars and baseURL for all routes
 let defaultVars, baseURL;
-router.all('*', function(req, res, next) {
+router.all('*', (req, res, next) => {
   defaultVars = req.app.get('defaultVars');
   baseURL     = req.app.get('baseURL');
   next();

@@ -1,13 +1,13 @@
 socket = io($('server').html());
 ref = $('ref').html();
 
-var editor = ace.edit("aceEditor");
+let editor = ace.edit("aceEditor");
 editor.setTheme("ace/theme/twilight");
 editor.session.setMode("ace/mode/javascript");
 editor.focus();
 
-$("#submit").click(function() {
-  $.post('', {code: editor.getValue()}, function(url) {
+$("#submit").click(() => {
+  $.post('', {code: editor.getValue()}, url => {
     window.location.replace(url);
   });
 });
@@ -15,20 +15,20 @@ $("#submit").click(function() {
 updateCharCount();
 lintCode();
 
-var typingTimer;
-var codeArea = $(editor.textInput.getElement());
-codeArea.keyup(function(){
+let typingTimer;
+let codeArea = $(editor.textInput.getElement());
+codeArea.keyup(() => {
   clearTimeout(typingTimer);
   typingTimer = setTimeout(lintCode, 250);
 });
 
-codeArea.keydown(function(){
+codeArea.keydown(() => {
   clearTimeout(typingTimer);
 });
 
 codeArea.bind('change keyup paste', updateCharCount);
 
-socket.on('codeLinted', function(msg) {
+socket.on('codeLinted', msg => {
   if (msg.error === null) {
     $('#results').html(JSON.stringify(msg.results, null, 2));
   } else {

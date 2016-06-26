@@ -1,5 +1,5 @@
 const mysql    = require('mysql');
-const settings = require('../settings.json');
+const settings = require('../utils').settings;
 const logger   = require('../utils').logger;
 
 var connection = mysql.createConnection({
@@ -22,7 +22,7 @@ module.exports.init = function(cb) {
   });
 
   // Keep connection alive
-  setInterval(function () {
+  setInterval(() => {
       connection.query('SELECT 1');
   }, settings.db.keepAliveInterval);
 };

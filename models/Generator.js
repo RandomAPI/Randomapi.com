@@ -1,7 +1,7 @@
-const bcrypt    = require('bcrypt-nodejs');
-const db        = require('./db').connection;
-const andify    = require('../utils').andify;
-const Promise   = require('bluebird');
+const bcrypt  = require('bcrypt-nodejs');
+const db      = require('./db').connection;
+const andify  = require('../utils').andify;
+const Promise = require('bluebird');
 
 module.exports = {
   getByID(id) {

@@ -7,7 +7,7 @@ const List = require('../models/List');
 
 // Setup defaultVars and baseURL for all routes
 let defaultVars, baseURL;
-router.all('*', function(req, res, next) {
+router.all('*', (req, res, next) => {
   defaultVars = req.app.get('defaultVars');
   baseURL     = req.app.get('baseURL');
   next();
@@ -21,7 +21,7 @@ router.get('/api/:ref', (req, res, next) => {
       } else {
         API.remove({id: doc.id}).then(() => {
           fs.unlink('./data/apis/' + doc.id + '.api', err => {
-            req.flash('info', 'API ' + doc.name + ' was deleted successfully!');
+            req.flash('info', `API ${doc.name} was deleted successfully!`);
             res.redirect(baseURL + '/view/api');
           });
         });
@@ -41,7 +41,7 @@ router.get('/list/:ref', (req, res, next) => {
       } else {
         List.remove({id: doc.id}).then(() => {
           fs.unlink('./data/lists/' + doc.id + '.list', err => {
-            req.flash('info', 'List ' + doc.name + ' was deleted successfully!');
+            req.flash('info', `List ${doc.name} was deleted successfully!`);
             res.redirect(baseURL + '/view/list');
           });
         });
