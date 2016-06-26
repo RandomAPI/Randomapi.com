@@ -1,5 +1,6 @@
 const bcrypt    = require('bcrypt-nodejs');
 const db        = require('./db').connection;
+const andify    = require('../utils').andify;
 const Promise   = require('bluebird');
 
 module.exports = {
@@ -39,6 +40,26 @@ module.exports = {
           resolve(versions);
         }
       });
+    });
+  },
+  getCond(cond) {
+    return new Promise((resolve, reject) => {
+      cond = andify(cond);
+      if (cond.query !== undefined) {
+        db.query('SELECT * FROM `Generator` WHERE ' + cond.query, (err, data) => {
+          if (err) reject(err);
+          else if (data.length === 0) resolve(null);
+          else if (data.length === 1) resolve(data[0]);
+          else resolve(data);
+        });
+      } else {
+        db.query('SELECT * FROM `Generator` WHERE ?', cond, (err, data) => {
+          if (err) reject(err);
+          else if (data.length === 0) resolve(null);
+          else if (data.length === 1) resolve(data[0]);
+          else resolve(data);
+        });
+      }
     });
   }
 };

@@ -5,6 +5,9 @@
 </head>
 <body>
   <% include ../snippets/navbar %>
+  <%
+    let selected = {[session.tier.name.toLowerCase()]: 'disabled'};
+  %>
 
   <div class="container main">
     <section class="hero">
@@ -13,10 +16,9 @@
     </section>
     <div class="row">
       <div class="container">
-        <h2 id="title">Plans & Pricing</h2>
         <div class="pricingTable">
           <div class="card">
-            <div class="title">Free</div>
+            <div class="title" style="color:#012212">Free</div>
             <div class="pricing">$0.00<span class='subpricing'> / month</span></div>
             <div class="info">
               <ul>
@@ -24,12 +26,31 @@
                 <li><span id="main">10</span> results / request</li>
                 <li><span id="main">256 KB</span> list data</li>
                 <li><span id="main">1</span> API</li>
-                <li id='upgradeButton'></li>
+                <li id='upgradeButton'>
+                  <% if (selected['free'] === 'disabled') { %>
+                    <button type="submit" class="stripe-button-el <%= selected['free'] %>" style="visibility: visible;"><span style="display: block; min-height: 30px;">Current Plan</span></button>
+                  <% } else { %>
+                    <form action="charge" method="POST">
+                      <script 
+                        src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                        data-key="pk_test_Kz9PkZwjRRlC4g6vMqzIRHGk"
+                        data-amount="250"
+                        data-name="RandomAPI"
+                        data-description="RandomAPI Standard Tier (Beta)"
+                        data-image="https://s3.amazonaws.com/stripe-uploads/acct_102bx12y2KIUsl34merchant-icon-499777-logo.png"
+                        data-locale="auto"
+                        data-label="Upgrade"
+                        data-zip-code="true">
+                      </script>
+                      <input type="hidden" name="plan" value="standard_beta">
+                    </form>
+                  <% } %>
+                </li>
               </ul>
             </div>
           </div>
           <div class="card">
-            <div class="title">Standard</div>
+            <div class="title" style="color: #056335">Standard</div>
             <div class="pricing">$2.50<span class='subpricing'> / month</span></div>
             <div class="info">
               <ul>
@@ -38,9 +59,12 @@
                 <li><span id="main">5 MB</span> list data</li>
                 <li><span id="main">10</span> APIs</li>
                 <li id='upgradeButton'>
+                <% if (selected['standard'] === 'disabled') { %>
+                  <button type="submit" class="stripe-button-el <%= selected['standard'] %>" style="visibility: visible;"><span style="display: block; min-height: 30px;">Current Plan</span></button>
+                <% } else { %>
                   <form action="charge" method="POST">
                     <script 
-                      src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                      src="https://checkout.stripe.com/checkout.js" class="stripe-button <%= selected['standard'] %>"
                       data-key="pk_test_Kz9PkZwjRRlC4g6vMqzIRHGk"
                       data-amount="250"
                       data-name="RandomAPI"
@@ -52,12 +76,13 @@
                     </script>
                     <input type="hidden" name="plan" value="standard_beta">
                   </form>
+                <% } %>
                 </li>
               </ul>
             </div>
           </div>
           <div class="card">
-            <div class="title">Premium</div>
+            <div class="title" style="color: #0CB863">Premium</div>
             <div class="pricing">$5.00<span class='subpricing'> / month</span></div>
             <div class="info">
               <ul>
@@ -66,7 +91,10 @@
                 <li><span id="main">25 MB</span> list data</li>
                 <li><span id="main">unlimited</span> APIs</li>
                 <li id='upgradeButton'>
-                  <form action="/charge" method="POST">
+                  <% if (selected['premium'] === 'disabled') { %>
+                    <button type="submit" class="stripe-button-el <%= selected['premium'] %>" style="visibility: visible;"><span style="display: block; min-height: 30px;">Current Plan</span></button>
+                  <% } else { %>
+                    <form action="/charge" method="POST">
                     <script 
                       src="https://checkout.stripe.com/checkout.js" class="stripe-button"
                       data-key="pk_test_Kz9PkZwjRRlC4g6vMqzIRHGk"
@@ -80,83 +108,14 @@
                     </script>
                     <input type="hidden" name="plan" value="premium_beta">
                   </form>
+                  <% } %>
                 </li>
               </ul>
             </div>
           </div>
+          <p><br><b><span style="color: orange">Beta users</span></b>: These are the current prices and perks. If you purchase a subscription during the beta period, it'll carry over when RandomAPI releases. Beta prices will most likely increase in the final release and perk values will <b>definitely</b> increase in the final version.<br><br><b>Note</b>: If you would like to cancel or downgrade your subscription, please manage your subscription settings at <a href="settings/subscription" class='green'>Settings > Subscription</a>.</p>
         </div>
       </div>
-      <!-- <table class="table table-striped pricingTable" style="width: 75%">
-        <thead>
-          <tr>
-            <th><h3>Free</h3></th>
-            <th><h3>Standard</h3></th>
-            <th><h3>Premium</h3></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><span class='price'>$0.00</span> <span class='subprice'>/ month</span></td>
-            <td><span class='price'>$2.50</span> <span class='subprice'>/ month</span></td>
-            <td><span class='price'>$5.00</span> <span class='subprice'>/ month</span></td>
-          </tr>
-          <tr>
-            <td><span class='price'>1,000</span> <span class='subprice'> daily results</span></td>
-            <td><span class='price'>100,000</span> <span class='subprice'> daily results</span></td>
-            <td><span class='price'>unlimited</span> <span class='subprice'> daily results</span></td>
-          </tr>
-          <tr>
-            <td><span class='price'>10</span> <span class='subprice'> results / request</span></td>
-            <td><span class='price'>500</span> <span class='subprice'> results / request</span></td>
-            <td><span class='price'>5,000</span> <span class='subprice'> results / request</span></td>
-          </tr>
-          <tr>
-            <td><span class='price'>256 KB</span> <span class='subprice'> list data</span></td>
-            <td><span class='price'>5 MB</span> <span class='subprice'> list data</span></td>
-            <td><span class='price'>50 MB</span> <span class='subprice'> list data</span></td>
-          </tr>
-          <tr>
-            <td><span class='price'>1</span> <span class='subprice'> API</span></td>
-            <td><span class='price'>10</span> <span class='subprice'> APIs</span></td>
-            <td><span class='price'>unlimited</span> <span class='subprice'> APIs</span></td>
-          </tr>
-          <tr>
-            <td></td>
-            <td>
-              <form action="charge" method="POST">
-                <script 
-                  src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-                  data-key="pk_test_Kz9PkZwjRRlC4g6vMqzIRHGk"
-                  data-amount="250"
-                  data-name="RandomAPI"
-                  data-description="RandomAPI Standard Tier (Beta)"
-                  data-image="https://s3.amazonaws.com/stripe-uploads/acct_102bx12y2KIUsl34merchant-icon-499777-logo.png"
-                  data-locale="auto"
-                  data-label="Upgrade"
-                  data-zip-code="true">
-                </script>
-                <input type="hidden" name="plan" value="standard_beta">
-              </form>
-            </td>
-            <td>
-              <form action="/charge" method="POST">
-                <script 
-                  src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-                  data-key="pk_test_Kz9PkZwjRRlC4g6vMqzIRHGk"
-                  data-amount="500"
-                  data-name="RandomAPI"
-                  data-description="RandomAPI Premium Tier (Beta)"
-                  data-image="https://s3.amazonaws.com/stripe-uploads/acct_102bx12y2KIUsl34merchant-icon-499777-logo.png"
-                  data-locale="auto"
-                  data-label="Upgrade"
-                  data-zip-code="true">
-                </script>
-                <input type="hidden" name="plan" value="premium_beta">
-              </form>
-            </td>
-          </tr>
-        </tbody>
-      </table> -->
     </div>
   </div>
   <% include ../snippets/footer %>

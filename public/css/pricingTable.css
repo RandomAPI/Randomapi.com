@@ -21,15 +21,10 @@
 }
 
 .card .title {
-  color: #B2BB91;
+  color: #0CB863;
   font-size: 22pt;
   font-weight: bold;
   text-align: center;
-}
-
-.card:first-child {
-  position: relative;
-  top: -38px;
 }
 
 .card .pricing {

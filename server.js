@@ -6,7 +6,7 @@ const sessionDB  = require('./utils').redis;
 const server = require('./app').server;
 const app    = require('./app').app;
 
-const GUI = false;
+const GUI = true;
 
 const db = require('./models/db').init(() => {
 

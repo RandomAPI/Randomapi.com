@@ -2,8 +2,12 @@ const express = require('express');
 const _       = require('lodash');
 const router  = express.Router();
 const logger  = require('../utils').logger;
+const moment  = require('moment');
 
 const User = require('../models/User');
+const Subscription = require('../models/Subscription');
+const Plan = require('../models/Plan');
+const Tier = require('../models/Tier');
 
 // Setup defaultVars and baseURL for all routes
 let defaultVars, baseURL;
@@ -33,8 +37,23 @@ router.post('/', (req, res, next) => {
       req.flash('info', 'There was a problem upgrading your account');
       res.redirect(baseURL + '/');
     } else {
-      req.flash('info', 'Your account was upgraded successfully!');
-      res.redirect(baseURL + '/');
+      Plan.getCond({name: req.body.plan,}).then(plan => {
+        Subscription.upgrade({uid: req.session.user.id}, {
+          cid: customer.id,
+          email: customer.email,
+          created: moment(customer.created*1000).format("YYYY-MM-DD HH:mm:ss"),
+          current_period_end: moment(customer.subscriptions.data[0].current_period_end*1000).format("YYYY-MM-DD HH:mm:ss"),
+          plan: plan.id
+        }).then(() => {
+          Tier.getCond({id: plan.tier}).then(tier => {
+            req.flash('info', 'Your account was upgraded successfully to the ' + tier.name + " tier!");
+            res.redirect(baseURL + '/');
+          });
+        });
+      }, () => {
+        req.flash('info', 'There was a problem upgrading your account');
+        res.redirect(baseURL + '/');
+      });
     }
   });
 });

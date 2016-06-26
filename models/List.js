@@ -51,13 +51,15 @@ module.exports = {
         db.query('SELECT * FROM `list` WHERE ' + cond.query, (err, data) => {
           if (err) reject(err);
           else if (data.length === 0) resolve(null);
-          else resolve(data[0]);
+          else if (data.length === 1) resolve(data[0]);
+          else resolve(data);
         });
       } else {
         db.query('SELECT * FROM `list` WHERE ?', cond, (err, data) => {
           if (err) reject(err);
           else if (data.length === 0) resolve(null);
-          else resolve(data[0]);
+          else if (data.length === 1) resolve(data[0]);
+          else resolve(data);
         });
       }
     });
