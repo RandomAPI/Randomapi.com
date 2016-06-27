@@ -8,13 +8,24 @@ const db = require('../models/db').connection;
 const Subscription = require('../models/Subscription');
 const stripe = require('../utils').stripe;
 
+let total = 0;
 db.query("SELECT * FROM `subscription` WHERE `sid` IS NOT NULL", (err, results) => {
   results.forEach(result => {
-    stripe.subscriptions.retrieve(
-      result.sid,
-      function(err, subscription) {
-        console.log(subscription);
+    stripe.subscriptions.retrieve(result.sid, (err, subscription) => {
+      console.log(err, subscription);
+      if (subscription.status === "past_due") {
+        Subscription.update(result.uid, {
+          status: 3
+        }).then(() => {
+          if (++total === results.length) {
+            process.exit();
+          }
+        });
+      } else {
+        if (++total === results.length) {
+          process.exit();
+        }
       }
-    );
+    });
   });
 });

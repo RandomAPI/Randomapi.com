@@ -72,7 +72,7 @@ router.post('/login', (req, res, next) => {
         res.redirect(baseURL + data.redirect);
       });
     }, err => {
-      req.flash('info', err.flash);
+      req.flash('warning', err.flash);
       res.redirect(baseURL + err.redirect);
     });
   }
@@ -110,7 +110,7 @@ router.post('/register', (req, res, next) => {
       req.flash('info', data.flash);
       res.redirect(baseURL + data.redirect);
     }, err => {
-      req.flash('info', err.flash);
+      req.flash('warning', err.flash);
       res.redirect(baseURL + err.redirect);
     });
   } else {

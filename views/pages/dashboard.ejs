@@ -11,9 +11,6 @@
         <% include ../snippets/subnav %>
       </div>
       <div class="ten columns">
-        <div id="note">
-          <%- messages %>
-        </div>
         <h3>Dashboard</h3>
         Your api key is <input class="green" onClick="this.select();" value="<%= session.user.apikey %>" readonly size="23"><br>
         Your tier is <span class="green"><%= session.user.tierName %></span>.<br>

@@ -84,8 +84,18 @@ app.use('*', (req, res, next) => {
   if (req.params[0].slice(0, 5) === '/api/') next();
   else {
     if (baseURL === null && basehref === null) firstRun = true;
+    let info = req.flash('info');
+    let warning = req.flash('warning');
 
-    defaultVars = {messages: req.flash('info'), session: req.session, basehref, title: null, originalUrl: req.originalUrl };
+    if (info.length) {
+      messages = ["info", info];
+    } else if (warning.length) {
+      messages = ["warning", warning];
+    } else {
+      messages = "";
+    }
+
+    defaultVars = {messages, session: req.session, basehref, title: null, originalUrl: req.originalUrl };
     if (settings.general.behindReverseProxy) {
       let uri  = req.headers.uri.replace(/(\/)+$/,'');
       let path = req.originalUrl.replace(/(\/)+$/,'');

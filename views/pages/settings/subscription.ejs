@@ -11,9 +11,6 @@
         <% include ../../snippets/settingsSubnav %>
       </div>
       <div class="ten columns">
-        <div id="note">
-          <%=messages%>
-        </div>
         <h3>Subscription</h3>
         <% if (session.user.tierID === 1) { %>
           <p>You don't currently have an active subscription.<br>Check out the available upgrade options <a href="upgrade" class='green'>here</a>.</p>
@@ -24,8 +21,8 @@
 
 
           <% if (session.subscription.status === 3) { %>
-            <p>You are currently on the <span class='green'><%= tier.name %></span> tier, however, your account is currently on hold due to an unpaid subscription charge.<br><br>
-            Please either revert to the <span class='green'>Free</span> tier by canceling your subscription, or click on the <span class='green'><%= tier.name %></span> tier upgrade button below to restart your subscription.</p>
+            <p>You are currently on the <span class='green'><%= tier.name %></span> tier, however, your account is currently on hold due to an unpaid subscription charge.<br>
+            You will not be able to use your account until your subscrition status is resolved.<br>
             </p>
           <% } else { %>
             <p>You are currently on the <span class='green'><%= tier.name %></span> tier.<br>
@@ -44,7 +41,7 @@
             <% } %>
           <% } %>
           </p>
-          <% if (tier.name !== "Premium") { %>
+          <% if (tier.name !== "Premium" && subscription.status !== 3) { %>
             <h4>Available upgrades</h4>
             <div class="card">
               <div class="title" style="color: #0CB863">Premium</div>

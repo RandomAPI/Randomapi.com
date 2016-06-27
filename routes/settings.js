@@ -138,7 +138,7 @@ router.get('/subscription/upgrade', (req, res, next) => {
 });
 
 router.get('/subscription/paymentOverdue', (req, res, next) => {
-  req.flash('info', 'Your account is currently on hold until your subscription status is resolved.');
+  req.flash('warning', 'Your account is currently on hold until your subscription status is resolved.');
   res.redirect(baseURL + "/settings/subscription");
 });
 
