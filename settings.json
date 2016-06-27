@@ -21,7 +21,7 @@
         "keepAliveInterval": 5000
     },
     "stripe": {
-        "key": ""
+        "key": "sk_test_IWLPsvE2E4QaDxAiMDoT44KU"
     },
     "generators": {
         "basic": {

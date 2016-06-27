@@ -1,4 +1,8 @@
-const db = require('./models/db').connection;
+/*
+  Run every 15 minutes
+  Resets the daily results count for users where it is midnight
+*/
+const db = require('../models/db').connection;
 
 db.query('UPDATE `user` SET `results` = 0 WHERE ?', {timezone: currentMidnight()}, (a, b) => {
   console.log(a, b);

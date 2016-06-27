@@ -29,53 +29,77 @@ router.all('*', (req, res, next) => {
 });
 
 router.get('/api', (req, res, next) => {
-  if (req.session.loggedin) {
+  if (req.session.loggedin && req.session.subscription.status !== 3) {
     Generator.getAvailableVersions().then(versions => {
       res.render('new/api', _.merge(defaultVars, {versions, title: 'New API'}));
     });
   } else {
-    res.redirect(baseURL + '/');
+    if (req.session.subscription.status === 3) {
+      res.redirect(baseURL + '/settings/subscription/paymentOverdue');
+    } else {
+      res.redirect(baseURL + '/');
+    }
   }
 });
 
 router.post('/api', (req, res, next) => {
-  if (req.body.name === '') {
-    req.flash('info', 'Please provide a name for your API');
-    res.redirect(baseURL + '/new/api');
-  } else {
-    API.add({name: req.body.name, generator: req.body.generator, owner: req.session.user.id}).then(API.getCond).then(model => {
-      fs.writeFile('./data/apis/' + model.id + '.api', `
-// Documentation: http://localhost:3000/documentation
-// Your awesome API code here...
-`, 'utf8', err => {
-        req.flash('info', `API ${req.body.name} was added successfully!`);
-        res.redirect(baseURL + '/edit/api/' + model.ref);
+  if (req.session.loggedin && req.session.subscription.status !== 3) {
+    if (req.body.name === '') {
+      req.flash('info', 'Please provide a name for your API');
+      res.redirect(baseURL + '/new/api');
+    } else {
+      API.add({name: req.body.name, generator: req.body.generator, owner: req.session.user.id}).then(API.getCond).then(model => {
+        fs.writeFile('./data/apis/' + model.id + '.api', `
+  // Documentation: http://localhost:3000/documentation
+  // Your awesome API code here...
+  `, 'utf8', err => {
+          req.flash('info', `API ${req.body.name} was added successfully!`);
+          res.redirect(baseURL + '/edit/api/' + model.ref);
+        });
       });
-    });
+    }
+  } else {
+    if (req.session.subscription.status === 3) {
+      res.redirect(baseURL + '/settings/subscription/paymentOverdue');
+    } else {
+      res.redirect(baseURL + '/');
+    }
   }
 });
 
 // list //
 router.get('/list', (req, res, next) => {
-  if (req.session.loggedin) {
+  if (req.session.loggedin && req.session.subscription.status !== 3) {
     res.render('new/list', _.merge(defaultVars, {title: 'New List'}));
   } else {
-    res.redirect(baseURL + '/');
+    if (req.session.subscription.status === 3) {
+      res.redirect(baseURL + '/settings/subscription/paymentOverdue');
+    } else {
+      res.redirect(baseURL + '/');
+    }
   }
 });
 
 router.post('/list', upload.any(), (req, res, next) => {
-  if (req.body.name === undefined || req.files.length === 0 || req.files[0].originalname.match(/(?:\.([^.]+))?$/)[1] !== 'txt') {
-    req.flash('info', 'Looks like you provided an invalid file...please try again.');
-    fs.unlink('./'+ req.files[0].path);
-    res.redirect(baseURL + '/new/list');
-  } else {
-    List.add({name: req.body.name, owner: req.session.user.id}).then(List.getCond).then(model => {
-      fs.rename('./'+ req.files[0].path, './data/lists/' + model.id + '.list', err => {
-        req.flash('info', `List ${req.body.name} was added successfully!`);
-        res.redirect(baseURL + '/view/list');
+  if (req.session.loggedin && req.session.subscription.status !== 3) {
+    if (req.body.name === undefined || req.files.length === 0 || req.files[0].originalname.match(/(?:\.([^.]+))?$/)[1] !== 'txt') {
+      req.flash('info', 'Looks like you provided an invalid file...please try again.');
+      fs.unlink('./'+ req.files[0].path);
+      res.redirect(baseURL + '/new/list');
+    } else {
+      List.add({name: req.body.name, owner: req.session.user.id}).then(List.getCond).then(model => {
+        fs.rename('./'+ req.files[0].path, './data/lists/' + model.id + '.list', err => {
+          req.flash('info', `List ${req.body.name} was added successfully!`);
+          res.redirect(baseURL + '/view/list');
+        });
       });
-    });
+    }
+  } else {
+    if (req.session.subscription.status === 3) {
+      res.redirect(baseURL + '/settings/subscription/paymentOverdue');
+    } else {
+      res.redirect(baseURL + '/');
+    }
   }
 });
 

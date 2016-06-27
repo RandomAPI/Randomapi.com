@@ -16,6 +16,7 @@ const settings     = require('./utils').settings;
 
 const User = require('./models/User');
 const Tier = require('./models/Tier');
+const Subscription = require('./models/Subscription');
 
 // Redis Session Store
 const session      = require('express-session');
@@ -113,21 +114,19 @@ app.use('*', (req, res, next) => {
       }
     } else {
       if (req.session.loggedin) {
-        User.getCond({username: req.session.user.username}).then(data => {
-          if (data === null) {
+        User.getCond({username: req.session.user.username}).then(user => {
+          if (user === null) {
             delete req.session.loggedin;
             res.redirect(baseURL + '/logout');
             return;
           }
-          Tier.getCond({id: data.tierID}).then(tier => {
-            if (data === null) {
-              delete req.session.loggedin;
-              res.redirect(baseURL + '/logout');
-            } else {
-              req.session.user = data;
+          Tier.getCond({id: user.tierID}).then(tier => {
+            Subscription.getCond({uid: user.id}).then(subscription => {
+              req.session.user = user;
               req.session.tier = tier;
+              req.session.subscription = subscription;
               next();
-            }
+            });
           });
         });
       } else {
@@ -145,6 +144,7 @@ app.use('/view', require('./routes/view'));
 app.use('/edit', require('./routes/edit'));
 app.use('/delete', require('./routes/delete'));
 app.use('/api', require('./routes/api'));
+app.use('/settings', require('./routes/settings'));
 
 // production error handler
 // no stacktraces leaked to user

@@ -17,7 +17,7 @@ router.all('*', (req, res, next) => {
 });
 
 router.get('/api/:ref?', (req, res, next) => {
-  if (req.session.loggedin) {
+  if (req.session.loggedin && req.session.subscription.status !== 3) {
     API.getCond({ref: req.params.ref}).then(doc => {
       if (doc.owner !== req.session.user.id) {
         res.redirect(baseURL + '/view/api');
@@ -29,12 +29,16 @@ router.get('/api/:ref?', (req, res, next) => {
       res.redirect(baseURL + '/view/api');
     });
   } else {
-    res.redirect(baseURL + '/');
+    if (req.session.subscription.status === 3) {
+      res.redirect(baseURL + '/settings/subscription/paymentOverdue');
+    } else {
+      res.redirect(baseURL + '/');
+    }
   }
 });
 
 router.post('/api/:ref', (req, res, next) => {
-  if (req.session.loggedin) {
+  if (req.session.loggedin && req.session.subscription.status !== 3) {
     API.getCond({ref: req.params.ref}).then(doc => {
       if (doc.owner !== req.session.user.id) {
         res.redirect(baseURL + '/view/api');
@@ -45,17 +49,27 @@ router.post('/api/:ref', (req, res, next) => {
         });
       }
     });
+  } else {
+    if (req.session.subscription.status === 3) {
+      res.redirect(baseURL + '/settings/subscription/paymentOverdue');
+    } else {
+      res.redirect(baseURL + '/');
+    }
   }
 });
 
 // list //
 router.get('/list/:ref', (req, res, next) => {
-  if (req.session.loggedin) {
+  if (req.session.loggedin && req.session.subscription.status !== 3) {
     List.getCond({ref: req.params.ref}).then(doc => {
       res.render('edit/list', _.merge(defaultVars, {list: doc, title: `Editing list ${doc.ref}`}));
     });
   } else {
-    res.redirect(baseURL + '/');
+    if (req.session.subscription.status === 3) {
+      res.redirect(baseURL + '/settings/subscription/paymentOverdue');
+    } else {
+      res.redirect(baseURL + '/');
+    }
   }
 });
 

@@ -15,25 +15,33 @@ router.all('*', (req, res, next) => {
 });
 
 router.get('/api', (req, res, next) => {
-  if (req.session.loggedin) {
+  if (req.session.loggedin && req.session.subscription.status !== 3) {
     let obs = [];
     API.getAPIs(req.session.user.id).then(apis => {
       res.render('view/api', _.merge(defaultVars, {apis, title: 'View APIs'}));
     });
   } else {
-    res.redirect(baseURL + '/');
+    if (req.session.subscription.status === 3) {
+      res.redirect(baseURL + '/settings/subscription/paymentOverdue');
+    } else {
+      res.redirect(baseURL + '/');
+    }
   }
 });
 
 
 // list //
 router.get('/list', (req, res, next) => {
-  if (req.session.loggedin) {
+  if (req.session.loggedin && req.session.subscription.status !== 3) {
     List.getLists(req.session.user.id).then(lists => {
       res.render('view/list', _.merge(defaultVars, {lists, title: 'View APIs'}));
     });
   } else {
-    res.redirect(baseURL + '/');
+    if (req.session.subscription.status === 3) {
+      res.redirect(baseURL + '/settings/subscription/paymentOverdue');
+    } else {
+      res.redirect(baseURL + '/');
+    }
   }
 });
 
