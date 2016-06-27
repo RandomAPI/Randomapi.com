@@ -16,7 +16,7 @@ module.exports = {
   },
   update(userID, info) {
     return new Promise((resolve, reject) => {
-      db.query('UPDATE `subscription` SET ? WHERE ?', [info, userID], (err, result) => {
+      db.query('UPDATE `subscription` SET ? WHERE ?', [info, {uid: userID}], (err, result) => {
         err ? reject(err) : resolve(true);
       });
     });
