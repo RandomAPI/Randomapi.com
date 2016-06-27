@@ -36,7 +36,7 @@ router.post('/', (req, res, next) => {
     } else {
       Plan.getCond({name: req.body.plan,}).then(plan => {
 
-        Subscription.upgrade({uid: req.session.user.id}, {
+        Subscription.update({uid: req.session.user.id}, {
           cid: customer.id,
           sid: customer.subscriptions.data[0].id,
           email: customer.email,

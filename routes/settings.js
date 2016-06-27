@@ -71,7 +71,7 @@ router.get('/subscription/cancel', (req, res, next) => {
           req.flash('info', 'There was a problem canceling your subscription!');
           res.sendStatus(200);
         } else {
-          Subscription.upgrade(req.session.user.id, {canceled: moment(new Date().getTime()).format("YYYY-MM-DD HH:mm:ss"), status: 2}).then(subscription => {
+          Subscription.update(req.session.user.id, {canceled: moment(new Date().getTime()).format("YYYY-MM-DD HH:mm:ss"), status: 2}).then(subscription => {
             req.flash('info', 'Your subscription will be canceled at the end of your billing period!');
             res.sendStatus(200);
           });
@@ -96,7 +96,7 @@ router.get('/subscription/restart', (req, res, next) => {
               req.flash('info', 'There was a problem restarting your subscription!');
               res.sendStatus(200);
             } else {
-              Subscription.upgrade(req.session.user.id, {canceled: null, status: 1}).then(subscription => {
+              Subscription.update(req.session.user.id, {canceled: null, status: 1}).then(subscription => {
                 req.flash('info', 'Your subscription was restarted successfully!');
                 res.sendStatus(200);
               });
@@ -123,7 +123,7 @@ router.get('/subscription/upgrade', (req, res, next) => {
               req.flash('info', 'There was a problem upgrading your subscription!');
               res.sendStatus(200);
             } else {
-              Subscription.upgrade(req.session.user.id, {canceled: null, status: 1, plan: 4}).then(subscription => {
+              Subscription.update(req.session.user.id, {canceled: null, status: 1, plan: 4}).then(subscription => {
                 req.flash('info', 'Your subscription was upgraded successfully!');
                 res.sendStatus(200);
               });

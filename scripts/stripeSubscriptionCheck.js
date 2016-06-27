@@ -4,7 +4,7 @@
   if not, update status to unpaid
   If a user's payment that was unpaid ends up going through, set status back to normal
 */
-const db     = require('../models/db').connection;
+const db = require('../models/db').connection;
 const Subscription = require('../models/Subscription');
 const stripe = require('../utils').stripe;
 

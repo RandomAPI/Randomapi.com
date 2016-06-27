@@ -14,7 +14,7 @@ module.exports = {
       });
     });
   },
-  upgrade(userID, info) {
+  update(userID, info) {
     return new Promise((resolve, reject) => {
       db.query('UPDATE `subscription` SET ? WHERE ?', [info, userID], (err, result) => {
         err ? reject(err) : resolve(true);
