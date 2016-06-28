@@ -12,6 +12,7 @@
       </div>
       <div class="ten columns">
         <h3>New API</h3>
+        <p><span id='quotaResults' class='green'><%= session.user.apis %></span> of <span id='tierResults' class="green"><%= session.tier.apis === 0 ? 'unlimited' : session.tier.apis %></span> APIs used.</p>
         <form action="" method="POST">
         <input type="text" name="name" placeholder="API Name" autofocus required autocomplete="off"><br>
         <input type="submit" value="Add new API">

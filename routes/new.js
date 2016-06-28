@@ -18,6 +18,7 @@ const upload = multer({ storage: storage });
 
 const API = require('../models/API');
 const List = require('../models/List');
+const User = require('../models/User');
 const Generator = require('../models/Generator');
 
 // Setup defaultVars and baseURL for all routes
@@ -45,16 +46,26 @@ router.get('/api', (req, res, next) => {
 router.post('/api', (req, res, next) => {
   if (req.session.loggedin && req.session.subscription.status !== 3) {
     if (req.body.name === '') {
-      req.flash('info', 'Please provide a name for your API');
+      req.flash('warning', 'Please provide a name for your API');
       res.redirect(baseURL + '/new/api');
+
+    // Is user within their tier limits?
+    } else if (req.session.user.apis + 1 > req.session.tier.apis && req.session.tier.apis !== 0) {
+      req.flash('warning', 'You have used up your API quota for the ' + req.session.tier.name + ' tier.');
+      res.redirect(baseURL + '/new/api');
+
+    // Else, add the API
     } else {
       API.add({name: req.body.name, generator: req.body.generator, owner: req.session.user.id}).then(API.getCond).then(model => {
         fs.writeFile('./data/apis/' + model.id + '.api', `
-  // Documentation: http://localhost:3000/documentation
-  // Your awesome API code here...
-  `, 'utf8', err => {
-          req.flash('info', `API ${req.body.name} was added successfully!`);
-          res.redirect(baseURL + '/edit/api/' + model.ref);
+// Documentation: http://localhost:3000/documentation
+// Your awesome API code here...`, 'utf8', err => {
+
+          // Increment total APIs for user
+          User.incVal('apis', 1, req.session.user.username).then(() => {
+            req.flash('info', `API ${req.body.name} was added successfully!`);
+            res.redirect(baseURL + '/edit/api/' + model.ref);
+          });
         });
       });
     }
@@ -86,11 +97,20 @@ router.post('/list', upload.any(), (req, res, next) => {
       req.flash('warning', 'Looks like you provided an invalid file...please try again.');
       fs.unlink('./'+ req.files[0].path);
       res.redirect(baseURL + '/new/list');
+
+    // Is user within their tier limits?
+    } else if (req.session.user.memory + req.files[0].size > req.session.tier.memory && req.session.tier.memory !== 0) {
+      req.flash('warning', 'You have used up your List quota for the ' + req.session.tier.name + ' tier.');
+      res.redirect(baseURL + '/new/list');
+
+    // Else, add the List
     } else {
-      List.add({name: req.body.name, owner: req.session.user.id}).then(List.getCond).then(model => {
+      List.add({name: req.body.name, memory: req.files[0].size, owner: req.session.user.id}).then(List.getCond).then(model => {
         fs.rename('./'+ req.files[0].path, './data/lists/' + model.id + '.list', err => {
-          req.flash('info', `List ${req.body.name} was added successfully!`);
-          res.redirect(baseURL + '/view/list');
+          User.incVal('memory', req.files[0].size, req.session.user.username).then(() => {
+            req.flash('info', `List ${req.body.name} was added successfully!`);
+            res.redirect(baseURL + '/view/list');
+          });
         });
       });
     }

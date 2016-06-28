@@ -6,6 +6,7 @@
 */
 const db = require('../models/db').connection;
 const Subscription = require('../models/Subscription');
+const User = require('../models/User');
 const stripe = require('../utils').stripe;
 
 let total = 0;
@@ -27,9 +28,14 @@ db.query("SELECT * FROM `subscription` WHERE `sid` IS NOT NULL", (err, results) 
           current_period_end: null,
           status: 1
         });
+
+        // Delete customer from Stripe
         stripe.customers.del(result.cid, (err, confirmation) => {
           done(++total, results);
         });
+
+        // Check if user has now gone over their account limit and soft lock them until
+        // they delete lists/apis
       } else if (subscription.status === "past_due") {
         Subscription.update(result.uid, {
           status: 3

@@ -15,6 +15,8 @@
         Your api key is <input class="green" onClick="this.select();" value="<%= session.user.apikey %>" readonly size="23"><br>
         Your tier is <span class="green"><%= session.user.tierName %></span>.<br>
         Your have used <span id='quotaResults' class='green'><%= session.user.results %></span> of your daily <span id='tierResults' class="green"><%= session.tier.results === 0 ? 'unlimited' : session.tier.results %></span> results.<br>
+        Your have used <span id='quotaResults' class='green'><%= session.user.apis %></span> of your <span id='tierResults' class="green"><%= session.tier.apis === 0 ? 'unlimited' : session.tier.apis %></span> APIs.<br>
+        Your have used <span class='green'><%= (session.user.memory/1024/1024).toFixed(2) %> MB</span> of your <span id='tierResults' class="green"><%= session.tier.memory === 0 ? 'unlimited' : session.tier.memory/1024/1024 %> MB</span> List memory.<br>
       </div>
     </div>
   </div>
