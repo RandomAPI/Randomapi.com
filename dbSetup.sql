@@ -5,7 +5,7 @@ USE randomapi;
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jun 26, 2016 at 08:59 PM
+-- Generation Time: Jun 28, 2016 at 09:15 PM
 -- Server version: 5.7.13
 -- PHP Version: 5.5.36
 
@@ -64,6 +64,7 @@ CREATE TABLE `list` (
   `id` int(11) NOT NULL,
   `ref` varchar(8) NOT NULL,
   `name` varchar(32) NOT NULL,
+  `memory` int(11) NOT NULL,
   `owner` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
