@@ -5,7 +5,9 @@ const redis    = require('redis').createClient();
 const settings = require('./settings.json');
 const stripe   = require("stripe")(settings.stripe.key);
 
+redis.config('SET', 'maxmemory', settings.general.redisMaxMemory);
 redis.on('error', err => module.exports.logger(err));
+
 module.exports = {
   pad(n, width, z) {
     z = z || '0';
