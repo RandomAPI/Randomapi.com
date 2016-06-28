@@ -15,7 +15,7 @@ module.exports = {
         if (data.password === '') {
           reject({flash: 'Please provide a password!', redirect: '/register'});
         } else {
-          this.getCond({username: data.username}).then((user) => {
+          this.getCond({username: data.username}).then(user => {
             if (user !== null) {
               reject({flash: 'This username is already in use!', redirect: '/register'});
             } else {
@@ -107,7 +107,7 @@ module.exports = {
       data.apikey   = this.genRandomKey();
 
       db.query('INSERT INTO `user` SET ?', data, (err, result) => {
-        err ? reject(err) : resolve({id: result.insertId});
+        err !== null ? reject(err) : resolve({id: result.insertId});
       });
     });
   },

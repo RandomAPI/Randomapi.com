@@ -30,8 +30,8 @@ router.post('/', (req, res, next) => {
   }, (err, customer) => {
 
     if (err) {
-      req.flash('info', 'There was a problem upgrading your account');
-      res.redirect(baseURL + '/');
+      req.flash('warning', err.toString());
+      res.redirect(baseURL + '/upgrade');
 
     } else {
       Plan.getCond({name: req.body.plan,}).then(plan => {
@@ -53,7 +53,7 @@ router.post('/', (req, res, next) => {
 
       }, () => {
         req.flash('warning', 'There was a problem upgrading your account');
-        res.redirect(baseURL + '/');
+        res.redirect(baseURL + '/upgrade');
       });
     }
   });
@@ -63,7 +63,7 @@ router.post('/', (req, res, next) => {
 router.post('/updateCard', (req, res, next) => {
   stripe.customers.createSource(req.session.subscription.cid, {source: req.body.stripeToken}, (err, card) => {
     if (err) {
-      req.flash('warning', err);
+      req.flash('warning', err.toString());
       res.redirect(baseURL + '/settings/subscription');
     } else {
       stripe.customers.update(req.session.subscription.cid, {
