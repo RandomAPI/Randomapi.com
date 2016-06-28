@@ -18,9 +18,50 @@ $(() => {
       timeout: 2500,
       closeWith: ['click'],
       animation: {
-          open: 'animated flipInX',
-          close: 'animated flipOutX'
+        open: 'animated flipInX',
+        close: 'animated flipOutX'
       }
     });
   }
 });
+
+function notyPrompt(text, yes, no) {
+  noty({
+    text,
+    layout: 'center',
+    type: "confirm",
+    theme: 'relax',
+    buttons: [{
+      addClass: 'button greenButton',
+      text: 'Yes',
+      onClick: function ($noty) {
+        $noty.close();
+        yes();
+      }
+    },
+    {
+      addClass: 'button redButton',
+      text: 'No',
+      onClick: function ($noty) {
+        $noty.close();
+        no();
+      }
+    }]
+  });
+}
+
+function apiDeletePrompt(ref) {
+  notyPrompt(`Are you sure you want to delete API ${ref}?`, () => {
+    window.location.replace(`delete/api/${ref}`);
+  }, () => {
+
+  });
+}
+
+function listDeletePrompt(ref) {
+  notyPrompt(`Are you sure you want to delete List ${ref}?`, () => {
+    window.location.replace(`delete/list/${ref}`);
+  }, () => {
+
+  });
+}

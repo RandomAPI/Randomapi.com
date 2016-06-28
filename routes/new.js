@@ -82,8 +82,8 @@ router.get('/list', (req, res, next) => {
 
 router.post('/list', upload.any(), (req, res, next) => {
   if (req.session.loggedin && req.session.subscription.status !== 3) {
-    if (req.body.name === undefined || req.files.length === 0 || req.files[0].originalname.match(/(?:\.([^.]+))?$/)[1] !== 'txt') {
-      req.flash('info', 'Looks like you provided an invalid file...please try again.');
+    if (req.body.name === undefined || req.body.name === "" || req.files.length === 0 || req.files[0].originalname.match(/(?:\.([^.]+))?$/)[1] !== 'txt') {
+      req.flash('warning', 'Looks like you provided an invalid file...please try again.');
       fs.unlink('./'+ req.files[0].path);
       res.redirect(baseURL + '/new/list');
     } else {

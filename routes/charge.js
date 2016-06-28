@@ -59,4 +59,27 @@ router.post('/', (req, res, next) => {
   });
 });
 
+// Update customer's credit card details
+router.post('/updateCard', (req, res, next) => {
+  stripe.customers.createSource(req.session.subscription.cid, {source: req.body.stripeToken}, (err, card) => {
+    if (err) {
+      req.flash('warning', err);
+      res.redirect(baseURL + '/settings/subscription');
+    } else {
+      stripe.customers.update(req.session.subscription.cid, {
+        default_source: card.id
+      }, function(err, customer) {
+        if (err) {
+          req.flash('warning', err);
+          res.redirect(baseURL + '/settings/subscription');
+        } else {
+          req.flash('info', 'New card details added successfully!');
+          res.redirect(baseURL + '/settings/subscription');
+        }
+      });
+      console.log(card)
+    }
+  });
+});
+
 module.exports = router;

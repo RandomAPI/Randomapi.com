@@ -22,18 +22,33 @@
 
           <% if (session.subscription.status === 3) { %>
             <p>You are currently on the <span class='green'><%= tier.name %></span> tier, however, your account is currently on hold due to an unpaid subscription charge.<br>
-            You will not be able to use your account until your subscrition status is resolved.<br>
-            </p>
+            You will not be able to use your account until your subscription status is resolved.<br><br>
+            What would you like to do?</p>
+            <input type='button' class='button greenButton' id='attemptPayment' value='Attempt Payment with current card'>
+            <form action="charge/updateCard" method="POST">
+              <script
+                src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                data-key="pk_test_Kz9PkZwjRRlC4g6vMqzIRHGk"
+                data-name="RandomAPI"
+                data-image="https://s3.amazonaws.com/stripe-uploads/acct_102bx12y2KIUsl34merchant-icon-499777-logo.png"
+                data-locale="auto"
+                data-panel-label="Update Card Details"
+                data-label="Replace current card with new card"
+                data-email="<%= session.subscription.email %>"
+                data-zip-code="true">
+              </script>
+            </form>
           <% } else { %>
             <p>You are currently on the <span class='green'><%= tier.name %></span> tier.<br>
             This plan gives you<br>
             -<span class='green'><%= tier.memory/1024/1024 %></span> MB of list memory<br>
             -<span class='green' id="dailyResults"><%= tier.results %></span> daily results<br>
             -<span class='green' id="resultsPerRequest"><%= tier.per %></span> results per request<br>
-            -<span class='green'><%= tier.apis %></span> APIs at a rate of <span class='green' id="price">$<%= tier.price %></span> per month.<br><br>
+            -<span class='green'><%= tier.apis %></span> APIs<br>
+            at a rate of <span class='green' id="price">$<%= tier.price %></span> per month.<br><br>
             <% if (subscription.status === 2) { %>
                  Your account will be downgraded to the <span class='green'>free</span> tier at the end of your subscription period.<br>
-                 Your current subscription will end on <span class='green' id="renewalDate"><%= subscription.current_period_end %></span>.<br><br>
+                 Your current subscription period is set to end on <span class='green' id="renewalDate"><%= subscription.current_period_end %></span>.<br><br>
               <input type='button' class='greenButton' id='restartSubscription' value='Restart Subscription'>
             <% } else { %>
                  Your current subscription will be renewed on <span class='green' id="renewalDate"><%= subscription.current_period_end %></span>.<br><br>

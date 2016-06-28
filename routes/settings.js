@@ -2,6 +2,7 @@ const express = require('express');
 const _       = require('lodash');
 const router  = express.Router();
 const logger  = require('../utils').logger;
+const syslog  = require('../utils').syslog;
 const stripe  = require('../utils').stripe;
 const moment  = require('moment');
 
@@ -131,6 +132,51 @@ router.get('/subscription/upgrade', (req, res, next) => {
           });
         });
       }
+    });
+  } else {
+    res.redirect(baseURL + '/');
+  }
+});
+
+router.get('/subscription/attemptPayment', (req, res, next) => {
+  if (req.session.loggedin) {
+    let results = [];
+    let error = false;
+    Subscription.getUnpaidInvoices(req.session.subscription.cid).then(data => {
+      if (data === null) {
+        req.flash('warning', 'No unpaid invoices were found.');
+        res.sendStatus(200);
+      } else {
+        data.forEach(invoice => {
+          Subscription.payInvoice(invoice.id).then(result => {
+            results.push(result);
+            if (results.length === data.length) {
+              if (error === false) {
+                Subscription.update(req.session.subscription.uid, {status: 1}).then(data => {
+                  // Change account status
+                  req.flash('info', 'Outstanding Invoices were paid off successfully! Your account has been unlocked.');
+                  res.sendStatus(200);
+                });
+              } else {
+                req.flash('warning', error);
+                res.sendStatus(200);
+              }
+            }
+          }, err => {
+            error = err.toString();
+            results.push(err);
+            syslog(err, req);
+            if (results.length === data.length) {
+              req.flash('warning', err.toString());
+              res.sendStatus(200);
+            }
+          });
+        });
+      }
+    }, err => {
+      syslog(err, req);
+      req.flash('warning', err);
+      res.sendStatus(200);
     });
   } else {
     res.redirect(baseURL + '/');

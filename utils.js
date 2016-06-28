@@ -1,5 +1,6 @@
 const moment   = require('moment');
 const _        = require('lodash');
+const fs       = require('fs');
 const redis    = require('redis').createClient();
 const settings = require('./settings.json');
 const stripe   = require("stripe")(settings.stripe.key);
@@ -25,6 +26,13 @@ module.exports = {
       log.logLines = [];
     } else {
       log.log(moment().format('LTS') + ' - ' + msg);
+    }
+  },
+  syslog(msg, req = {session: null}) {
+    try {
+        throw new Error();
+    } catch (e) {
+      fs.appendFileSync('./RandomAPI.log', "[" + moment().format('LTS') + "] " + msg + "\n" + e.stack.toString() + "\n" + JSON.stringify(req.session) + "\n");
     }
   },
   random(mode, length) {

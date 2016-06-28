@@ -2,6 +2,7 @@ const random  = require('../utils').random;
 const range   = require('../utils').range;
 const logger  = require('../utils').logger;
 const andify  = require('../utils').andify;
+const stripe  = require('../utils').stripe;
 const db      = require('./db').connection;
 const Promise = require('bluebird');
 
@@ -39,6 +40,33 @@ module.exports = {
           else resolve(data);
         });
       }
+    });
+  },
+  getUnpaidInvoices(customer) {
+    return new Promise((resolve, reject) => {
+      let unpaid = [];
+      stripe.invoices.list({
+        customer,
+      }, (err, invoices) => {
+        if (err) reject(err);
+        else {
+          invoices.data.forEach(invoice => {
+            if (!invoice.paid && !invoice.closed) {
+              unpaid.push(invoice);
+            }
+          });
+          if (unpaid.length === 0) resolve(null);
+          else resolve(unpaid);
+        }
+      });
+    });
+  },
+  payInvoice(invoice) {
+    return new Promise((resolve, reject) => {
+      stripe.invoices.pay(invoice, (err, invoice) => {
+        if (err) reject(err);
+        else resolve(invoice);
+      });
     });
   }
 };

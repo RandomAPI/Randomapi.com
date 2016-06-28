@@ -12,26 +12,33 @@ $(() => {
   resultsPerRequest.html(numeral(Number(resultsPerRequest.html())).format(','))
   price.html(numeral(price.html()).format('$0.00'))
 
-  $("#premiumUpgrade").click(() => {
-    $.post('', {code: editor.getValue()}, url => {
-      window.location.replace(url);
-    });
-  });
 
   $("#cancelSubscription").click(() => {
-    $.get('settings/subscription/cancel', () => {
-      window.location.replace('settings/subscription');
+    notyPrompt(`Are you sure you want to cancel your subscription?`, () => {
+      $.get('settings/subscription/cancel', () => {
+        window.location.replace('settings/subscription');
+      });
     });
   });
 
   $("#restartSubscription").click(() => {
-    $.get('settings/subscription/restart', () => {
-      window.location.replace('settings/subscription');
+    notyPrompt(`Are you sure you want to restart your subscription?`, () => {
+      $.get('settings/subscription/restart', () => {
+        window.location.replace('settings/subscription');
+      });
     });
   });
 
   $("#upgradeSubscription").click(() => {
-    $.get('settings/subscription/upgrade', () => {
+    notyPrompt(`Are you sure you want to upgrade to the Premium Tier?`, () => {
+      $.get('settings/subscription/upgrade', () => {
+        window.location.replace('settings/subscription');
+      });
+    });
+  });
+
+  $("#attemptPayment").click(() => {
+    $.get('settings/subscription/attemptPayment', () => {
       window.location.replace('settings/subscription');
     });
   });
