@@ -11,13 +11,28 @@
   margin: auto;
 }
 
+.disclaimers {
+  width: 750px;
+  height: auto;
+  position: relative;
+  margin: 10px auto 50px auto;
+}
+
+#disclaimer {
+  font-size: 10pt;
+}
+
 .card {
   background-color: white;
   width: 250px;
-  height: 275px;
+  height: 450px;
   display: inline-block;
   margin-right: -4px;
   box-shadow: 0px 0px 5px #888888;
+}
+
+.card:last-child {
+  position: absolute;
 }
 
 .card .title {
@@ -50,6 +65,17 @@
   color: #000;
 }
 
+.card .info #main.x {
+  color: red !important;
+}
+
+.card .info #main.check {
+  color: #0CB863 !important;
+}
+
 #upgradeButton {
+  position: absolute;
+  bottom: 0px;
+  margin-left: 40px;
   text-align: center;
 }
