@@ -21,7 +21,7 @@
         "keepAliveInterval": 5000
     },
     "stripe": {
-        "key": "sk_test_IWLPsvE2E4QaDxAiMDoT44KU"
+        "key": ""
     },
     "generators": {
         "basic": {
@@ -29,6 +29,7 @@
             "execTime": 5,
             "results": 100,
             "localTTL": 60,
+            "localCache": 5,
             "redisTTL": 120
         },
         "standard": {
@@ -36,6 +37,7 @@
             "execTime": 10,
             "results": 1000,
             "localTTL": 120,
+            "localCache": 10,
             "redisTTL": 240
         },
         "premium": {
@@ -43,6 +45,7 @@
             "execTime": 20,
             "results": 10000,
             "localTTL": 240,
+            "localCache": 20,
             "redisTTL": 480
         },
         "realtime": {
@@ -50,6 +53,7 @@
             "execTime": 5,
             "results": 1,
             "localTTL": 60,
+            "localCache": 5,
             "redisTTL": 120
         },
         "speedtest": {
@@ -57,6 +61,7 @@
             "execTime": 5,
             "results": 0,
             "localTTL": 1,
+            "localCache": 5,
             "redisTTL": 1
         }
     }

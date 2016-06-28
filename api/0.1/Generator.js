@@ -76,11 +76,11 @@ const Generator = function(name, options) {
       } else if (msg.data === 'emptyListCache') {
         this.emptyListCache();
       } else if (msg.data === 'getListCache') {
-        var listCache = 0;
+        this.cacheSize = 0;
         _.each(this.cache, item => {
-          listCache += Number(item.size);
+          this.cacheSize += Number(item.size);
         });
-        process.send({type: 'cmdComplete', mode: 'listCache', content: listCache});
+        process.send({type: 'cmdComplete', mode: 'listCache', content: this.cacheSize});
       }
     } else if (msg.type === 'pong') {
       this.emit('pong');
@@ -106,7 +106,7 @@ const Generator = function(name, options) {
       this.parentReplied = true;
     });
 
-    // See if any lists have expired
+    // See if any lists have expired or if over the max size limit
     this.checkCache();
   }, 5000)
 };
@@ -427,11 +427,21 @@ Generator.prototype.availableFuncs = function() {
 };
 
 Generator.prototype.checkCache = function() {
+  let sizes = {};
   _.each(this.cache, (obj, ref) => {
+    sizes[ref] = obj.size;
     if (new Date().getTime() - obj.lastUsed > settings.generators[this.name].localTTL * 1000) {
       delete this.cache[ref];
     }
   });
+
+  sizes = _.toPairs(sizes);
+  sizes.sort((a, b) => ~~b[1] - ~~a[1]);
+  while (this.cacheSize > settings.generators[this.name].localCache * 1024 * 1024) {
+    let toRemove = sizes.shift();
+    delete this.cache[toRemove[0]];
+    this.cacheSize -= toRemove[1];
+  }
 };
 
 Generator.prototype.emptyListCache = function() {

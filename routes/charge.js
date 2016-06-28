@@ -77,7 +77,6 @@ router.post('/updateCard', (req, res, next) => {
           res.redirect(baseURL + '/settings/subscription');
         }
       });
-      console.log(card)
     }
   });
 });

@@ -151,7 +151,7 @@ router.get('/subscription/attemptPayment', (req, res, next) => {
           Subscription.payInvoice(invoice.id).then(result => {
             results.push(result);
             if (results.length === data.length) {
-              if (error === false) {
+              if (!error) {
                 Subscription.update(req.session.subscription.uid, {status: 1}).then(data => {
                   // Change account status
                   req.flash('info', 'Outstanding Invoices were paid off successfully! Your account has been unlocked.');
