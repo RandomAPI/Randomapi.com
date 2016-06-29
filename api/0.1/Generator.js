@@ -122,6 +122,8 @@ Generator.prototype.instruct = function(options, done) {
   this.noInfo  = typeof this.options.noinfo !== 'undefined';
   this.page    = Number(this.options.page) || 1;
 
+  this.hideuserinfo = typeof this.options.hideuserinfo !== 'undefined';
+
   if (this.mode === undefined) this.mode = options.mode || "generator";
 
   // Sanitize values
@@ -243,6 +245,7 @@ ${this.src}
       };
 
       if (self.noInfo) delete json.info;
+      if (self.hideuserinfo && !self.noInfo) delete json.info.user;
 
       if (self.format === 'yaml') {
         cb(null, YAML.stringify(json, 4), 'yaml');

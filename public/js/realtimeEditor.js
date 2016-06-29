@@ -4,6 +4,7 @@ ref = $('ref').html();
 let editor = ace.edit("aceEditor");
 editor.setTheme("ace/theme/twilight");
 editor.session.setMode("ace/mode/javascript");
+editor.setValue(editor.getValue(), 1);
 editor.focus();
 
 $("#submit").click(() => {
