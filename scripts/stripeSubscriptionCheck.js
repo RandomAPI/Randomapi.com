@@ -4,6 +4,7 @@
   if not, update status to unpaid
   If a user's payment that was unpaid ends up going through, set status back to normal
 */
+const moment = require('moment');
 const db = require('../models/db').connection;
 const Subscription = require('../models/Subscription');
 const User = require('../models/User');
@@ -57,7 +58,11 @@ db.query("SELECT * FROM `subscription` WHERE `sid` IS NOT NULL", (err, results) 
           done(++total, results);
         });
       } else {
-        done(++total, results);
+        Subscription.update(result.uid, {
+          current_period_end: moment(subscription.current_period_end*1000).format("YYYY-MM-DD HH:mm:ss")
+        }).then(() => {
+          done(++total, results);
+        });
       }
     });
   });
