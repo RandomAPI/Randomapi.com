@@ -66,16 +66,20 @@ router.post('/updateCard', (req, res, next) => {
       req.flash('warning', err.toString());
       res.redirect(baseURL + '/settings/subscription');
     } else {
-      stripe.customers.update(req.session.subscription.cid, {
-        default_source: card.id
-      }, function(err, customer) {
-        if (err) {
-          req.flash('warning', err);
-          res.redirect(baseURL + '/settings/subscription');
-        } else {
-          req.flash('info', 'New card details added successfully!');
-          res.redirect(baseURL + '/settings/subscription');
-        }
+      stripe.customers.retrieve(req.session.subscription.cid, (err, customer) => {
+        stripe.customers.deleteCard(req.session.subscription.cid, customer.default_source, (err, confirmation) => {
+          stripe.customers.update(req.session.subscription.cid, {
+            default_source: card.id
+          }, (err, customer) => {
+            if (err) {
+              req.flash('warning', err);
+              res.redirect(baseURL + '/settings/subscription');
+            } else {
+              req.flash('info', 'New card details added successfully!');
+              res.redirect(baseURL + '/settings/subscription');
+            }
+          });
+        });
       });
     }
   });
