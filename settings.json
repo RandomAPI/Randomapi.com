@@ -57,12 +57,12 @@
             "localCache": 5,
             "redisTTL": 120
         },
-        "speedtest": {
-            "count": 1,
-            "execTime": 5,
-            "results": 0,
+        "demo": {
+            "count": 3,
+            "execTime": 1,
+            "results": 1,
             "localTTL": 1,
-            "localCache": 5,
+            "localCache": 1,
             "redisTTL": 1
         }
     }
