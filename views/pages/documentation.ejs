@@ -280,6 +280,68 @@ https://randomapi.com/api/?key=<span class='green'>ABCD-1234-EFGH-5678</span>&re
 https://randomapi.com/api/?key=ABCD-1234-EFGH-5678&ref=123abc&callback=<span class='green'>fetchData</span>
 https://randomapi.com/api/?key=ABCD-1234-EFGH-5678&ref=123abc&fmt=<span class='green'>xml</span>&<span class='green'>dl</span>
 https://randomapi.com/api/?key=ABCD-1234-EFGH-5678&ref=123abc&fmt=<span class='green'>pretty</span>&<span class='green'>noinfo</span></code></pre>
+
+        <h5 class='subtitle'><a name="errors">Errors</a></h5>
+        <table class="u-full-width">
+          <thead>
+            <tr>
+              <th colspan='2'>Error Code</th>
+              <th>HTTP Code</th>
+              <th colspan='2'>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan='2'>MISSING_API_KEY</td>
+              <td>404</td>
+              <td colspan='2'>
+                The API call could not be complete since an API key was not provided. Make sure you include your key with the <span class='green'>key</span> parameter.
+              </td>
+            </tr>
+            <tr>
+              <td colspan='2'>MISSING_API_REF</td>
+              <td>404</td>
+              <td colspan='2'>
+                The API call could not be complete since an API ref was not provided. Make sure you include your ref with the <span class='green'>ref</span> parameter or specify it in the URI after <span class='green'>/api/REF_KEY</span>.
+              </td>
+            </tr>
+            <tr>
+              <td colspan='2'>SUBSCRIPTION_PAYMENT_OVERDUE</td>
+              <td>403</td>
+              <td colspan='2'>
+                Your latest invoice was not paid in time. Please go to your account settings to resolve the issue.
+              </td>
+            </tr>
+            <tr>
+              <td colspan='2'>ACCOUNT_SOFTLOCKED</td>
+              <td>403</td>
+              <td colspan='2'>
+                Your account was recently downgraded to the free tier (due to a canceled subscription) and your account quotas are currently higher than the free tier allows. Delete APIs and Lists until they are within the free tier limits or restart your subscription to your previous tier.
+              </td>
+            </tr>
+            <tr>
+              <td colspan='2'>API_QUOTA_EXCEEDED</td>
+              <td>403</td>
+              <td colspan='2'>
+                You've used up your daily number of results. Please upgrade or wait until your quota resets at midnight in the timezone you selected when you signed up.
+              </td>
+            </tr>
+            <tr>
+              <td colspan='2'>INVALID_API_KEY</td>
+              <td>401</td>
+              <td colspan='2'>
+                The API key that was provided was invalid. API keys are case-insensitive, however, the dashes are required.
+              </td>
+            </tr>
+            <tr>
+              <td colspan='2'>UNAUTHORIZED_USER</td>
+              <td>401</td>
+              <td colspan='2'>
+                Your API key does not have the proper permissions to access this API.
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>

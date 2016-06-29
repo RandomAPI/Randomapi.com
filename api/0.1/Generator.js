@@ -155,7 +155,7 @@ Generator.prototype.instruct = function(options, done) {
         this.options.userID      = data.id;
         this.options.userTier    = data.tier;
 
-        if (data.apikey !== this.options.key) {
+        if (data.apikey.toLowerCase() !== this.options.key.toLowerCase()) {
           cb('UNAUTHORIZED_USER');
         } else {
           cb(null);
