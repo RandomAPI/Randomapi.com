@@ -7,6 +7,8 @@
 const db = require('../models/db').connection;
 const Subscription = require('../models/Subscription');
 const User = require('../models/User');
+const Tier = require('../models/Tier');
+const Plan = require('../models/Plan');
 const stripe = require('../utils').stripe;
 
 let total = 0;
@@ -27,15 +29,27 @@ db.query("SELECT * FROM `subscription` WHERE `sid` IS NOT NULL", (err, results) 
           plan: 1,
           current_period_end: null,
           status: 1
-        });
+        }).then(() => {
 
-        // Delete customer from Stripe
-        stripe.customers.del(result.cid, (err, confirmation) => {
-          done(++total, results);
-        });
+          // Delete customer from Stripe
+          stripe.customers.del(result.cid, (err, confirmation) => {
 
-        // Check if user has now gone over their account limit and soft lock them until
-        // they delete lists/apis
+            // Check if user has now gone over their account limit and soft lock them until
+            // they delete lists/apis
+            User.getCond({['u.id']: result.uid}).then(user => {
+              Tier.getCond({id: 1}).then(tier => {
+
+                if (user.apis > tier.apis || user.memory > tier.memory) {
+                  Subscription.update(result.uid, {status: 4}).then(() => {
+                    done(++total, results);
+                  });
+                } else {
+                  done(++total, results);
+                }
+              });
+            });
+          });
+        });
       } else if (subscription.status === "past_due") {
         Subscription.update(result.uid, {
           status: 3
@@ -47,6 +61,9 @@ db.query("SELECT * FROM `subscription` WHERE `sid` IS NOT NULL", (err, results) 
       }
     });
   });
+  if (results.length === 0) {
+    done(0, []);
+  }
 });
 
 function done(total, results) {

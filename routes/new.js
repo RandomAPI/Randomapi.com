@@ -49,6 +49,11 @@ router.post('/api', (req, res, next) => {
       req.flash('warning', 'Please provide a name for your API');
       res.redirect(baseURL + '/new/api');
 
+    // Is user OVER their limits from a recent downgrade?
+    } else if (req.session.subscription.status === 4) {
+      req.flash('warning', 'Your account is currently soft-locked until you fix your account quotas.');
+      res.redirect(baseURL + '/');
+
     // Is user within their tier limits?
     } else if (req.session.user.apis + 1 > req.session.tier.apis && req.session.tier.apis !== 0) {
       req.flash('warning', 'You have used up your API quota for the ' + req.session.tier.name + ' tier.');
@@ -98,9 +103,16 @@ router.post('/list', upload.any(), (req, res, next) => {
       fs.unlink('./'+ req.files[0].path);
       res.redirect(baseURL + '/new/list');
 
+    // Is user OVER their limits from a recent downgrade?
+    } else if (req.session.subscription.status === 4) {
+      req.flash('warning', 'Your account is currently soft-locked until you fix your account quotas.');
+      fs.unlink('./'+ req.files[0].path);
+      res.redirect(baseURL + '/');
+
     // Is user within their tier limits?
     } else if (req.session.user.memory + req.files[0].size > req.session.tier.memory && req.session.tier.memory !== 0) {
       req.flash('warning', 'You have used up your List quota for the ' + req.session.tier.name + ' tier.');
+      fs.unlink('./'+ req.files[0].path);
       res.redirect(baseURL + '/new/list');
 
     // Else, add the List

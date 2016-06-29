@@ -23,6 +23,8 @@ router.get('/:ref?', (req, res, next) => {
     Subscription.getCond({uid: user.id}).then(subscription => {
       if (subscription.status === 3) {
         return res.status(403).send({error: "SUBSCRIPTION_PAYMENT_OVERDUE"});
+      } else if (subscription.status === 4) {
+        return res.status(403).send({error: "ACCOUNT_SOFTLOCKED"});
       }
       Tier.getCond({id: user.tierID}).then(tier => {
         if (user.results >= tier.results && tier.results !== 0) {

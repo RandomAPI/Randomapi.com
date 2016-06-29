@@ -28,7 +28,11 @@ router.get('/', (req, res, next) => {
 
 router.get('/upgrade', (req, res, next) => {
   if (req.session.loggedin) {
-    if (req.session.user.tierName === 'Free') {
+    // Is user OVER their limits from a recent downgrade?
+    if (req.session.subscription.status === 4) {
+      req.flash('warning', 'Your account is currently soft-locked until your account quotas are within their limits.');
+      res.redirect(baseURL + '/');
+    } else if (req.session.user.tierName === 'Free') {
       res.render('upgrade', _.merge(defaultVars, {title: 'Upgrade'}));
     } else {
       res.redirect(baseURL + 'settings/subscription');

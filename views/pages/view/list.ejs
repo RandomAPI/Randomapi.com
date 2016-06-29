@@ -12,6 +12,7 @@
       </div>
       <div class="ten columns">
         <h3>View Lists</h3>
+        <p><span class='<%= session.user.memory > session.tier.memory ? "red" : "green" %>'><%= (session.user.memory/1024/1024).toFixed(2) %> MB</span> of <span class="green"><%= session.tier.memory === 0 ? 'unlimited' : session.tier.memory/1024/1024 %> MB</span> used.</p>
         <table class="table table-striped" style="width: 75%">
           <thead>
             <tr>

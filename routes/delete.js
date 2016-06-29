@@ -5,6 +5,7 @@ const router   = express.Router();
 const API = require('../models/API');
 const List = require('../models/List');
 const User = require('../models/User');
+const Subscription = require('../models/Subscription');
 
 // Setup defaultVars and baseURL for all routes
 let defaultVars, baseURL;
@@ -23,8 +24,16 @@ router.get('/api/:ref', (req, res, next) => {
         API.remove({id: doc.id}).then(() => {
           fs.unlink('./data/apis/' + doc.id + '.api', err => {
             User.decVal('apis', 1, req.session.user.username).then(() => {
-              req.flash('info', `API ${doc.name} was deleted successfully!`);
-              res.redirect(baseURL + '/view/api');
+              // If user's account is soft-locked, check to see if they are within their quota's limits now
+              if (req.session.subscription.status === 4 && req.session.user.apis-1 <= req.session.tier.apis && req.session.user.memory <= req.session.tier.memory) {
+                Subscription.update(req.session.user.id, {status: 1}).then(() => {
+                  req.flash('info', `API ${doc.name} was deleted successfully and your account status is back to normal!`);
+                  res.redirect(baseURL + '/view/api');
+                });
+              } else {
+                req.flash('info', `API ${doc.name} was deleted successfully!`);
+                res.redirect(baseURL + '/view/api');
+              }
             });
           });
         });
@@ -45,8 +54,17 @@ router.get('/list/:ref', (req, res, next) => {
         List.remove({id: doc.id}).then(() => {
           fs.unlink('./data/lists/' + doc.id + '.list', err => {
             User.decVal('memory', doc.memory, req.session.user.username).then(() => {
-              req.flash('info', `List ${doc.name} was deleted successfully!`);
-              res.redirect(baseURL + '/view/list');
+
+              // If user's account is soft-locked, check to see if they are within their quota's limits now
+              if (req.session.subscription.status === 4 && req.session.user.apis <= req.session.tier.apis && req.session.user.memory-doc.memory <= req.session.tier.memory) {
+                Subscription.update(req.session.user.id, {status: 1}).then(() => {
+                  req.flash('info', `List ${doc.name} was deleted successfully and your account status is back to normal!`);
+                  res.redirect(baseURL + '/view/list');
+                });
+              } else {
+                req.flash('info', `List ${doc.name} was deleted successfully!`);
+                res.redirect(baseURL + '/view/list');
+              }
             });
           });
         });

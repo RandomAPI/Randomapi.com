@@ -11,7 +11,8 @@
         <% include ../../snippets/subnav %>
       </div>
       <div class="ten columns">
-        <h3>View APIs</h3>
+        <h3>View APIs - <a href='new/api'>New API</a></h3>
+        <p><span id='quotaResults' class='<%= session.user.apis > session.tier.apis ? "red" : "green" %>'><%= session.user.apis %></span> of <span id='tierResults' class="green"><%= session.tier.apis === 0 ? 'unlimited' : session.tier.apis %></span> APIs used.</p>
         <table class="table table-striped" style="width: 75%">
           <thead>
             <tr>
