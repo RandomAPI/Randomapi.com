@@ -27,11 +27,11 @@ router.get('/api/:ref', (req, res, next) => {
               // If user's account is soft-locked, check to see if they are within their quota's limits now
               if (req.session.subscription.status === 4 && req.session.user.apis-1 <= req.session.tier.apis && req.session.user.memory <= req.session.tier.memory) {
                 Subscription.update(req.session.user.id, {status: 1}).then(() => {
-                  req.flash('info', `API ${doc.name} was deleted successfully and your account status is back to normal!`);
+                  req.flash('info', `API ${doc.name} [${doc.ref}] was deleted successfully and your account status is back to normal!`);
                   res.redirect(baseURL + '/view/api');
                 });
               } else {
-                req.flash('info', `API ${doc.name} was deleted successfully!`);
+                req.flash('info', `API ${doc.name} [${doc.ref}] was deleted successfully!`);
                 res.redirect(baseURL + '/view/api');
               }
             });
@@ -58,11 +58,11 @@ router.get('/list/:ref', (req, res, next) => {
               // If user's account is soft-locked, check to see if they are within their quota's limits now
               if (req.session.subscription.status === 4 && req.session.user.apis <= req.session.tier.apis && req.session.user.memory-doc.memory <= req.session.tier.memory) {
                 Subscription.update(req.session.user.id, {status: 1}).then(() => {
-                  req.flash('info', `List ${doc.name} was deleted successfully and your account status is back to normal!`);
+                  req.flash('info', `List ${doc.name} [${doc.ref}] was deleted successfully and your account status is back to normal!`);
                   res.redirect(baseURL + '/view/list');
                 });
               } else {
-                req.flash('info', `List ${doc.name} was deleted successfully!`);
+                req.flash('info', `List ${doc.name} [${doc.ref}] was deleted successfully!`);
                 res.redirect(baseURL + '/view/list');
               }
             });

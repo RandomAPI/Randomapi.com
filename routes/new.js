@@ -68,7 +68,7 @@ router.post('/api', (req, res, next) => {
 
           // Increment total APIs for user
           User.incVal('apis', 1, req.session.user.username).then(() => {
-            req.flash('info', `API ${req.body.name} was added successfully!`);
+            req.flash('info', `API ${model.name} [${model.ref}] was added successfully!`);
             res.redirect(baseURL + '/edit/api/' + model.ref);
           });
         });
@@ -120,7 +120,7 @@ router.post('/list', upload.any(), (req, res, next) => {
       List.add({name: req.body.name, memory: req.files[0].size, owner: req.session.user.id}).then(List.getCond).then(model => {
         fs.rename('./'+ req.files[0].path, './data/lists/' + model.id + '.list', err => {
           User.incVal('memory', req.files[0].size, req.session.user.username).then(() => {
-            req.flash('info', `List ${req.body.name} was added successfully!`);
+            req.flash('info', `List ${model.name} [${model.ref}] was added successfully!`);
             res.redirect(baseURL + '/view/list');
           });
         });

@@ -44,7 +44,7 @@ router.post('/api/:ref', (req, res, next) => {
         res.redirect(baseURL + '/view/api');
       } else {
         fs.writeFile('./data/apis/' + doc.id + '.api', req.body.code.replace(/\r\n/g, '\n').slice(0, 8192), 'utf8', err => {
-          req.flash('info', `API ${doc.name} was updated successfully!`);
+          req.flash('info', `API ${doc.name} [${doc.ref}] was updated successfully!`);
           res.send(baseURL + '/view/api');
         });
       }
