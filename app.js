@@ -7,6 +7,7 @@ const http         = require('http');
 const flash        = require('connect-flash');
 const compress     = require('compression');
 const cors         = require('cors');
+const filesize     = require('filesize');
 const debug        = require('debug')('RandomAPI:server');
 const app          = express();
 const server       = http.createServer(app);
@@ -95,7 +96,7 @@ app.use('*', (req, res, next) => {
       messages = "";
     }
 
-    defaultVars = {messages, session: req.session, basehref, title: null, originalUrl: req.originalUrl };
+    defaultVars = {filesize, messages, session: req.session, basehref, title: null, originalUrl: req.originalUrl };
     if (settings.general.behindReverseProxy) {
       let uri  = req.headers.uri.replace(/(\/)+$/,'');
       let path = req.originalUrl.replace(/(\/)+$/,'');

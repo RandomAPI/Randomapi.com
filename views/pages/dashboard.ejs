@@ -19,7 +19,7 @@
 
         Your have used <span id='quotaResults' class='<%= session.tier.apis !== 0 && session.user.apis > session.tier.apis ? "red" : "green" %>'><%= session.user.apis %></span> of your <span id='tierResults' class="green"><%= session.tier.apis === 0 ? 'unlimited' : session.tier.apis %></span> APIs.<br>
 
-        Your have used <span class='<%= session.user.memory > session.tier.memory ? "red" : "green" %>'><%= (session.user.memory/1024/1024).toFixed(2) %> MB</span> of your <span class="green"><%= session.tier.memory === 0 ? 'unlimited' : session.tier.memory/1024/1024 %> MB</span> List memory.<br>
+        Your have used <span class='<%= session.user.memory > session.tier.memory ? "red" : "green" %>'><%= filesize(session.user.memory) %></span> of your <span class="green"><%= session.tier.memory === 0 ? 'unlimited' : filesize(session.tier.memory) %></span> List memory.<br>
       </div>
     </div>
   </div>

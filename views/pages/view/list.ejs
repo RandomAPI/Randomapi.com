@@ -12,13 +12,14 @@
       </div>
       <div class="ten columns">
         <h3>View Lists</h3>
-        <p><span class='<%= session.user.memory > session.tier.memory ? "red" : "green" %>'><%= (session.user.memory/1024/1024).toFixed(2) %> MB</span> of <span class="green"><%= session.tier.memory === 0 ? 'unlimited' : session.tier.memory/1024/1024 %> MB</span> used.</p>
+        <p><span class='<%= session.user.memory > session.tier.memory ? "red" : "green" %>'><%= filesize(session.user.memory) %></span> of <span class="green"><%= session.tier.memory === 0 ? 'unlimited' : filesize(session.tier.memory) %></span> used.</p>
         <table class="table table-striped" style="width: 75%">
           <thead>
             <tr>
               <th>#</th>
               <th>Name</th>
               <th>Ref ID</th>
+              <th>Size</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -31,6 +32,7 @@
               <td><%=index+1%></td>
               <td><%=list.name%></td>
               <td><%=list.ref%></td>
+              <td><%=filesize(list.memory)%></td>
               <td><a href="" onClick="listDeletePrompt('<%=list.ref%>', this);return false;">Delete</a> <a href="edit/list/<%=list.ref%>">Edit</a></td>
             </tr>
           <%  });
