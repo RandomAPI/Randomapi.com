@@ -1,0 +1,54 @@
+#preview {
+  margin-top: -25px;
+  position: relative;
+  float: right;
+  width: 35%;
+  height: 250px;
+}
+
+#results {
+  white-space: pre-wrap;       /* Since CSS 2.1 */
+  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+  white-space: -pre-wrap;      /* Opera 4-6 */
+  white-space: -o-pre-wrap;    /* Opera 7 */
+  word-wrap: break-word;       /* Internet Explorer 5.5+ */
+  height: 175px;
+}
+
+#aceEditor {
+  float: left;
+  width: 60%;
+  margin-top: 5px;
+  height: 250px;
+}
+
+#submit {
+  background-color: #0CB863;
+  color: white;
+}
+
+#submit:hover {
+  background-color: #09A459;
+  -webkit-transition: background-color 0.2s ease-in-out;
+  -moz-transition: background-color 0.2s ease-in-out;
+  -ms-transition: background-color 0.2s ease-in-out;
+  -o-transition: background-color 0.2s ease-in-out;
+  transition: background-color 0.2s ease-in-out;
+}
+
+#charCount {
+
+}
+
+.rename {
+  margin-top: -30px;
+  margin-left: 150px;
+  height: 30px;
+}
+
+.info {
+  margin-top: -15px;
+  margin-bottom: 10px;
+  width: 60%;
+  height: 20px;
+}

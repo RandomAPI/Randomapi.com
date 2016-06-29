@@ -232,7 +232,7 @@ setInterval(() => {
     listCacheStats[type] = new Array(Generators[type].length).fill().map((v, k) => Generators[type][k].listCacheUsage());
     jobStats[type] = new Array(Generators[type].length).fill().map((v, k) => Generators[type][k].totalJobs());
 
-    if (type === 'speedtest' || type === 'realtime') return;
+    if (type === 'speedtest' || type === 'realtime' || type === 'demo') return;
     bars[type].setData({
       titles: new Array(Generators[type].length).fill().map((v, k) => '#' + k),
       data: queueStats[type]

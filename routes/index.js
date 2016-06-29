@@ -4,6 +4,7 @@ const router  = express.Router();
 const logger  = require('../utils').logger;
 const stripe  = require('../utils').stripe;
 const moment  = require('moment');
+const settings  = require('../utils').settings;
 
 const User = require('../models/User');
 const Tier = require('../models/Tier');
@@ -22,7 +23,7 @@ router.get('/', (req, res, next) => {
   if (req.session.loggedin) {
     res.render('dashboard', _.merge(defaultVars, {title: 'Dashboard'}));
   } else {
-    res.render('index', _.merge(defaultVars, {title: 'Index'}));
+    res.render('index', _.merge(defaultVars, {socket: ':' + settings.general.socket, title: 'Index'}));
   }
 });
 
@@ -86,6 +87,9 @@ router.post('/login', (req, res, next) => {
 router.get('/logout', (req, res, next) => {
   if (req.session.loggedin) {
     delete req.session.loggedin;
+    delete req.session.user;
+    delete req.session.subscription;
+    delete req.session.tier;
     res.redirect(baseURL + '/');
   } else {
     res.redirect(baseURL + '/');

@@ -36,12 +36,32 @@ io.on('connection', socket => {
     if (!Generators.realtime[shortest].generator.connected) {
       socket.emit('codeLinted', {error: {formatted: "Something bad has happened...please try again later."}, results: [], fmt: null});
     } else {
-
       // Don't pass along ref/owner info if from front page demo
-      if (socket.session === null) {
-        Generators.realtime[shortest].queue.push({socket, data: {src: msg.code, ref: null, owner: null}});
+      if (JSON.parse(socket.session).loggedin === undefined) {
+        Generators.realtime[shortest].queue.push({socket, data: {src: msg.code, ref: null, owner: 'demo'}});
       } else {
         Generators.realtime[shortest].queue.push({socket, data: {src: msg.code, ref: msg.ref, owner: JSON.parse(socket.session).user}});
+      }
+    }
+  });
+
+  socket.on('lintDemoCode', msg => {
+    let shortest = Math.floor(Math.random() * Generators.demo.length);
+    for (let i = 0; i < Generators.demo.length; i++) {
+      if (Generators.demo[i].queueLength() < Generators.demo[shortest].queueLength()) {
+        shortest = i;
+      }
+    }
+
+    // Check if chosen Generator has crashed and is in middle of restarting
+    if (!Generators.demo[shortest].generator.connected) {
+      socket.emit('codeLinted', {error: {formatted: "Something bad has happened...please try again later."}, results: [], fmt: null});
+    } else {
+      // Don't pass along ref/owner info if from front page demo
+      if (JSON.parse(socket.session).loggedin === undefined) {
+        Generators.demo[shortest].queue.push({socket, data: {src: msg.code, ref: null, owner: 'demo'}});
+      } else {
+        Generators.demo[shortest].queue.push({socket, data: {src: msg.code, ref: msg.ref, owner: JSON.parse(socket.session).user}});
       }
     }
   });
