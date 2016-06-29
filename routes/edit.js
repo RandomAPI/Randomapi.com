@@ -43,9 +43,13 @@ router.post('/api/:ref', (req, res, next) => {
       if (doc.owner !== req.session.user.id) {
         res.redirect(baseURL + '/view/api');
       } else {
-        fs.writeFile('./data/apis/' + doc.id + '.api', req.body.code.replace(/\r\n/g, '\n').slice(0, 8192), 'utf8', err => {
-          req.flash('info', `API ${doc.name} [${doc.ref}] was updated successfully!`);
-          res.send(baseURL + '/view/api');
+        let name = req.body.rename;
+        if (name === undefined || name === "") name = doc.name;
+        API.update({name}, doc.ref).then(() => {
+          fs.writeFile('./data/apis/' + doc.id + '.api', req.body.code.replace(/\r\n/g, '\n').slice(0, 8192), 'utf8', err => {
+            req.flash('info', `API ${name} [${doc.ref}] was updated successfully!`);
+            res.send(baseURL + '/view/api');
+          });
         });
       }
     });
