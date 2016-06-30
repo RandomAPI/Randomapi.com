@@ -21,9 +21,8 @@ codeArea.keydown(() => {
 
 socket.on('codeLinted', msg => {
   if (msg.error === null) {
-    $('#results').html(JSON.stringify(msg.results, null, 2));
+    $('#results').html(msg.results);
   } else {
-    //$('#results').html(msg.error.error + "\n" + msg.error.stack);
     $('#results').html(msg.error.formatted);
   }
 });

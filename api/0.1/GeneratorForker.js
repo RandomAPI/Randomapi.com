@@ -42,10 +42,11 @@ const GeneratorForker = function(options) {
         options = {key: task.data.owner.apikey, src: task.data.src, ref: task.data.ref};
       }
       this.generate({mode: 'lint', options}, (error, results, fmt) => {
+        results = JSON.stringify(JSON.parse(results).results[0], null, 2);
         if (results.length > 65535) {
-          results = "Warning: Output has been truncated\n---------------\n" + results.slice(0, 65535);
+          results = "Warning: Output has been truncated\n----------\n" + results.slice(0, 65535) + "\n----------";
         }
-        task.socket.emit('codeLinted', {error, results: JSON.parse(results).results[0], fmt});
+        task.socket.emit('codeLinted', {error, results, fmt});
         callback();
       });
     } else {
