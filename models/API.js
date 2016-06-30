@@ -102,5 +102,5 @@ module.exports = {
         resolve({err: err, result: result});
       });
     });
-  },
+  }
 };

@@ -72,5 +72,12 @@ module.exports = {
         else resolve(data);
       });
     });
+  },
+  update(vals, ref) {
+    return new Promise((resolve, reject) => {
+      db.query('UPDATE `List` SET ? WHERE ?', [vals, {ref}], (err, result) => {
+        resolve({err: err, result: result});
+      });
+    });
   }
 };
