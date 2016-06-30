@@ -12,7 +12,7 @@ gulp.task('minify-ejs-pages', () => {
   return gulp.src(['views/pages/*.ejs', 'views/pages/**/*.ejs'])
     .pipe(through.obj((chunk, enc, cb) => {
       var contents = chunk.contents.toString('utf8');
-      var preMatches = contents.match(/<pre>((?:.|\n)*?)<\/pre>/g);
+      var preMatches = contents.match(/<pre>?((?:.|\n)*?)<\/pre>/g);
 
       if (preMatches) {
         preMatches.forEach(match => {
