@@ -5,20 +5,18 @@
 </head>
 <body>
   <% include ../../snippets/navbar %>
-  <div class="container main">
-    <div class="row">
-      <div class="two columns">
-        <% include ../../snippets/settingsSubnav %>
-      </div>
-      <div class="ten columns">
-        <h3>General</h3>
-        <form action="" method="POST">
-          <input type='password' name="current" placeholder='current password' autofocus required><br>
-          <input type='password' name="new" placeholder='new password' required><br>
-          <input type='password' name="confirm" placeholder='confirm password' required><br><br>
-          <input type='submit' value='Update Settings'>
-        </form>
-      </div>
+  <div class="main">
+    <div class="two columns">
+      <% include ../../snippets/settingsSubnav %>
+    </div>
+    <div class="ten columns">
+      <h3>General</h3>
+      <form action="" method="POST">
+        <input type='password' name="current" placeholder='current password' autofocus required><br>
+        <input type='password' name="new" placeholder='new password' required><br>
+        <input type='password' name="confirm" placeholder='confirm password' required><br><br>
+        <input type='submit' value='Update Settings'>
+      </form>
     </div>
   </div>
   <% include ../../snippets/footer %>

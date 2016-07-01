@@ -7,21 +7,19 @@
 <body>
   <ref hidden><%=list.ref%></ref>
   <% include ../../snippets/navbar %>
-  <div class="container main editor">
-    <div class="row">
-      <div class="two columns">
-        <% include ../../snippets/subnav %>
-      </div>
-      <div class="ten columns">
-        <h3>Editing List <%=list.name%> [<%=list.ref%>]</h3>
-        <p><span class='<%= session.user.memory > session.tier.memory ? "red" : "green" %>'><%= filesize(session.user.memory) %></span> of <span class="green"><%= session.tier.memory === 0 ? 'unlimited' : filesize(session.tier.memory) %></span> used.</p>
-        <form enctype="multipart/form-data" action="" method="POST">
-        <input type="text" name="rename" placeholder="<%= list.name %>" autofocus autocomplete="off"><br><br>
-        Choose a file to replace the list:<br>
-        <input name="file" type="file"><br>
-        <input type="submit" value="Upload File" />
-        </form>
-      </div>
+  <div class="main editor">
+    <div class="two columns">
+      <% include ../../snippets/subnav %>
+    </div>
+    <div class="ten columns">
+      <h3>Editing List <%=list.name%> [<%=list.ref%>]</h3>
+      <p><span class='<%= session.user.memory > session.tier.memory ? "red" : "green" %>'><%= filesize(session.user.memory) %></span> of <span class="green"><%= session.tier.memory === 0 ? 'unlimited' : filesize(session.tier.memory) %></span> used.</p>
+      <form enctype="multipart/form-data" action="" method="POST">
+      <input type="text" name="rename" placeholder="<%= list.name %>" autofocus autocomplete="off"><br><br>
+      Choose a file to replace the list:<br>
+      <input name="file" type="file"><br>
+      <input type="submit" value="Upload File" />
+      </form>
     </div>
   </div>
   <% include ../../snippets/footer %>

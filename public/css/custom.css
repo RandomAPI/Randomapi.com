@@ -7,7 +7,7 @@ html {
   display: block;
   margin: 15px auto 0px auto;
   padding: 0px 25px 50px 25px;
-  max-width: 1200px;
+  width: 90%;
 }
 
 #navbar h3 {
@@ -68,10 +68,14 @@ a {
 }
 
 .main {
+  position: relative;
   margin-top: 10px;
   clear: both;
-  max-width: 1200px;
-  padding: 10px;
+  width: 90%;
+
+  margin: auto;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 section.hero {
@@ -111,7 +115,7 @@ section.login #loginButton:hover {
   transition: background-color 0.2s ease-in-out;
 }
 
-section.login #forgotButton {
+section.login #signupButton {
   float: left;
   margin-left: 10px;
   width: 140px;
@@ -145,7 +149,7 @@ section.register input[type='password'] {
 
 section.register #registerButton {
   display: block;
-  margin : 0 auto;
+  margin: 0 auto;
   width: 140px;
   padding: 0px;
   background-color: #0CB863;
@@ -169,6 +173,26 @@ section.login h4 {
 section.login .flash {
   clear: both;
   color: red;
+}
+
+section.tryitout {
+  margin: auto;
+  width: 75%;
+}
+
+section.triplesec {
+  width: 100%;
+  height: 350px;
+  background-color: #F4F4F4;
+  clear: both;
+}
+
+.tripleTitle {
+  text-align: center;
+}
+
+.tripleInfo {
+  font-size: 14pt;
 }
 
 .green {

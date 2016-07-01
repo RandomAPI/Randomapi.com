@@ -23,6 +23,10 @@ $(() => {
       }
     });
   }
+
+  $('#signupButton').click(() => {
+    window.location.replace(`register`);
+  });
 });
 
 function notyPrompt(text, yes, no) {

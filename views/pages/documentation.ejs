@@ -6,42 +6,41 @@
 </head>
 <body>
   <% include ../snippets/navbar %>
-  <div class="container main">
-    <div class="row">
-      <div class="three columns">
-        <% include ../snippets/documentationSubnav %>
-      </div>
-      <div class="nine columns documentationMain">
-        <h2>Documentation</h2>
-        <h5>Learn how to code your API</h5>
+  <div class="main">
+    <div class="two columns">
+      <% include ../snippets/documentationSubnav %>
+    </div>
+    <div class="documentationMain">
+      <h2>Documentation</h2>
+      <h5>Learn how to code your API</h5>
 
-        <h4 class='title'><a name="general">General</a></h4>
-        <p>If you know Javascript, then coding an API is a piece of cake! If not, it's fairly easy to pick up and is very similar to other programming languages. Check out <a href="http://eloquentjavascript.net/" class='green' target="_blank">Eloquent Javascript</a> if you'd like a brief intro to the language and then check back here, we'll wait. :)</p>
-        <p>The reason you need to know Javascript is because APIs are coded in Javascript! No learning a new language and its fancy syntax is required!</p>
+      <h4 class='title'><a name="general">General</a></h4>
+      <p>If you know Javascript, then coding an API is a piece of cake! If not, it's fairly easy to pick up and is very similar to other programming languages. Check out <a href="http://eloquentjavascript.net/" class='green' target="_blank">Eloquent Javascript</a> if you'd like a brief intro to the language and then check back here, we'll wait. :)</p>
+      <p>The reason you need to know Javascript is because APIs are coded in Javascript! No learning a new language and its fancy syntax is required!</p>
 
-        <h5 class='subtitle'><a name="APIObject">API Object</a></h5>
-        <p>In RandomAPI, all of your <b>fields</b> are attached to the <b>api</b> object. A <b>field</b> is a Javascript property that holds the data that you generate and the <b>api</b> object is the central variable that RandomAPI will end up pushing into a results array.</p>
-        <div class="row">
-          <div class="six columns">
-            <span class='caption'>API Code</span>
-            <pre><code class="javascript">api.age      = random.numeric(1, 25);
+      <h5 class='subtitle'><a name="APIObject">API Object</a></h5>
+      <p>In RandomAPI, all of your <b>fields</b> are attached to the <b>api</b> object. A <b>field</b> is a Javascript property that holds the data that you generate and the <b>api</b> object is the central variable that RandomAPI will end up pushing into a results array.</p>
+      <div class="row">
+        <div class="six columns">
+          <span class='caption'>API Code</span>
+          <pre><code class="javascript">api.age      = random.numeric(1, 25);
 api.dogYears = api.age * 7;</code></pre>
-          </div>
-          <div class="six columns">
-            <span class='caption'>Result</span>
-            <pre><code>{"results":[{"age":20,"dogYears":140}]}
-            </code></pre>
-          </div>
         </div>
+        <div class="six columns">
+          <span class='caption'>Result</span>
+          <pre><code>{"results":[{"age":20,"dogYears":140}]}
+          </code></pre>
+        </div>
+      </div>
 
-        <h5 class='subtitle'><a name="variables">Variables and functions and comments, oh my!</a></h5>
-        <p>Since APIs are coded in Javascript, you are free to do whatever you like in order to generate your data. This includes creating functions, variables, comments, etc. Just make sure that whatever data you generate gets attached to the api object or else it won't be available in your results.
-        <div class="row">
-          <div class="six columns">
-            <span class='caption'>API Code</span>
-            <pre><code class="javascript">// This is a comment that isn't evaluated
+      <h5 class='subtitle'><a name="variables">Variables and functions and comments, oh my!</a></h5>
+      <p>Since APIs are coded in Javascript, you are free to do whatever you like in order to generate your data. This includes creating functions, variables, comments, etc. Just make sure that whatever data you generate gets attached to the api object or else it won't be available in your results.
+      <div class="row">
+        <div class="six columns">
+          <span class='caption'>API Code</span>
+          <pre><code class="javascript">// This is a comment that isn't evaluated
 /*
-    Multiline comments work as well!
+  Multiline comments work as well!
 */
 const fullName = "Billy Builder"; // Not attached to api object
 var middleName = "The";
@@ -50,55 +49,55 @@ api.age   = age; // Attached to api object
 api.phone = phoneNum(); // Calling user defined function
 
 function phoneNum (format) {
-  format = format || "(xxx) xxx-xxxx";
-  return String(format).split('').map(digit => {
-    return digit === 'x' ? random.numeric(0, 9) : digit;
-  }).join('');
+format = format || "(xxx) xxx-xxxx";
+return String(format).split('').map(digit => {
+  return digit === 'x' ? random.numeric(0, 9) : digit;
+}).join('');
 }</code></pre>
-          </div>
-          <div class="six columns">
-            <span class='caption'>Result</span>
-            <pre><code>{
-  "results": [
-    {
-      "age": 5,
-      "phone": "(336) 580-1131"
-    }
-  ]
-}
-            </code></pre>
-          </div>
         </div>
-        <h5 class='subtitle'><a name="sandbox">Sandbox</a></h5>
-        <p>In order to keep other users and the server safe from malicious code, all APIs are executed in a sandboxed environment with limited native Node.js/Javascript functions available. Features like requiring modules, spawning child processes, access the file system, etc. are all disabled. All code is run in strict mode as well.</p>
-        <p>Native methods and build in objects such as type casting using <b>String</b> and <b>Number</b> and using <b>JSON.stringify</b> are enabled and methods that can be chained to those data types such as <b>.toString()</b> are also available for use.
+        <div class="six columns">
+          <span class='caption'>Result</span>
+          <pre><code>{
+"results": [
+  {
+    "age": 5,
+    "phone": "(336) 580-1131"
+  }
+]
+}
+          </code></pre>
+        </div>
+      </div>
+      <h5 class='subtitle'><a name="sandbox">Sandbox</a></h5>
+      <p>In order to keep other users and the server safe from malicious code, all APIs are executed in a sandboxed environment with limited native Node.js/Javascript functions available. Features like requiring modules, spawning child processes, access the file system, etc. are all disabled. All code is run in strict mode as well.</p>
+      <p>Native methods and build in objects such as type casting using <b>String</b> and <b>Number</b> and using <b>JSON.stringify</b> are enabled and methods that can be chained to those data types such as <b>.toString()</b> are also available for use.
 
 
-        <h4 class='title'><a name="availableFunctions">Available functions</a></h4>
-        <p>RandomAPI includes some basic data generation functions in the sandboxed environment that your API can make use of. All of these included functions respect the <b>seed</b> value that is sent in through an API request.</p>
+      <h4 class='title'><a name="availableFunctions">Available functions</a></h4>
+      <p>RandomAPI includes some basic data generation functions in the sandboxed environment that your API can make use of. All of these included functions respect the <b>seed</b> value that is sent in through an API request.</p>
 
-        <h5 class='subtitle'><a name="availableFunctionsRandom">Random</a></h5>
-        <p>Generates a random number within a range as well as a string of random characters from a predefined or custom charset.</p>
-        <table class="u-full-width">
-          <thead>
-            <tr>
-              <th>Mode</th>
-              <th>Arguments</th>
-              <th colspan='5'>Example</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>numeric</td>
-              <td>min, max</td>
-              <td colspan='5'><pre><code class='javascript'>random.numeric(25, 85);    // 31
+      <h5 class='subtitle'><a name="availableFunctionsRandom">Random</a></h5>
+      <p>Generates a random number within a range as well as a string of random characters from a predefined or custom charset.</p>
+      <table class="u-full-width">
+        <thead>
+          <tr>
+            <th>Mode</th>
+            <th>Arguments</th>
+            <th colspan='5'>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>numeric</td>
+            <td>min, max</td>
+            <td colspan='5'><pre><code class='javascript'>random.numeric(25, 85);    // 31
 random.numeric('adsf', 2); // TypeError: Non numeric arguments provided
 random.numeric(3, 2);      // RangeError: min is greater than max</code></pre></td>
-            </tr>
-            <tr>
-              <td>special</td>
-              <td>mode, length</td>
-              <td colspan='5'><pre><code class='javascript'>// Available predefined charsets
+          </tr>
+          <tr>
+            <td>special</td>
+            <td>mode, length</td>
+            <td colspan='5'><pre><code class='javascript'>// Available predefined charsets
 // 1: abcdef1234567890
 // 2: ABCDEF1234567890
 // 3: abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
@@ -116,240 +115,240 @@ random.special(5, 10); // pvdsmelnei
 random.special(6, 10); // YIHHSSVRXR
 random.special(7, 10); // auws4syf9k
 random.special(8, 10); // SEFXPCCBIP</code></pre></td>
-            </tr>
-            <tr>
-              <td>custom</td>
-              <td>charset, length</td>
-              <td colspan='5'><pre><code class='javascript'>random.custom("1111111112", 10); // 1112111111
+          </tr>
+          <tr>
+            <td>custom</td>
+            <td>charset, length</td>
+            <td colspan='5'><pre><code class='javascript'>random.custom("1111111112", 10); // 1112111111
 random.custom("aBcáΩßDefG1290é\"", 10); // G"BcGé02D1
 random.custom("œ∑´®†¥¨ˆøπåß∂ƒ©˙∆˚¬Ω≈ç√∫˜µ", 10); // ®®ø˚øƒ˚†Ωç</code></pre>Notice: There is a 10% chance of a 2 being chosen in example 1.</td>
-            </tr>
-          </tbody>
-        </table>
+          </tr>
+        </tbody>
+      </table>
 
-        <h5 class='subtitle'><a name="availableFunctionsList">List</a></h5>
-        <p>Chooses a random (or specified) item from either a list or provided array. If no lineNumber or indexNumber is provided, a random item will be chosen forom the list or array respectively.</p>
-        <table class="u-full-width">
-          <thead>
-            <tr>
-              <th>Arguments</th>
-              <th colspan='2'>Example</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>listid, [lineNumber]</td>
-              <td colspan='2'><pre><code class='javascript'>// list a1b2c3 contents:
+      <h5 class='subtitle'><a name="availableFunctionsList">List</a></h5>
+      <p>Chooses a random (or specified) item from either a list or provided array. If no lineNumber or indexNumber is provided, a random item will be chosen forom the list or array respectively.</p>
+      <table class="u-full-width">
+        <thead>
+          <tr>
+            <th>Arguments</th>
+            <th colspan='2'>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>listid, [lineNumber]</td>
+            <td colspan='2'><pre><code class='javascript'>// list a1b2c3 contents:
 // line 1: cat
 // line 2: horse
 // line 3: dog
 
 list('a1b2c3'); // dog
 list('a1b2c3', 2); // horse</code></pre>Notice: Example 2 chose line number 2 from list <b>a1b2c3</b>.</td>
-            </tr>
-            <tr>
-              <td>array, [indexNumber]</td>
-              <td colspan='2'><pre><code class='javascript'>list(['a', 'b', 'c']); // c
+          </tr>
+          <tr>
+            <td>array, [indexNumber]</td>
+            <td colspan='2'><pre><code class='javascript'>list(['a', 'b', 'c']); // c
 list(["male", "female"], 1); // female</code></pre>Warning: Indexes are zero based for arrays.</td>
-            </tr>
-          </tbody>
-        </table>
+          </tr>
+        </tbody>
+      </table>
 
-        <h5 class='subtitle'><a name="availableFunctionsHash">Hash</a></h5>
-        <p>Generate a hash from a string.</p>
-        <table class="u-full-width">
-          <thead>
-            <tr>
-              <th>Mode</th>
-              <th>Arguments</th>
-              <th colspan='5'>Example</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>md5</td>
-              <td>str</td>
-              <td colspan='5'><pre><code class='javascript'>// 82961fecf4f7ee8d8a10390072332efd
+      <h5 class='subtitle'><a name="availableFunctionsHash">Hash</a></h5>
+      <p>Generate a hash from a string.</p>
+      <table class="u-full-width">
+        <thead>
+          <tr>
+            <th>Mode</th>
+            <th>Arguments</th>
+            <th colspan='5'>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>md5</td>
+            <td>str</td>
+            <td colspan='5'><pre><code class='javascript'>// 82961fecf4f7ee8d8a10390072332efd
 hash.md5('mysoupersekurepasswurd!');</code></pre></td>
-            </tr>
-            <tr>
-              <td>sha1</td>
-              <td>str</td>
-              <td colspan='5'><pre><code class='javascript'>// 7babf75100bbe01ad3e0795831463dd9fd0ed517
+          </tr>
+          <tr>
+            <td>sha1</td>
+            <td>str</td>
+            <td colspan='5'><pre><code class='javascript'>// 7babf75100bbe01ad3e0795831463dd9fd0ed517
 hash.sha1('mysoupersekurepasswurd!');</code></pre></td>
-            </tr>
-            <tr>
-              <td>sha256</td>
-              <td>str</td>
-              <td colspan='5'><pre><code class='javascript'>// a6360b34e354384e75de6241ba4fa3a33c6ef799c8943a04d000f19cb6af1051
+          </tr>
+          <tr>
+            <td>sha256</td>
+            <td>str</td>
+            <td colspan='5'><pre><code class='javascript'>// a6360b34e354384e75de6241ba4fa3a33c6ef799c8943a04d000f19cb6af1051
 hash.sha256('mysoupersekurepasswurd!');</code></pre></td>
-            </tr>
-          </tbody>
-        </table>
+          </tr>
+        </tbody>
+      </table>
 
-        <h5 class='subtitle'><a name="availableFunctionsTimestamp">Timestamp</a></h5>
-        <p>Returns the current unix timestamp.</p>
-        <pre><code class='javascript'>timestamp(); //1466196805</code></pre>
+      <h5 class='subtitle'><a name="availableFunctionsTimestamp">Timestamp</a></h5>
+      <p>Returns the current unix timestamp.</p>
+      <pre><code class='javascript'>timestamp(); //1466196805</code></pre>
 
-        <h5 class='subtitle'><a name="availableFunctionsRequire">Require</a></h5>
-        <p>Shhhh...coming soon.</p>
-        <pre><code class='javascript'>const faker = require('faker'); // I wonder what this will do... :)</code></pre>
+      <h5 class='subtitle'><a name="availableFunctionsRequire">Require</a></h5>
+      <p>Shhhh...coming soon.</p>
+      <pre><code class='javascript'>const faker = require('faker'); // I wonder what this will do... :)
+api.name = faker.name.findName();</code></pre>
 
-        <h4 class='title'><a name="callingAPIs">Calling APIs</a></h4>
-        <p>APIs can be accessed through via the <a href="https://randomapi.com/api" class='green' target="_blank">https://randomapi.com/api</a> endpoint.</p>
-        <p>At a minimum, the endpoint requires a <b>key</b> and <b>ref</b> value. Key would be your API key and ref is the Ref ID of the API you want to access which can be found on the <a href="view/api" class='green' target="_blank">View APIs</a> page.</p>
-        <p>APIs can be called in two different ways:</p>
-        <pre><code class="html">https://randomapi.com/api/<span class='green'>123abc</span>?key=<span class='green'>ABCD-1234-EFGH-5678</span>      // Ref value is implied
+      <h4 class='title'><a name="callingAPIs">Calling APIs</a></h4>
+      <p>APIs can be accessed through via the <a href="https://randomapi.com/api" class='green' target="_blank">https://randomapi.com/api</a> endpoint.</p>
+      <p>At a minimum, the endpoint requires a <b>key</b> and <b>ref</b> value. Key would be your API key and ref is the Ref ID of the API you want to access which can be found on the <a href="view/api" class='green' target="_blank">View APIs</a> page.</p>
+      <p>APIs can be called in two different ways:</p>
+      <pre><code class="html">https://randomapi.com/api/<span class='green'>123abc</span>?key=<span class='green'>ABCD-1234-EFGH-5678</span>      // Ref value is implied
 https://randomapi.com/api/?key=<span class='green'>ABCD-1234-EFGH-5678</span>&ref=<span class='green'>123abc</span> // Ref value is explicitly stated</code></pre>
 
-        <h5 class='subtitle'><a name="options">Options</a></h5>
-        <p>You can add extra parameters to your API call to transform your data into different formats, specify how many results you'd like to generate, specify a seed, and even communicate with your api through the <b>getVar</b> function</p>
-        <table class="u-full-width">
-          <thead>
-            <tr>
-              <th>Parameter</th>
-              <th>Default value</th>
-              <th>Example value</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>key</td>
-              <td><i>null</i></td>
-              <td>ABCD-1234-EFGH-5678</td>
-              <td>(<span class='red'>required</span>) Your API Key</td>
-            </tr>
-            <tr>
-              <td>ref</td>
-              <td><i>null</i></td>
-              <td>123abc</td>
-              <td>(<span class='red'>required</span>) The Ref ID of the API that you want to access</td>
-            </tr>
-            <tr>
-              <td>fmt</td>
-              <td>json</td>
-              <td>json, pretty, csv, xml, yaml</td>
-              <td>Format your data to your liking</td>
-            </tr>
-            <tr>
-              <td>results</td>
-              <td>10</td>
-              <td>20</td>
-              <td>How many results would you like to have generated</td>
-            </tr>
-            <tr>
-              <td>seed</td>
-              <td><i>Random 16 character hex string</i></td>
-              <td>huskiesarecute</td>
-              <td>Generate the same results</td>
-            </tr>
-            <tr>
-              <td>page</td>
-              <td>1</td>
-              <td>3</td>
-              <td>Pagination through results</td>
-            </tr>
-            <tr>
-              <td>noinfo</td>
-              <td><i>null</i></td>
-              <td><i>No value required</i></td>
-              <td>Only show the results. Don't show the info property</td>
-            </tr>
-            <tr>
-              <td>dl</td>
-              <td><i>null</i></td>
-              <td><i>No value required</i></td>
-              <td>Download the file with proper headers and file extension</td>
-            </tr>
-            <tr>
-              <td>callback</td>
-              <td><i>null</i></td>
-              <td>fetchdata</td>
-              <td>For JSONP requests. Only available with json format</td>
-            </tr>
-            <tr>
-              <td><i>Custom Parameter</i></td>
-              <td><i>null</i></td>
-              <td>mode=3</td>
-              <td>You can specify custom parameters and then access them in your API using the <b>getVar</b> function.</td>
-            </tr>
-          </tbody>
-        </table>
-        <pre><code class="html">https://randomapi.com/api/123abc?key=ABCD-1234-EFGH-5678&results=<span class='green'>25</span>&seed=<span class='green'>huskiesarecute</span>&page=<span class='green'>3</span>
+      <h5 class='subtitle'><a name="options">Options</a></h5>
+      <p>You can add extra parameters to your API call to transform your data into different formats, specify how many results you'd like to generate, specify a seed, and even communicate with your api through the <b>getVar</b> function</p>
+      <table class="u-full-width">
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Default value</th>
+            <th>Example value</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>key</td>
+            <td><i>null</i></td>
+            <td>ABCD-1234-EFGH-5678</td>
+            <td>(<span class='red'>required</span>) Your API Key</td>
+          </tr>
+          <tr>
+            <td>ref</td>
+            <td><i>null</i></td>
+            <td>123abc</td>
+            <td>(<span class='red'>required</span>) The Ref ID of the API that you want to access</td>
+          </tr>
+          <tr>
+            <td>fmt</td>
+            <td>json</td>
+            <td>json, pretty, csv, xml, yaml</td>
+            <td>Format your data to your liking</td>
+          </tr>
+          <tr>
+            <td>results</td>
+            <td>10</td>
+            <td>20</td>
+            <td>How many results would you like to have generated</td>
+          </tr>
+          <tr>
+            <td>seed</td>
+            <td><i>Random 16 character hex string</i></td>
+            <td>huskiesarecute</td>
+            <td>Generate the same results</td>
+          </tr>
+          <tr>
+            <td>page</td>
+            <td>1</td>
+            <td>3</td>
+            <td>Pagination through results</td>
+          </tr>
+          <tr>
+            <td>noinfo</td>
+            <td><i>null</i></td>
+            <td><i>No value required</i></td>
+            <td>Only show the results. Don't show the info property</td>
+          </tr>
+          <tr>
+            <td>dl</td>
+            <td><i>null</i></td>
+            <td><i>No value required</i></td>
+            <td>Download the file with proper headers and file extension</td>
+          </tr>
+          <tr>
+            <td>callback</td>
+            <td><i>null</i></td>
+            <td>fetchdata</td>
+            <td>For JSONP requests. Only available with json format</td>
+          </tr>
+          <tr>
+            <td><i>Custom Parameter</i></td>
+            <td><i>null</i></td>
+            <td>mode=3</td>
+            <td>You can specify custom parameters and then access them in your API using the <b>getVar</b> function.</td>
+          </tr>
+        </tbody>
+      </table>
+      <pre><code class="html">https://randomapi.com/api/123abc?key=ABCD-1234-EFGH-5678&results=<span class='green'>25</span>&seed=<span class='green'>huskiesarecute</span>&page=<span class='green'>3</span>
 https://randomapi.com/api/?key=ABCD-1234-EFGH-5678&ref=123abc&callback=<span class='green'>fetchData</span>
 https://randomapi.com/api/?key=ABCD-1234-EFGH-5678&ref=123abc&fmt=<span class='green'>xml</span>&<span class='green'>dl</span>
 https://randomapi.com/api/?key=ABCD-1234-EFGH-5678&ref=123abc&fmt=<span class='green'>pretty</span>&<span class='green'>noinfo</span></code></pre>
 
-        <h5 class='subtitle'><a name="errors">Errors</a></h5>
-        <table class="u-full-width">
-          <thead>
-            <tr>
-              <th colspan='2'>Error Code</th>
-              <th>HTTP Code</th>
-              <th colspan='2'>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td colspan='2'>MISSING_API_KEY</td>
-              <td>404</td>
-              <td colspan='2'>
-                The API call could not be complete since an API key was not provided. Make sure you include your key with the <span class='green'>key</span> parameter.
-              </td>
-            </tr>
-            <tr>
-              <td colspan='2'>MISSING_API_REF</td>
-              <td>404</td>
-              <td colspan='2'>
-                The API call could not be complete since an API ref was not provided. Make sure you include your ref with the <span class='green'>ref</span> parameter or specify it in the URI after <span class='green'>/api/REF_KEY</span>.
-              </td>
-            </tr>
-            <tr>
-              <td colspan='2'>INVALID_API</td>
-              <td>404</td>
-              <td colspan='2'>
-                The API ref that was provided was not found.
-              </td>
-            </tr>
-            <tr>
-              <td colspan='2'>SUBSCRIPTION_PAYMENT_OVERDUE</td>
-              <td>403</td>
-              <td colspan='2'>
-                Your latest invoice was not paid in time. Please go to your account settings to resolve the issue.
-              </td>
-            </tr>
-            <tr>
-              <td colspan='2'>ACCOUNT_SOFTLOCKED</td>
-              <td>403</td>
-              <td colspan='2'>
-                Your account was recently downgraded to the free tier (due to a canceled subscription) and your account quotas are currently higher than the free tier allows. Delete APIs and Lists until they are within the free tier limits or restart your subscription to your previous tier.
-              </td>
-            </tr>
-            <tr>
-              <td colspan='2'>API_QUOTA_EXCEEDED</td>
-              <td>403</td>
-              <td colspan='2'>
-                You've used up your daily number of results. Please upgrade or wait until your quota resets at midnight in the timezone you selected when you signed up.
-              </td>
-            </tr>
-            <tr>
-              <td colspan='2'>INVALID_API_KEY</td>
-              <td>401</td>
-              <td colspan='2'>
-                The API key that was provided was invalid. API keys are case-insensitive, however, the dashes are required.
-              </td>
-            </tr>
-            <tr>
-              <td colspan='2'>UNAUTHORIZED_USER</td>
-              <td>401</td>
-              <td colspan='2'>
-                Your API key does not have the proper permissions to access this API.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <h5 class='subtitle'><a name="errors">Errors</a></h5>
+      <table class="u-full-width">
+        <thead>
+          <tr>
+            <th colspan='2'>Error Code</th>
+            <th>HTTP Code</th>
+            <th colspan='2'>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan='2'>MISSING_API_KEY</td>
+            <td>404</td>
+            <td colspan='2'>
+              The API call could not be complete since an API key was not provided. Make sure you include your key with the <span class='green'>key</span> parameter.
+            </td>
+          </tr>
+          <tr>
+            <td colspan='2'>MISSING_API_REF</td>
+            <td>404</td>
+            <td colspan='2'>
+              The API call could not be complete since an API ref was not provided. Make sure you include your ref with the <span class='green'>ref</span> parameter or specify it in the URI after <span class='green'>/api/REF_KEY</span>.
+            </td>
+          </tr>
+          <tr>
+            <td colspan='2'>INVALID_API</td>
+            <td>404</td>
+            <td colspan='2'>
+              The API ref that was provided was not found.
+            </td>
+          </tr>
+          <tr>
+            <td colspan='2'>SUBSCRIPTION_PAYMENT_OVERDUE</td>
+            <td>403</td>
+            <td colspan='2'>
+              Your latest invoice was not paid in time. Please go to your account settings to resolve the issue.
+            </td>
+          </tr>
+          <tr>
+            <td colspan='2'>ACCOUNT_SOFTLOCKED</td>
+            <td>403</td>
+            <td colspan='2'>
+              Your account was recently downgraded to the free tier (due to a canceled subscription) and your account quotas are currently higher than the free tier allows. Delete APIs and Lists until they are within the free tier limits or restart your subscription to your previous tier.
+            </td>
+          </tr>
+          <tr>
+            <td colspan='2'>API_QUOTA_EXCEEDED</td>
+            <td>403</td>
+            <td colspan='2'>
+              You've used up your daily number of results. Please upgrade or wait until your quota resets at midnight in the timezone you selected when you signed up.
+            </td>
+          </tr>
+          <tr>
+            <td colspan='2'>INVALID_API_KEY</td>
+            <td>401</td>
+            <td colspan='2'>
+              The API key that was provided was invalid. API keys are case-insensitive, however, the dashes are required.
+            </td>
+          </tr>
+          <tr>
+            <td colspan='2'>UNAUTHORIZED_USER</td>
+            <td>401</td>
+            <td colspan='2'>
+              Your API key does not have the proper permissions to access this API.
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
   <% include ../snippets/footer %>

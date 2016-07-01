@@ -5,19 +5,17 @@
 </head>
 <body>
   <% include ../../snippets/navbar %>
-  <div class="container main">
-    <div class="row">
-      <div class="two columns">
-        <% include ../../snippets/subnav %>
-      </div>
-      <div class="ten columns">
-        <h3>New API</h3>
-        <p><span id='quotaResults' class='<%= session.tier.apis !== 0 && session.user.apis > session.tier.apis ? "red" : "green" %>'><%= session.user.apis %></span> of <span id='tierResults' class="green"><%= session.tier.apis === 0 ? 'unlimited' : session.tier.apis %></span> APIs used.</p>
-        <form action="" method="POST">
-        <input type="text" name="name" placeholder="API Name" autofocus required autocomplete="off"><br>
-        <input type="submit" value="Add new API">
-        </form>
-      </div>
+  <div class="main">
+    <div class="two columns">
+      <% include ../../snippets/subnav %>
+    </div>
+    <div class="ten columns">
+      <h3>New API</h3>
+      <p><span id='quotaResults' class='<%= session.tier.apis !== 0 && session.user.apis > session.tier.apis ? "red" : "green" %>'><%= session.user.apis %></span> of <span id='tierResults' class="green"><%= session.tier.apis === 0 ? 'unlimited' : session.tier.apis %></span> APIs used.</p>
+      <form action="" method="POST">
+      <input type="text" name="name" placeholder="API Name" autofocus required autocomplete="off"><br>
+      <input type="submit" value="Add new API">
+      </form>
     </div>
   </div>
   <% include ../../snippets/footer %>

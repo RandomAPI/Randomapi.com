@@ -7,23 +7,47 @@
 <body>
   <server hidden><%=socket%></server>
   <% include ../snippets/navbar %>
-  <div class="container main">
+  <div class="main">
     <section class="hero">
       <h3>Simplify your testing</h3>
       <h5 id="subtitle">Easily generate mock data for testing your application</h5>
     </section>
-    <div class="ten columns">
-        <h3>Try it out!</h3>
-        <pre id="aceEditor" name="code">blah</pre>
-        <div id="preview">
-          <button id="lintButton" onClick="lintCode()">Test API</button>
-          <pre id="results">
+    <section class="tryitout">
+      <h4>Try it out!</h4>
+      <pre id="aceEditor" name="code">let age   = random.numeric(18, 65);
+  api.age   = age; // Attached to api object
+  api.phone = phoneNum(); // Calling user defined function
+
+  function phoneNum (format) {
+  format = format || "(xxx) xxx-xxxx";
+  return String(format).split('').map(digit => {
+    return digit === 'x' ? random.numeric(0, 9) : digit;
+  }).join('');
+  }</pre>
+      <div id="preview">
+        <button id="lintButton" onClick="lintCode()">Generate result</button>
+        <pre id="results">
   Loading...
-          </pre>
-        </div>
+        </pre>
+      </div>
+    </section>
+  </div>
+  <section class="triplesec">
+    <div class="main">
+      <div class="one-third column">
+        <h4 class="tripleTitle">Simple</h4>
+        <p class="tripleInfo">APIs are coded in Vanilla Javascript. No learning a new language and its fancy syntax is required!</p>
+      </div>
+      <div class="one-third column">
+        <h4 class="tripleTitle">Powerful</h4>
+        <p class="tripleInfo">You have complete control over the output of your API. Whether you want </p>
+      </div>
+      <div class="one-third column">
+        <h4 class="tripleTitle">Secure</h4>
+        <p class="tripleInfo">Only your account has access to the Lists and APIs that you have created. We also have features such as public links for APIs to prevent your API key and references from being leaked.</p>
       </div>
     </div>
-  </div>
+  </section>
   <% include ../snippets/footer %>
   <script src="js/socket.io.min.js"></script>
   <script src="js/ace/ace.js"></script>

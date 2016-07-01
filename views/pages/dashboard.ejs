@@ -5,22 +5,20 @@
 </head>
 <body>
   <% include ../snippets/navbar %>
-  <div class="container main">
-    <div class="row">
-      <div class="two columns">
-        <% include ../snippets/subnav %>
-      </div>
-      <div class="ten columns">
-        <h3>Dashboard</h3>
-        Your api key is <input class="green" onClick="this.select();" value="<%= session.user.apikey %>" readonly size="23"><br>
-        Your tier is <span class="green"><%= session.user.tierName %></span>.<br>
+  <div class="main">
+    <div class="two columns">
+      <% include ../snippets/subnav %>
+    </div>
+    <div class="ten columns">
+      <h3>Dashboard</h3>
+      Your api key is <input class="green" onClick="this.select();" value="<%= session.user.apikey %>" readonly size="23"><br>
+      Your tier is <span class="green"><%= session.user.tierName %></span>.<br>
 
-        Your have used <span id='quotaResults' class='green'><%= session.user.results %></span> of your daily <span id='tierResults' class="green"><%= session.tier.results === 0 ? 'unlimited' : session.tier.results %></span> results.<br>
+      Your have used <span id='quotaResults' class='green'><%= session.user.results %></span> of your daily <span id='tierResults' class="green"><%= session.tier.results === 0 ? 'unlimited' : session.tier.results %></span> results.<br>
 
-        Your have used <span id='quotaResults' class='<%= session.tier.apis !== 0 && session.user.apis > session.tier.apis ? "red" : "green" %>'><%= session.user.apis %></span> of your <span id='tierResults' class="green"><%= session.tier.apis === 0 ? 'unlimited' : session.tier.apis %></span> APIs.<br>
+      Your have used <span id='quotaResults' class='<%= session.tier.apis !== 0 && session.user.apis > session.tier.apis ? "red" : "green" %>'><%= session.user.apis %></span> of your <span id='tierResults' class="green"><%= session.tier.apis === 0 ? 'unlimited' : session.tier.apis %></span> APIs.<br>
 
-        Your have used <span class='<%= session.user.memory > session.tier.memory ? "red" : "green" %>'><%= filesize(session.user.memory) %></span> of your <span class="green"><%= session.tier.memory === 0 ? 'unlimited' : filesize(session.tier.memory) %></span> List memory.<br>
-      </div>
+      Your have used <span class='<%= session.user.memory > session.tier.memory ? "red" : "green" %>'><%= filesize(session.user.memory) %></span> of your <span class="green"><%= session.tier.memory === 0 ? 'unlimited' : filesize(session.tier.memory) %></span> List memory.<br>
     </div>
   </div>
   <% include ../snippets/footer %>

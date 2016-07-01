@@ -8,23 +8,21 @@
   <server hidden><%=socket%></server>
   <ref hidden><%=api.ref%></ref>
   <% include ../../snippets/navbar %>
-  <div class="container main editor">
-    <div class="row">
-      <div class="two columns">
-        <% include ../../snippets/subnav %>
+  <div class="main editor">
+    <div class="two columns">
+      <% include ../../snippets/subnav %>
+    </div>
+    <div class="ten columns">
+      <h3>Editing API <%=api.name%> [<%=api.ref%>]</h3>
+      <div class='info'>
+        <span id='charCount'><span id='currentCharCount'>0</span> / 8,192 chars</span><div class='rename'> Rename: <input id='rename' type='text' name='rename' value='<%=api.name%>'></div>
       </div>
-      <div class="ten columns">
-        <h3>Editing API <%=api.name%> [<%=api.ref%>]</h3>
-        <div class='info'>
-          <span id='charCount'><span id='currentCharCount'>0</span> / 8,192 chars</span><div class='rename'> Rename: <input id='rename' type='text' name='rename' value='<%=api.name%>'></div>
-        </div>
-        <pre id="aceEditor" name="code"><%=api.code%></pre>
-        <div id="preview">
-          <input type="submit" id="submit" value="Save"> <button id="lintButton" onClick="lintCode()">Test API</button>
-          <pre id="results">
-  Loading...
-          </pre>
-        </div>
+      <pre id="aceEditor" name="code"><%=api.code%></pre>
+      <div id="preview">
+        <input type="submit" id="submit" value="Save"> <button id="lintButton" onClick="lintCode()">Test API</button>
+        <pre id="results">
+Loading...
+        </pre>
       </div>
     </div>
   </div>
