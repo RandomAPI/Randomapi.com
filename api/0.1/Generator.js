@@ -33,6 +33,17 @@ const Generator = function(name, options) {
     '_APIstack', '_APIerror', 'getVar'
   ];
 
+  this.reservedObjects = {
+    Array, Boolean, Date, decodeURI, decodeURIComponent, encodeURI,
+    encodeURIComponent, Error, EvalError, Function, isFinite, isNaN,
+    Math, Number, Object, parseInt, parseFloat, RangeError,
+    ReferenceError, RegExp, String, SyntaxError, TypeError, URIError,
+    JSON, Map, Promise, Proxy, Reflect, Set, Symbol, WeakMap, WeakSet,
+    escape, unescape, ArrayBuffer, DataView, Float32Array,
+    Float64Array, Int16Array, Int32Array, Int8Array, Uint16Array,
+    Uint32Array, Uint8Array, Uint8ClampedArray
+  };
+
   process.on('message', msg => {
     if (msg.type === 'task') {
       if (msg.mode === 'generate') {
@@ -225,6 +236,9 @@ ${this.src}
   // Remove accidental user defined globals. Pretty hacky, should probably look into improving this...
   let diff = Object.keys(this.context);
   diff.filter(each => this.originalContext.indexOf(each) === -1).forEach(each => delete self.context[each]);
+  _.each(this.reservedObjects, (object, val) => {
+    this.context[val] = object;
+  });
 
   function returnResults(err, output) {
     if (err === null) {
