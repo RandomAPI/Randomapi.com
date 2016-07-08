@@ -11,11 +11,15 @@ let defaultVars, baseURL;
 router.all('*', (req, res, next) => {
   defaultVars = req.app.get('defaultVars');
   baseURL     = req.app.get('baseURL');
-  next();
+  if (!req.session.loggedin) {
+    res.redirect(baseURL + '/');
+  } else {
+    next();
+  }
 });
 
 router.get('/api', (req, res, next) => {
-  if (req.session.loggedin && req.session.subscription.status !== 3) {
+  if (req.session.subscription.status !== 3) {
     let obs = [];
     API.getAPIs(req.session.user.id).then(apis => {
       res.render('view/api', _.merge(defaultVars, {apis, title: 'View APIs'}));
@@ -32,7 +36,7 @@ router.get('/api', (req, res, next) => {
 
 // list //
 router.get('/list', (req, res, next) => {
-  if (req.session.loggedin && req.session.subscription.status !== 3) {
+  if (req.session.subscription.status !== 3) {
     List.getLists(req.session.user.id).then(lists => {
       res.render('view/list', _.merge(defaultVars, {lists, title: 'View APIs'}));
     });

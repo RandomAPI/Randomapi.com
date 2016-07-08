@@ -15,15 +15,15 @@
     <section class="tryitout">
       <h4>Try it out!</h4>
       <pre id="aceEditor" name="code">let age   = random.numeric(18, 65);
-  api.age   = age; // Attached to api object
-  api.phone = phoneNum(); // Calling user defined function
+api.age   = age; // Attached to api object
+api.phone = phoneNum(); // Calling user defined function
 
-  function phoneNum (format) {
+function phoneNum (format) {
   format = format || "(xxx) xxx-xxxx";
   return String(format).split('').map(digit => {
     return digit === 'x' ? random.numeric(0, 9) : digit;
   }).join('');
-  }</pre>
+}</pre>
       <div id="preview">
         <button id="lintButton" onClick="lintCode()">Generate result</button>
         <pre id="results">
@@ -36,7 +36,7 @@
     <div class="main">
       <div class="one-third column">
         <h4 class="tripleTitle">Simple</h4>
-        <p class="tripleInfo">APIs are coded in Vanilla Javascript. No learning a new language and its fancy syntax is required!</p>
+        <p class="tripleInfo">If you know Javascript, you know how to code APIs. APIs are written in Vanilla Javascript. No learning a new language and its fancy syntax is required!</p>
       </div>
       <div class="one-third column">
         <h4 class="tripleTitle">Powerful</h4>

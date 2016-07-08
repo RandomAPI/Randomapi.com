@@ -7,7 +7,6 @@ const server = require('./app').server;
 const app    = require('./app').app;
 
 const GUI = true;
-
 const db = require('./models/db').init(() => {
 
   // GUI - can be commented out if not required or too much overhead

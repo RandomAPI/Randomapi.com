@@ -26,11 +26,15 @@ let defaultVars, baseURL;
 router.all('*', (req, res, next) => {
   defaultVars = req.app.get('defaultVars');
   baseURL     = req.app.get('baseURL');
-  next();
+  if (!req.session.loggedin) {
+    res.redirect(baseURL + '/');
+  } else {
+    next();
+  }
 });
 
 router.get('/api', (req, res, next) => {
-  if (req.session.loggedin && req.session.subscription.status !== 3) {
+  if (req.session.subscription.status !== 3) {
     Generator.getAvailableVersions().then(versions => {
       res.render('new/api', _.merge(defaultVars, {versions, title: 'New API'}));
     });
@@ -44,7 +48,7 @@ router.get('/api', (req, res, next) => {
 });
 
 router.post('/api', (req, res, next) => {
-  if (req.session.loggedin && req.session.subscription.status !== 3) {
+  if (req.session.subscription.status !== 3) {
     if (req.body.name === '') {
       req.flash('warning', 'Please provide a name for your API');
       res.redirect(baseURL + '/new/api');
@@ -85,7 +89,7 @@ router.post('/api', (req, res, next) => {
 
 // list //
 router.get('/list', (req, res, next) => {
-  if (req.session.loggedin && req.session.subscription.status !== 3) {
+  if (req.session.subscription.status !== 3) {
     res.render('new/list', _.merge(defaultVars, {title: 'New List'}));
   } else {
     if (req.session.subscription.status === 3) {
@@ -97,7 +101,7 @@ router.get('/list', (req, res, next) => {
 });
 
 router.post('/list', upload.any(), (req, res, next) => {
-  if (req.session.loggedin && req.session.subscription.status !== 3) {
+  if (req.session.subscription.status !== 3) {
     if (req.body.name === undefined || req.body.name === "" || req.files.length === 0 || req.files[0].originalname.match(/(?:\.([^.]+))?$/)[1] !== 'txt') {
       req.flash('warning', 'Looks like you provided an invalid file...please try again.');
       fs.unlink('./'+ req.files[0].path);

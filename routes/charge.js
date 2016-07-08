@@ -15,7 +15,11 @@ let defaultVars, baseURL;
 router.all('*', (req, res, next) => {
   defaultVars = req.app.get('defaultVars');
   baseURL     = req.app.get('baseURL');
-  next();
+  if (!req.session.loggedin) {
+    res.redirect(baseURL + '/');
+  } else {
+    next();
+  }
 });
 
 router.post('/', (req, res, next) => {

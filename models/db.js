@@ -2,12 +2,18 @@ const mysql    = require('mysql');
 const settings = require('../utils').settings;
 const logger   = require('../utils').logger;
 
+let db = settings.db.prod;
+
+if (process.env.spec === "true") {
+  db = settings.db.spec
+}
+
 var connection = mysql.createConnection({
-  host:       settings.db.host,
-  socketPath: settings.db.socketPath,
-  database:   settings.db.database,
-  user:       settings.db.username,
-  password:   settings.db.password
+  host:       db.host,
+  socketPath: db.socketPath,
+  database:   db.database,
+  user:       db.username,
+  password:   db.password
 });
 
 module.exports.init = function(cb) {
@@ -24,7 +30,7 @@ module.exports.init = function(cb) {
   // Keep connection alive
   setInterval(() => {
       connection.query('SELECT 1');
-  }, settings.db.keepAliveInterval);
+  }, db.keepAliveInterval);
 };
 
 module.exports.connection = connection;

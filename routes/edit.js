@@ -27,11 +27,15 @@ let defaultVars, baseURL;
 router.all('*', (req, res, next) => {
   defaultVars = req.app.get('defaultVars');
   baseURL     = req.app.get('baseURL');
-  next();
+  if (!req.session.loggedin) {
+    res.redirect(baseURL + '/');
+  } else {
+    next();
+  }
 });
 
 router.get('/api/:ref?', (req, res, next) => {
-  if (req.session.loggedin && req.session.subscription.status !== 3) {
+  if (req.session.subscription.status !== 3) {
     API.getCond({ref: req.params.ref}).then(doc => {
       if (doc.owner !== req.session.user.id) {
         res.redirect(baseURL + '/view/api');
@@ -52,7 +56,7 @@ router.get('/api/:ref?', (req, res, next) => {
 });
 
 router.post('/api/:ref', (req, res, next) => {
-  if (req.session.loggedin && req.session.subscription.status !== 3) {
+  if (req.session.subscription.status !== 3) {
     API.getCond({ref: req.params.ref}).then(doc => {
       if (doc.owner !== req.session.user.id) {
         res.redirect(baseURL + '/view/api');
@@ -78,7 +82,7 @@ router.post('/api/:ref', (req, res, next) => {
 
 // list //
 router.get('/list/:ref', (req, res, next) => {
-  if (req.session.loggedin && req.session.subscription.status !== 3) {
+  if (req.session.subscription.status !== 3) {
     List.getCond({ref: req.params.ref}).then(doc => {
       res.render('edit/list', _.merge(defaultVars, {list: doc, title: `Editing list ${doc.name} [${doc.ref}]`}));
     });
@@ -92,7 +96,7 @@ router.get('/list/:ref', (req, res, next) => {
 });
 
 router.post('/list/:ref', upload.any(), (req, res, next) => {
-  if (req.session.loggedin && req.session.subscription.status !== 3) {
+  if (req.session.subscription.status !== 3) {
     List.getCond({ref: req.params.ref}).then(doc => {
 
       if (doc.owner !== req.session.user.id) {
