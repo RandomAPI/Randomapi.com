@@ -1,18 +1,19 @@
-var gulp    = require('gulp');
-var mocha   = require('gulp-mocha');
-var uglify  = require('gulp-uglifyjs');
-var concat  = require('gulp-concat');
-var ejsmin  = require('gulp-ejsmin');
-var through = require('through2')
+const gulp    = require('gulp');
+const mocha   = require('gulp-mocha');
+const uglify  = require('gulp-uglifyjs');
+const concat  = require('gulp-concat');
+const exit    = require('gulp-exit');
+const ejsmin  = require('gulp-ejsmin');
+const through = require('through2')
 
 gulp.task('minify-ejs-pages', () => {
   // Save the pre tag contents
-  var preLocs = [];
+  let preLocs = [];
 
   return gulp.src(['views/pages/*.ejs', 'views/pages/**/*.ejs'])
     .pipe(through.obj((chunk, enc, cb) => {
-      var contents = chunk.contents.toString('utf8');
-      var preMatches = contents.match(/<pre>?((?:.|\n)*?)<\/pre>/g);
+      let contents = chunk.contents.toString('utf8');
+      let preMatches = contents.match(/<pre>?((?:.|\n)*?)<\/pre>/g);
 
       if (preMatches) {
         preMatches.forEach(match => {
@@ -26,9 +27,9 @@ gulp.task('minify-ejs-pages', () => {
     }))
     .pipe(ejsmin())
     .pipe(through.obj((chunk, enc, cb) => {
-      var contents = chunk.contents.toString('utf8');
-      var search = new RegExp(/PRE_MATCH_(\d+)/g);
-      var match  = search.exec(contents);
+      let contents = chunk.contents.toString('utf8');
+      let search = new RegExp(/PRE_MATCH_(\d+)/g);
+      let match  = search.exec(contents);
 
       while (match != null) {
         contents = contents.replace('PRE_MATCH_' + match[1], preLocs[match[1]]);
@@ -49,6 +50,18 @@ gulp.task('minify-ejs-snippets', () => {
 
 gulp.task('testEnv', () => {
     return process.env.spec = true;
+});
+
+gulp.task('specnyan', ['default', 'testEnv'], () => {
+  return gulp.src('spec/randomapi.js', {read: false})
+    .pipe(mocha({require: ['mocha-clean'], reporter: 'nyan'}))
+    .pipe(exit());
+});
+
+gulp.task('spec', ['default', 'testEnv'], () => {
+  return gulp.src('spec/randomapi.js', {read: false})
+    .pipe(mocha({require: ['mocha-clean'], reporter: 'spec'}))
+    .pipe(exit());
 });
 
 gulp.task('default', ['minify-ejs-pages', 'minify-ejs-snippets']);
