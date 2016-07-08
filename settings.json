@@ -14,12 +14,22 @@
         "port": 6379
     },
     "db": {
-        "host": "localhost",
-        "socketPath": "",
-        "username": "randomapi",
-        "password": "randomapi",
-        "database": "randomapi",
-        "keepAliveInterval": 5000
+        "prod": {
+            "host": "localhost",
+            "socketPath": "",
+            "username": "randomapi",
+            "password": "randomapi",
+            "database": "randomapi",
+            "keepAliveInterval": 5000
+        },
+        "spec": {
+            "host": "localhost",
+            "socketPath": "",
+            "username": "randomapi",
+            "password": "randomapi",
+            "database": "randomapitest",
+            "keepAliveInterval": 5000
+        }
     },
     "stripe": {
         "key": ""
