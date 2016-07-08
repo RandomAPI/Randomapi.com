@@ -28,7 +28,7 @@ module.exports = {
     let ref, dup;
     do {
       dup = false;
-      ref = random(5, 5);
+      ref = random(5, 8);
 
       this.refExists(ref).then(exists => {
         dup = exists;

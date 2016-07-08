@@ -4,24 +4,24 @@ const logger  = require('../utils').logger;
 const andify  = require('../utils').andify;
 const db      = require('./db').connection;
 const Promise = require('bluebird');
-const crypto  = require('crypto');
+
+
+//const cc = snippet('keitharm/credit_card_generator/0.1');
 
 module.exports = {
   add(data) {
     return new Promise((resolve, reject) => {
       let self = this;
       data.ref = this.genRandomRef();
-      data.generator = 1;
-      data.hash = this.genRandomHash();
 
-      db.query('INSERT INTO `api` SET ?', data, (err, result) => {
+      db.query('INSERT INTO `snippet` SET ?', data, (err, result) => {
         err ? reject(err) : resolve({id: result.insertId});
       });
     });
   },
   remove(cond) {
     return new Promise((resolve, reject) => {
-      db.query('DELETE FROM `api` WHERE ?', cond, (err, data) => {
+      db.query('DELETE FROM `snippet` WHERE ?', cond, (err, data) => {
         if (err) reject(err);
         else resolve();
       });
@@ -39,29 +39,9 @@ module.exports = {
     } while(dup);
     return ref;
   },
-  genRandomHash() {
-    let hash, dup;
-    do {
-      dup = false;
-      hash = random(1, 32);
-
-      this.hashExists(hash).then(exists => {
-        dup = exists;
-      }, () => {});
-    } while(dup);
-    return hash;
-  },
   refExists(ref) {
     return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM `api` WHERE ?', {ref}, (err, data) => {
-        if (err) reject(err);
-        else resolve(data.length !== 0);
-      });
-    });
-  },
-  hashExists(hash) {
-    return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM `api` WHERE ?', {hash}, (err, data) => {
+      db.query('SELECT * FROM `snippet` WHERE ?', {ref}, (err, data) => {
         if (err) reject(err);
         else resolve(data.length !== 0);
       });
@@ -71,14 +51,14 @@ module.exports = {
     return new Promise((resolve, reject) => {
       cond = andify(cond);
       if (cond.query !== undefined) {
-        db.query('SELECT * FROM `api` WHERE ' + cond.query, (err, data) => {
+        db.query('SELECT * FROM `snippet` WHERE ' + cond.query, (err, data) => {
           if (err) reject(err);
           else if (data.length === 0) resolve(null);
           else if (data.length === 1) resolve(data[0]);
           else resolve(data);
         });
       } else {
-        db.query('SELECT * FROM `api` WHERE ?', cond, (err, data) => {
+        db.query('SELECT * FROM `snippet` WHERE ?', cond, (err, data) => {
           if (err) reject(err);
           else if (data.length === 0) resolve(null);
           else if (data.length === 1) resolve(data[0]);
@@ -87,9 +67,9 @@ module.exports = {
       }
     });
   },
-  getAPIs(owner) {
+  getSnippets(owner) {
     return new Promise((resolve, reject) => {
-      db.query('SELECT a.id, a.ref, a.name, a.hash, g.version generator, a.owner FROM `api` a INNER JOIN `generator` g ON (a.generator=g.id) WHERE ?', {owner}, (err, data) => {
+      db.query('SELECT * FROM `snippet` WHERE ?', {owner}, (err, data) => {
         if (err) reject(err);
         else if (data.length === 0) resolve(null);
         else resolve(data);
@@ -98,7 +78,7 @@ module.exports = {
   },
   update(vals, ref) {
     return new Promise((resolve, reject) => {
-      db.query('UPDATE `api` SET ? WHERE ?', [vals, {ref}], (err, result) => {
+      db.query('UPDATE `snippet` SET ? WHERE ?', [vals, {ref}], (err, result) => {
         resolve({err: err, result: result});
       });
     });

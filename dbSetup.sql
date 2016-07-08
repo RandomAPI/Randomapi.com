@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jun 29, 2016 at 08:07 PM
+-- Generation Time: Jul 08, 2016 at 09:39 PM
 -- Server version: 5.7.13
 -- PHP Version: 5.5.36
 
@@ -91,6 +91,22 @@ INSERT INTO `plan` (`id`, `name`, `tier`) VALUES
 (5, 'premium', 3),
 (6, 'standard_legacy', 2),
 (7, 'premium_legacy', 3);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `snippet`
+--
+
+CREATE TABLE `snippet` (
+  `id` int(11) NOT NULL,
+  `ref` varchar(8) NOT NULL,
+  `name` varchar(32) NOT NULL,
+  `description` text NOT NULL,
+  `version` varchar(8) NOT NULL DEFAULT '1.0.0',
+  `internal_version` int(11) NOT NULL DEFAULT '1',
+  `owner` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -190,6 +206,13 @@ ALTER TABLE `plan`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `snippet`
+--
+ALTER TABLE `snippet`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `ref` (`ref`);
+
+--
 -- Indexes for table `subscription`
 --
 ALTER TABLE `subscription`
@@ -233,6 +256,11 @@ ALTER TABLE `list`
 --
 ALTER TABLE `plan`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+--
+-- AUTO_INCREMENT for table `snippet`
+--
+ALTER TABLE `snippet`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `subscription`
 --
