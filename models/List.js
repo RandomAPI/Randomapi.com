@@ -75,7 +75,7 @@ module.exports = {
   },
   update(vals, ref) {
     return new Promise((resolve, reject) => {
-      db.query('UPDATE `List` SET ? WHERE ?', [vals, {ref}], (err, result) => {
+      db.query('UPDATE `list` SET ? WHERE ?', [vals, {ref}], (err, result) => {
         resolve({err: err, result: result});
       });
     });
