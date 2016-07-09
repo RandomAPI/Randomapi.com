@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jul 08, 2016 at 09:39 PM
+-- Generation Time: Jul 09, 2016 at 10:11 PM
 -- Server version: 5.7.13
 -- PHP Version: 5.5.36
 
@@ -103,8 +103,7 @@ CREATE TABLE `snippet` (
   `ref` varchar(8) NOT NULL,
   `name` varchar(32) NOT NULL,
   `description` text NOT NULL,
-  `version` varchar(8) NOT NULL DEFAULT '1.0.0',
-  `internal_version` int(11) NOT NULL DEFAULT '1',
+  `version` int(11) NOT NULL DEFAULT '1',
   `owner` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -140,17 +139,18 @@ CREATE TABLE `tier` (
   `memory` int(11) NOT NULL,
   `results` int(11) NOT NULL,
   `per` int(11) NOT NULL,
-  `apis` int(11) NOT NULL
+  `apis` int(11) NOT NULL,
+  `snippets` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `tier`
 --
 
-INSERT INTO `tier` (`id`, `name`, `price`, `memory`, `results`, `per`, `apis`) VALUES
-(1, 'Free', '0.00', 262144, 1000, 10, 1),
-(2, 'Standard', '2.50', 5242880, 100000, 500, 10),
-(3, 'Premium', '5.00', 26214400, 0, 2500, 0);
+INSERT INTO `tier` (`id`, `name`, `price`, `memory`, `results`, `per`, `apis`, `snippets`) VALUES
+(1, 'Free', '0.00', 262144, 1000, 10, 1, 5),
+(2, 'Standard', '2.50', 5242880, 100000, 500, 10, 25),
+(3, 'Premium', '5.00', 26214400, 0, 2500, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -168,6 +168,7 @@ CREATE TABLE `user` (
   `role` tinyint(4) NOT NULL DEFAULT '4',
   `memory` int(11) NOT NULL DEFAULT '0',
   `apis` int(11) NOT NULL DEFAULT '0',
+  `snippets` int(11) NOT NULL DEFAULT '0',
   `timezone` double(3,1) NOT NULL,
   `results` int(11) NOT NULL DEFAULT '0',
   `lifetime` int(11) NOT NULL DEFAULT '0',
