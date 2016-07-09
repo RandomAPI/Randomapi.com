@@ -16,9 +16,10 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-const API = require('../models/API');
+const API  = require('../models/API');
 const List = require('../models/List');
 const User = require('../models/User');
+const Snippet   = require('../models/Snippet');
 const Generator = require('../models/Generator');
 
 // Setup defaultVars and baseURL for all routes
@@ -51,6 +52,10 @@ router.post('/api', (req, res, next) => {
   if (req.session.subscription.status !== 3) {
     if (req.body.name === '') {
       req.flash('warning', 'Please provide a name for your API');
+      res.redirect(baseURL + '/new/api');
+
+    } else if (!req.body.name.match(/^[a-zA-Z0-9]{1,20}$/)) {
+      req.flash('warning', 'Only 20 alphanumeric chars max please!');
       res.redirect(baseURL + '/new/api');
 
     // Is user OVER their limits from a recent downgrade?
@@ -107,6 +112,10 @@ router.post('/list', upload.any(), (req, res, next) => {
       fs.unlink('./'+ req.files[0].path);
       res.redirect(baseURL + '/new/list');
 
+    } else if (!req.body.name.match(/^[a-zA-Z0-9]{1,20}$/)) {
+      req.flash('warning', 'Only 20 alphanumeric chars max please!');
+      res.redirect(baseURL + '/new/list');
+
     // Is user OVER their limits from a recent downgrade?
     } else if (req.session.subscription.status === 4) {
       req.flash('warning', 'Your account is currently soft-locked until you fix your account quotas.');
@@ -126,6 +135,68 @@ router.post('/list', upload.any(), (req, res, next) => {
           User.incVal('memory', req.files[0].size, req.session.user.username).then(() => {
             req.flash('info', `List ${model.name} [${model.ref}] was added successfully!`);
             res.redirect(baseURL + '/view/list');
+          });
+        });
+      });
+    }
+  } else {
+    if (req.session.subscription.status === 3) {
+      res.redirect(baseURL + '/settings/subscription/paymentOverdue');
+    } else {
+      res.redirect(baseURL + '/');
+    }
+  }
+});
+
+// snippets //
+router.get('/snippet', (req, res, next) => {
+  if (req.session.subscription.status !== 3) {
+    res.render('new/snippet', _.merge(defaultVars, {title: 'New Snippet'}));
+  } else {
+    if (req.session.subscription.status === 3) {
+      res.redirect(baseURL + '/settings/subscription/paymentOverdue');
+    } else {
+      res.redirect(baseURL + '/');
+    }
+  }
+});
+
+router.post('/snippet', (req, res, next) => {
+  if (req.session.subscription.status !== 3) {
+    if (req.body.name === '') {
+      req.flash('warning', 'Please provide a name for your Snippet');
+      res.redirect(baseURL + '/new/snippet');
+
+    } else if (!req.body.name.match(/^[a-zA-Z0-9]{1,20}$/)) {
+      req.flash('warning', 'Only 20 alphanumeric chars max please!');
+      res.redirect(baseURL + '/new/snippet');
+
+    // Make sure snippet name meets requirements
+    } else if (req.session.user.snippets + 1 > req.session.tier.snippets && req.session.tier.snippets !== 0) {
+      req.flash('warning', 'You have used up your Snippet quota for the ' + req.session.tier.name + ' tier.');
+      res.redirect(baseURL + '/new/snippet');
+
+    // Is user OVER their limits from a recent downgrade?
+    } else if (req.session.subscription.status === 4) {
+      req.flash('warning', 'Your account is currently soft-locked until you fix your account quotas.');
+      res.redirect(baseURL + '/');
+
+    // Is user within their snippet limits?
+    } else if (req.session.user.snippets + 1 > req.session.tier.snippets && req.session.tier.snippets !== 0) {
+      req.flash('warning', 'You have used up your Snippet quota for the ' + req.session.tier.name + ' tier.');
+      res.redirect(baseURL + '/new/snippet');
+
+    // Else, add the Snippet
+    } else {
+      Snippet.add({name: req.body.name, description: req.body.description, owner: req.session.user.id}).then(Snippet.getCond).then(model => {
+        fs.writeFile('./data/snippets/' + model.id + '.snippet', `
+// Documentation: http://localhost:3000/documentation
+// Your awesome Snippet code here...`, 'utf8', err => {
+
+          // Increment total Snippets for user
+          User.incVal('snippets', 1, req.session.user.username).then(() => {
+            req.flash('info', `Snippet ${model.name} was added successfully!`);
+            res.redirect(baseURL + '/edit/snippet/' + model.ref);
           });
         });
       });

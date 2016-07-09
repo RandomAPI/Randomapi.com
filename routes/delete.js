@@ -5,6 +5,7 @@ const router   = express.Router();
 const API = require('../models/API');
 const List = require('../models/List');
 const User = require('../models/User');
+const Snippet = require('../models/Snippet');
 const Subscription = require('../models/Subscription');
 
 // Setup defaultVars and baseURL for all routes

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <% include ../../snippets/header %>
+</head>
+<body>
+  <% include ../../snippets/navbar %>
+  <div class="main">
+    <div class="two columns">
+      <% include ../../snippets/subnav %>
+    </div>
+    <div class="ten columns">
+      <h3>View Snippets</h3>
+      <p><span id='quotaResults' class='<%= session.tier.snippets !== 0 && session.user.snippets > session.tier.snippets ? "red" : "green" %>'><%= session.user.snippets %></span> of <span id='tierResults' class="green"><%= session.tier.snippets === 0 ? 'unlimited' : session.tier.snippets %></span> snippets used.</p>
+      <table class="table table-striped" style="width: 75%">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Ref ID</th>
+            <th>Version</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        <%
+        if (snippets !== null) {
+          snippets.forEach(function(snippet, index) {
+        %>
+          <tr>
+            <td><%=index+1%></td>
+            <td><%=snippet.name%></td>
+            <td><%=snippet.ref%></td>
+            <td><%=snippet.version%></td>
+            <td><a href="" onClick="snippetDeletePrompt('<%=snippet.ref%>');return false;">Delete</a> | <a href="edit/snippet/<%=snippet.ref%>">Edit</a></td>
+          </tr>
+        <%  });
+        }
+        %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <% include ../../snippets/footer %>
+</body>
+</html>

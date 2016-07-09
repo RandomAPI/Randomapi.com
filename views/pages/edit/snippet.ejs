@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <% include ../../snippets/header %>
+  <link rel="stylesheet" href="css/editor.css">
+</head>
+<body>
+  <server hidden><%=socket%></server>
+  <ref hidden><%=snippet.ref%></ref>
+  <% include ../../snippets/navbar %>
+  <div class="main editor">
+    <div class="two columns">
+      <% include ../../snippets/subnav %>
+    </div>
+    <div class="ten columns">
+      <h3>Editing Snippet <%=snippet.name%></h3>
+      <div class='info'>
+        <span id='charCount'><span id='currentCharCount'>0</span> / 8,192 chars</span><div class='rename'> Rename: <input id='rename' type='text' name='rename' value='<%=snippet.name%>'></div>
+      </div>
+      <pre id="aceEditor" name="code"><%=snippet.code%></pre>
+      <div id="preview">
+        <input type="submit" id="submit" value="Save"> <button id="lintButton" onClick="lintCode()">Test Snippet</button>
+        <pre id="results">
+Loading...
+        </pre>
+      </div>
+    </div>
+  </div>
+  <% include ../../snippets/footer %>
+  <script src="js/socket.io.min.js"></script>
+  <script src="js/ace/ace.js"></script>
+  <script src="js/realtimeSnippetEditor.js"></script>
+</body>
+</html>

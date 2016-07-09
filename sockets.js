@@ -38,9 +38,9 @@ io.on('connection', socket => {
     } else {
       // Don't pass along ref/owner info if from front page demo
       if (JSON.parse(socket.session).loggedin === undefined) {
-        Generators.realtime[shortest].queue.push({socket, data: {src: msg.code, ref: null, owner: 'demo'}});
+        Generators.realtime[shortest].queue.push({socket, data: {src: msg.code, ref: null, owner: 'demo', type: 'lint'}});
       } else {
-        Generators.realtime[shortest].queue.push({socket, data: {src: msg.code, ref: msg.ref, owner: JSON.parse(socket.session).user}});
+        Generators.realtime[shortest].queue.push({socket, data: {src: msg.code, ref: msg.ref, owner: JSON.parse(socket.session).user, type: 'lint'}});
       }
     }
   });
@@ -59,9 +59,30 @@ io.on('connection', socket => {
     } else {
       // Don't pass along ref/owner info if from front page demo
       if (JSON.parse(socket.session).loggedin === undefined) {
-        Generators.demo[shortest].queue.push({socket, data: {src: msg.code, ref: null, owner: 'demo'}});
+        Generators.demo[shortest].queue.push({socket, data: {src: msg.code, ref: null, owner: 'demo', type: 'demo'}});
       } else {
-        Generators.demo[shortest].queue.push({socket, data: {src: msg.code, ref: msg.ref, owner: JSON.parse(socket.session).user}});
+        Generators.demo[shortest].queue.push({socket, data: {src: msg.code, ref: msg.ref, owner: JSON.parse(socket.session).user, type: 'demo'}});
+      }
+    }
+  });
+
+  socket.on('lintSnippetCode', msg => {
+    let shortest = Math.floor(Math.random() * Generators.realtime.length);
+    for (let i = 0; i < Generators.realtime.length; i++) {
+      if (Generators.realtime[i].queueLength() < Generators.realtime[shortest].queueLength()) {
+        shortest = i;
+      }
+    }
+
+    // Check if chosen Generator has crashed and is in middle of restarting
+    if (!Generators.realtime[shortest].generator.connected) {
+      socket.emit('codeLinted', {error: {formatted: "Something bad has happened...please try again later."}, results: [], fmt: null});
+    } else {
+      // Don't pass along ref/owner info if from front page demo
+      if (JSON.parse(socket.session).loggedin === undefined) {
+        Generators.realtime[shortest].queue.push({socket, data: {src: msg.code, ref: null, owner: 'demo', type: 'snippet'}});
+      } else {
+        Generators.realtime[shortest].queue.push({socket, data: {src: msg.code, ref: msg.ref, owner: JSON.parse(socket.session).user, type: 'snippet'}});
       }
     }
   });

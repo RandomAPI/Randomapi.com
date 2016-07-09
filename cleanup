@@ -2,3 +2,4 @@
 
 rm data/apis/*.api;
 rm data/lists/*.list;
+rm data/snippets/*.snippet;

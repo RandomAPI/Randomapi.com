@@ -21,6 +21,7 @@ const upload = multer({ storage: storage });
 const API  = require('../models/API');
 const User  = require('../models/User');
 const List = require('../models/List');
+const Snippet = require('../models/Snippet');
 
 // Setup defaultVars and baseURL for all routes
 let defaultVars, baseURL;
@@ -134,6 +135,53 @@ router.post('/list/:ref', upload.any(), (req, res, next) => {
             });
           });
         }
+      }
+    });
+  } else {
+    if (req.session.subscription.status === 3) {
+      res.redirect(baseURL + '/settings/subscription/paymentOverdue');
+    } else {
+      res.redirect(baseURL + '/');
+    }
+  }
+});
+
+// Snippets
+router.get('/snippet/:ref?', (req, res, next) => {
+  if (req.session.subscription.status !== 3) {
+    Snippet.getCond({ref: req.params.ref}).then(doc => {
+      if (doc.owner !== req.session.user.id) {
+        res.redirect(baseURL + '/view/snippet');
+      } else {
+        doc.code = fs.readFileSync('./data/snippets/' + doc.id + '.snippet'); // Read snippet src into this...
+        res.render('edit/snippet', _.merge(defaultVars, {snippet: doc, socket: ':' + settings.general.socket, title: `Edit Snippet ${doc.name}`}));
+      }
+    }).catch(err => {
+      res.redirect(baseURL + '/view/snippet');
+    });
+  } else {
+    if (req.session.subscription.status === 3) {
+      res.redirect(baseURL + '/settings/subscription/paymentOverdue');
+    } else {
+      res.redirect(baseURL + '/');
+    }
+  }
+});
+
+router.post('/snippet/:ref', (req, res, next) => {
+  if (req.session.subscription.status !== 3) {
+    Snippet.getCond({ref: req.params.ref}).then(doc => {
+      if (doc.owner !== req.session.user.id) {
+        res.redirect(baseURL + '/view/snippet');
+      } else {
+        let name = req.body.rename;
+        if (name === undefined || name === "") name = doc.name;
+        Snippet.update({name}, doc.ref).then(() => {
+          fs.writeFile('./data/snippets/' + doc.id + '.snippet', req.body.code.replace(/\r\n/g, '\n').slice(0, 8192), 'utf8', err => {
+            req.flash('info', `Snippet ${name} was updated successfully!`);
+            res.send(baseURL + '/view/snippet');
+          });
+        });
       }
     });
   } else {

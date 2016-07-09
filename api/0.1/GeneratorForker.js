@@ -12,6 +12,7 @@ const fs       = require('fs');
 const API  = require('../../models/API');
 const List = require('../../models/List');
 const User = require('../../models/User');
+const Snippet = require('../../models/Snippet');
 
 const GeneratorForker = function(options) {
   let self = this;
@@ -24,8 +25,9 @@ const GeneratorForker = function(options) {
   this.name      = options.name;
   this.startTime = new Date().getTime();
   this.jobCount  = 0;
-  this.memory = 0;
+  this.memory    = 0;
   this.listCache = 0;
+  this.snippetCache = 0;
 
   // Queue to push generate requests into
   this.queue = async.queue((task, callback) => {
@@ -33,22 +35,35 @@ const GeneratorForker = function(options) {
 
     // Realtime or Speedtest
     if (task.socket !== undefined) {
+      if (task.data.type === "snippet") {
+        var options = {key: null, src: task.data.src, ref: null};
 
-      // Check to see if we are linting a logged in user or guest trying out the linter
-      var options;
-      if (task.data.owner === null) {
-        options = {key: null, src: task.data.src, ref: null};
+        this.generate({mode: 'snippet', options}, (error, results, fmt) => {
+          results = JSON.stringify(JSON.parse(results).results[0], null, 2);
+          if (results.length > 65535) {
+            results = "Warning: Output has been truncated\n----------\n" + results.slice(0, 65535) + "\n----------";
+          }
+          task.socket.emit('codeLinted', {error, results, fmt});
+          callback();
+        });
+
       } else {
-        options = {key: task.data.owner.apikey, src: task.data.src, ref: task.data.ref};
-      }
-      this.generate({mode: 'lint', options}, (error, results, fmt) => {
-        results = JSON.stringify(JSON.parse(results).results[0], null, 2);
-        if (results.length > 65535) {
-          results = "Warning: Output has been truncated\n----------\n" + results.slice(0, 65535) + "\n----------";
+        // Check to see if we are linting a logged in user or guest trying out the linter
+        var options;
+        if (task.data.owner === null) {
+          options = {key: null, src: task.data.src, ref: null};
+        } else {
+          options = {key: task.data.owner.apikey, src: task.data.src, ref: task.data.ref};
         }
-        task.socket.emit('codeLinted', {error, results, fmt});
-        callback();
-      });
+        this.generate({mode: 'lint', options}, (error, results, fmt) => {
+          results = JSON.stringify(JSON.parse(results).results[0], null, 2);
+          if (results.length > 65535) {
+            results = "Warning: Output has been truncated\n----------\n" + results.slice(0, 65535) + "\n----------";
+          }
+          task.socket.emit('codeLinted', {error, results, fmt});
+          callback();
+        });
+      }
     } else {
       let ref;
       if (task.req.params.ref === undefined) {
@@ -122,8 +137,17 @@ const GeneratorForker = function(options) {
       data: 'getListCache'
     });
 
+    self.send({
+      type: 'cmd',
+      data: 'getSnippetCache'
+    });
+
     self.once('listCacheComplete', data => {
       self.listCache = Math.floor(data/1024/1024);
+    });
+
+    self.once('snippetCacheComplete', data => {
+      self.snippetCache = Math.floor(data/1024/1024);
     });
   }
 };
@@ -200,6 +224,61 @@ GeneratorForker.prototype.fork = function() {
             });
           }
         });
+      } else if (msg.mode === 'snippet') {
+        let obj = `snippet:${msg.data.user}/${msg.data.name}/${msg.data.version}`;
+
+        // Check if snippet exists in the cache
+        redis.exists(obj, (err, result) => {
+
+          // Snippet exists in the cache
+          if (result === 1) {
+
+            // Update TTL
+            redis.expire(obj, settings.generators[this.name].redisSnippetTTL);
+            redis.expire(`${obj}:contents`, settings.generators[this.name].redisSnippetTTL);
+
+            redis.hgetall(obj, (err, obj) => {
+
+              // Update lastUsed time
+              if (obj.ref !== undefined) {
+                redis.hset(obj, "lastUsed", new Date().getTime());
+              }
+
+              this.generator.send({type: 'response', mode: 'snippet', data: true});
+            });
+
+          // Add snippet to cache if user has permission
+          } else {
+            Snippet.getCond({username: msg.data.user, name: msg.data.name, version: msg.data.version}).then(doc => {
+              if (doc === null) {
+                this.generator.send({type: 'response', mode: 'snippet', data: false});
+              } else {
+                fs.readFile(process.cwd() + '/data/snippets/' + doc.id + '.snippet', 'utf8', (err, file) => {
+                  // prepend and append
+                  file = `(function() {
+  let snippet = {};
+  ${file}
+  return snippet;
+})();`;
+                  redis.hmset(obj, {
+                    added: new Date().getTime(),
+                    owner: doc.owner,
+                    lastUsed: new Date().getTime()
+                  }, (err, res) => {
+                    redis.SET(`${obj}:contents`, file, (a, b) => {
+
+                      // Add TTL
+                      redis.expire(obj, settings.generators[this.name].redisSnippetTTL);
+                      redis.expire(`${obj}:contents`, settings.generators[this.name].redisSnippetTTL);
+
+                      this.generator.send({type: 'response', mode: 'snippet', data: true});
+                    });
+                  });
+                });
+              }
+            });
+          }
+        });
       }
     } else if (msg.type === 'done') {
       this.emit('taskFinished', {error: msg.data.error, results: msg.data.results, fmt: msg.data.fmt});
@@ -210,6 +289,8 @@ GeneratorForker.prototype.fork = function() {
         this.emit('listsComplete', msg.content);
       } else if (msg.mode === 'listCache') {
         this.emit('listCacheComplete', msg.content);
+      } else if (msg.mode === 'snippetCache') {
+        this.emit('snippetCacheComplete', msg.content);
       }
     } else if (msg.type === 'pong') {
       this.emit('pong');
@@ -254,6 +335,10 @@ GeneratorForker.prototype.listCacheUsage = function() {
   return this.listCache;
 };
 
+GeneratorForker.prototype.snippetCacheUsage = function() {
+  return this.listCache;
+};
+
 GeneratorForker.prototype.gc = function() {
   this.send({
     type: 'cmd',
@@ -265,6 +350,13 @@ GeneratorForker.prototype.emptyListCache = function() {
   this.send({
     type: 'cmd',
     data: 'emptyListCache'
+  });
+};
+
+GeneratorForker.prototype.emptySnippetCache = function() {
+  this.send({
+    type: 'cmd',
+    data: 'emptySnippetCache'
   });
 };
 

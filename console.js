@@ -185,7 +185,7 @@ screen.key(['C-g'], (ch, key) => {
   Generators.standard.forEach(gen => gen.gc());
   Generators.premium.forEach(gen => gen.gc());
   Generators.realtime.forEach(gen => gen.gc());
-  Generators.speedtest.forEach(gen => gen.gc());
+  Generators.demo.forEach(gen => gen.gc());
 });
 
 screen.key(['C-r'], (ch, key) => {
@@ -203,7 +203,7 @@ screen.key(['C-l'], (ch, key) => {
   Generators.standard.forEach(gen => gen.emptyListCache());
   Generators.premium.forEach(gen => gen.emptyListCache());
   Generators.realtime.forEach(gen => gen.emptyListCache());
-  Generators.speedtest.forEach(gen => gen.emptyListCache());
+  Generators.demo.forEach(gen => gen.emptyListCache());
 });
 
 screen.key(['C-v'], (ch, key) => {

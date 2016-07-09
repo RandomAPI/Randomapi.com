@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <% include ../../snippets/header %>
+</head>
+<body>
+  <% include ../../snippets/navbar %>
+  <div class="main">
+    <div class="two columns">
+      <% include ../../snippets/subnav %>
+    </div>
+    <div class="ten columns">
+      <h3>New Snippet</h3>
+      <p><span id='quotaResults' class='<%= session.tier.snippets !== 0 && session.user.snippets > session.tier.snippets ? "red" : "green" %>'><%= session.user.snippets %></span> of <span id='tierResults' class="green"><%= session.tier.snippets === 0 ? 'unlimited' : session.tier.snippets %></span> snippets used.</p>
+      <form action="" method="POST">
+      <input type="text" name="name" placeholder="Snippet Name" autofocus required autocomplete="off"><br>
+      <textarea name="description" rows="10" cols="40"></textarea><br>
+      <input type="submit" value="Add new Snippet">
+      </form>
+    </div>
+  </div>
+  <% include ../../snippets/footer %>
+</body>
+</html>

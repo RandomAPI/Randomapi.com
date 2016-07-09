@@ -5,8 +5,9 @@ const andify  = require('../utils').andify;
 const db      = require('./db').connection;
 const Promise = require('bluebird');
 
-
 //const cc = snippet('keitharm/credit_card_generator/0.1');
+//snippets can be drafted and edited and tested in the snippet preview, but in order
+//to use them in an API, they much be saved with a version number and they can't be edited anymore.
 
 module.exports = {
   add(data) {
@@ -15,7 +16,7 @@ module.exports = {
       data.ref = this.genRandomRef();
 
       db.query('INSERT INTO `snippet` SET ?', data, (err, result) => {
-        err ? reject(err) : resolve({id: result.insertId});
+        err ? reject(err) : resolve({['s.id']: result.insertId});
       });
     });
   },
@@ -51,14 +52,16 @@ module.exports = {
     return new Promise((resolve, reject) => {
       cond = andify(cond);
       if (cond.query !== undefined) {
-        db.query('SELECT * FROM `snippet` WHERE ' + cond.query, (err, data) => {
+        db.query('SELECT s.* FROM `snippet` s \
+        INNER JOIN `user` u ON (u.id=s.owner) WHERE ' + cond.query, (err, data) => {
           if (err) reject(err);
           else if (data.length === 0) resolve(null);
           else if (data.length === 1) resolve(data[0]);
           else resolve(data);
         });
       } else {
-        db.query('SELECT * FROM `snippet` WHERE ?', cond, (err, data) => {
+        db.query('SELECT s.* FROM `snippet` s \
+        INNER JOIN `user` u ON (u.id=s.owner) WHERE ?', cond, (err, data) => {
           if (err) reject(err);
           else if (data.length === 0) resolve(null);
           else if (data.length === 1) resolve(data[0]);
@@ -84,3 +87,7 @@ module.exports = {
     });
   }
 };
+
+
+
+//

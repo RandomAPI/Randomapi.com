@@ -12,6 +12,7 @@ const logger       = require('../../utils').logger;
 const redis        = require('../../utils').redis;
 const settings     = require('../../utils').settings;
 const numeral      = require('numeral')
+const Promise      = require('Bluebird').Promise;
 const EventEmitter = require('events').EventEmitter;
 
 const Generator = function(name, options) {
@@ -26,6 +27,7 @@ const Generator = function(name, options) {
     results:  options.results
   };
   this.cache = {};
+  this.snippetCache = {};
   this.context = vm.createContext(this.availableFuncs());
   this.originalContext = [
     'random', 'list', 'hash', 'timestamp',
@@ -70,6 +72,20 @@ const Generator = function(name, options) {
             process.send({type: 'done', data: {error, results, fmt}});
           });
         });
+      } else if (msg.mode === 'snippet') {
+        // Inject snippet settings
+        this.seed   = String('snippet' + ~~(Math.random() * 100));
+        this.format = 'pretty';
+        this.noinfo = true;
+        this.page   = 1;
+        this.mode   = 'snippet';
+        this.src    = msg.data.src;
+        delete msg.data.src;
+        this.instruct(msg.data, err => {
+          this.generate((error, results, fmt) => {
+            process.send({type: 'done', data: {error, results, fmt}});
+          });
+        });
       }
     } else if (msg.type === 'response') {
       if (msg.mode === 'api') {
@@ -78,6 +94,8 @@ const Generator = function(name, options) {
         this.emit('userResponse', msg.data);
       } else if (msg.mode === 'list') {
         this.emit('listResponse', msg.data);
+      } else if (msg.mode === 'snippet') {
+        this.emit('snippetResponse', msg.data);
       }
     } else if (msg.type === 'cmd') {
       if (msg.data === 'getMemory') {
@@ -92,6 +110,14 @@ const Generator = function(name, options) {
           this.cacheSize += Number(item.size);
         });
         process.send({type: 'cmdComplete', mode: 'listCache', content: this.cacheSize});
+      } else if (msg.data === 'emptySnippetCache') {
+        this.emptySnippetCache();
+      } else if (msg.data === 'getSnippetCache') {
+        this.snippetCacheSize = 0;
+        _.each(this.snippetCache, item => {
+          this.snippetCacheSize += Number(item.size);
+        });
+        process.send({type: 'cmdComplete', mode: 'snippetCache', content: this.snippetCacheSize});
       }
     } else if (msg.type === 'pong') {
       this.emit('pong');
@@ -119,6 +145,9 @@ const Generator = function(name, options) {
 
     // See if any lists have expired or if over the max size limit
     this.checkCache();
+
+    // See if any snippets have expired
+    this.checkSnippetCache();
   }, 5000)
 };
 
@@ -165,8 +194,7 @@ Generator.prototype.instruct = function(options, done) {
       process.send({type: 'lookup', mode: 'user', data: this.doc.owner});
       this.once('userResponse', data => {
         this.user = data;
-        this.options.userID      = data.id;
-        this.options.userTier    = data.tier;
+        this.options.userID  = data.id;
 
         if (data.apikey.toLowerCase() !== this.options.key.toLowerCase()) {
           cb('UNAUTHORIZED_USER');
@@ -177,7 +205,7 @@ Generator.prototype.instruct = function(options, done) {
       });
     },
     cb => {
-      if (this.mode !== "lint") {
+      if (this.mode !== "lint" && this.mode !== "snippet") {
         // Get API src
         this.src = fs.readFileSync('./data/apis/' + this.doc.id + '.api', 'utf8');
       }
@@ -189,116 +217,93 @@ Generator.prototype.instruct = function(options, done) {
 };
 
 Generator.prototype.generate = function(cb) {
-  let self = this;
-
   this.results = this.results || 1;
   let output = [];
 
-  try {
-    this.sandBox = new vm.Script(`
-      'use strict'
-      var _APIgetVars = ${JSON.stringify(this.options)};
-      var _APIresults = [];
-      var _APIerror = null;
-      var _APIstack = null;
-      (function() {
-        for (var _APIi = 0; _APIi < ${this.results}; _APIi++) {
-          var api = {};
-          try {
-${this.src}
-          } catch (e) {
-            api = {};
-            _APIerror = e.toString();
-            _APIstack = e.stack;
-          }
-          _APIresults.push(api);
-        }
-      })();
-      function getVar(key) {
-        return key in _APIgetVars ? _APIgetVars[key] : null;
-      }
-    `);
+  // Replaces requires with the src code so that they can run in sandbox
+  this.updateRequires().then(() => {
 
-    this.sandBox.runInContext(this.context, {
-      displayErrors: true,
-      timeout: this.info.execTime * 1000
+    try {
+      if (this.mode !== 'snippet') {
+        this.sandBox = new vm.Script(`
+          'use strict'
+          var _APIgetVars = ${JSON.stringify(this.options)};
+          var _APIresults = [];
+          var _APIerror = null;
+          var _APIstack = null;
+          (function() {
+            for (var _APIi = 0; _APIi < ${this.results}; _APIi++) {
+              var api = {};
+              try {
+${this.src}
+              } catch (e) {
+                api = {};
+                _APIerror = e.toString();
+                _APIstack = e.stack;
+              }
+              _APIresults.push(api);
+            }
+          })();
+          function getVar(key) {
+            return key in _APIgetVars ? _APIgetVars[key] : null;
+          }
+        `);
+      } else {
+        this.sandBox = new vm.Script(`
+          'use strict'
+          var _APIgetVars = ${JSON.stringify(this.options)};
+          var _APIresults = [];
+          var _APIerror = null;
+          var _APIstack = null;
+          (function() {
+            var snippet = {};
+            try {
+${this.src}
+var _APISnippetKeys = Object.keys(snippet);
+for (var _APIi = 0; _APIi < _APISnippetKeys.length; _APIi++) {
+  if (typeof snippet[_APISnippetKeys[_APIi]] !== 'function') {
+    throw new Error("Snippet " + _APISnippetKeys[_APIi] + " is not a function");
+  } else {
+    snippet[_APISnippetKeys[_APIi]] = snippet[_APISnippetKeys[_APIi]]();
+  }
+}
+            } catch (e) {
+              snippet = {};
+              _APIerror = e.toString();
+              _APIstack = e.stack;
+            }
+            _APIresults.push(snippet);
+          })();
+          function getVar(key) {
+            return key in _APIgetVars ? _APIgetVars[key] : null;
+          }
+        `);
+      }
+
+      this.sandBox.runInContext(this.context, {
+        displayErrors: true,
+        timeout: this.info.execTime * 1000
+      });
+
+      if (this.context._APIerror === null && this.context._APIstack === null) {
+        this.returnResults(null, this.context._APIresults, cb);
+      } else {
+        this.returnResults({error: this.context._APIerror, stack: this.context._APIstack}, [{}], cb);
+      }
+    } catch(e) {
+      this.returnResults({error: e.toString(), stack: e.stack}, [{}], cb);
+    }
+
+    // Remove accidental user defined globals. Pretty hacky, should probably look into improving this...
+    let diff = Object.keys(this.context);
+    diff.filter(each => this.originalContext.indexOf(each) === -1).forEach(each => delete this.context[each]);
+    _.each(this.reservedObjects, (object, val) => {
+      this.context[val] = object;
     });
 
-    if (this.context._APIerror === null && this.context._APIstack === null) {
-      returnResults(null, this.context._APIresults);
-    } else {
-      returnResults({error: this.context._APIerror, stack: this.context._APIstack}, [{}]);
-    }
-  } catch(e) {
-    returnResults({error: e.toString(), stack: e.stack}, [{}]);
-  }
-
-  // Remove accidental user defined globals. Pretty hacky, should probably look into improving this...
-  let diff = Object.keys(this.context);
-  diff.filter(each => this.originalContext.indexOf(each) === -1).forEach(each => delete self.context[each]);
-  _.each(this.reservedObjects, (object, val) => {
-    this.context[val] = object;
+  }, e => {
+    this.returnResults({error: e.toString(), stack: e.stack}, [{}], cb);
   });
-
-  function returnResults(err, output) {
-    if (err === null) {
-      let json = {
-        results: output,
-        info: {
-          seed: String(self.seed),
-          results: numeral(self.results).format('0,0'),
-          page: numeral(self.page).format('0,0'),
-          version: self.version
-        }
-      };
-
-      if (self.user !== undefined) {
-        json.info.user = {
-          username: self.user.username,
-          tier: self.user.tierName + ` [${self.user.tierID}]`,
-          results: numeral(self.user.results).format('0,0') + " / " + String(self.user.tierResults !== 0 ? numeral(self.user.tierResults).format('0,0') : "unlimited"),
-          remaining: self.user.tierResults !== 0 ? numeral(self.user.tierResults - self.user.results).format('0,0') : "unlimited"
-        };
-      }
-
-      if (self.noInfo) delete json.info;
-      if (self.hideuserinfo && !self.noInfo) delete json.info.user;
-
-      if (self.format === 'yaml') {
-        cb(null, YAML.stringify(json, 4), 'yaml');
-      } else if (self.format === 'xml') {
-        cb(null, js2xmlparser('user', json), 'xml');
-      } else if (self.format === 'prettyjson' || self.format === 'pretty') {
-        cb(null, JSON.stringify(json, null, 2), 'json');
-      } else if (self.format === 'csv') {
-        converter.json2csv(json.results, (err, csv) => {
-          cb(null, csv, 'csv');
-        });
-      } else {
-        cb(null, JSON.stringify(json), 'json');
-      }
-    } else {
-      if ([
-        "SyntaxError: Unexpected token }",
-        "SyntaxError: Unexpected token catch",
-        "SyntaxError: Missing catch or finally after try"
-      ].indexOf(err.error) !== -1) {
-        err.error = "SyntaxError: Unexpected end of input";
-      }
-      try {
-        parseStack = err.stack.split('\n').slice(0, 2).join('').match(/evalmachine.*?:(\d+)(?::(\d+))?/);
-        let line = parseStack[1]-10;
-        let col  = parseStack[2];
-
-        parseStack = `${err.error.toString().split(':').join(':\n-')} on line ${line}${col === undefined ? "." : " column " + col}`;
-      } catch(e) {
-        parseStack = err.error;
-      }
-      err.formatted = parseStack;
-      delete err.stack;
-      cb(err, JSON.stringify({results: [{}]}), null);
-    }
-  }
 };
 
 Generator.prototype.seedRNG = function() {
@@ -332,8 +337,9 @@ Generator.prototype.availableFuncs = function() {
     list: (obj, num) => {
       if (num !== '' && num !== undefined) num = Number(num); // Convert string to num if it isn't undefined
       if (num === '') num = undefined;
+      if (obj === '' || obj === undefined) throw new Error(`Empty list value provided`);
 
-      if (Array.isArray(obj)) {
+      else if (Array.isArray(obj)) {
         if (num < 0 || num > obj.length-1) {
           throw new Error(`Index ${num} is out of range for array ${obj}`);
         } else {
@@ -420,20 +426,15 @@ Generator.prototype.availableFuncs = function() {
     },
     timestamp: () => {
       return Math.floor(new Date().getTime()/1000);
-    },
-    require: function(lib) {
-      if (lib === 'faker') {
-        return require('faker');
-      }
     }
   };
 
   // Proxy
   return {
     random: {
-      numeric: (min, max)     => funcs.random.numeric(min, max),
-      special: (mode, length) => funcs.random.special(mode, length),
-      custom:  (charset, length) => funcs.random.custom(charset, length)
+      numeric: (min, max)       => funcs.random.numeric(min, max),
+      special: (mode, length)   => funcs.random.special(mode, length),
+      custom: (charset, length) => funcs.random.custom(charset, length)
     },
     list: (obj, num) => funcs.list(obj, num),
     hash: {
@@ -442,8 +443,69 @@ Generator.prototype.availableFuncs = function() {
       sha256: val => funcs.hash.sha256(val)
     },
     timestamp: () => funcs.timestamp(),
-    require: () => null//lib  => funcs.require(lib)
+    //require: signature => funcs.require(signature)
   };
+};
+
+Generator.prototype.require = function(signature) {
+  signature = signature !== undefined && signature.indexOf('/') !== -1 ? signature.split('/') : [];
+
+  // username/snippetName/versionNumber
+  if (signature.length !== 3) {
+    throw new Error(`Invalid signature format`);
+    return;
+  }
+
+  let obj = `snippet:${signature[0]}/${signature[1]}/${signature[2]}`;
+
+  // Check if snippet is in local snippet cache
+  // If not, fetch from redis snippet cache and add it to the local snippet cache
+  if (obj in this.snippetCache) {
+
+    // Update local snippet cache lastUsed date
+    // Also update redis snippet cache lastUsed date
+    this.snippetCache[obj].lastUsed = new Date().getTime();
+    redis.exists(`${obj}:contents`, (err, result) => {
+      if (result === 1) {
+        redis.hmset(obj, 'lastUsed', new Date().getTime());
+      }
+    });
+
+    return this.snippetCache[obj].snippet;
+  } else {
+    process.send({type: 'lookup', mode: 'snippet', data: {
+      user: signature[0],
+      name: signature[1],
+      version: signature[2]
+    }});
+
+    let done = false;
+    let contents = null;
+
+    this.once('snippetResponse', result => {
+      if (result === false) {
+        throw new Error(`Snippet signature ${obj.slice(8)} wasn't recognized`);
+        done = true;
+      } else {
+        redis.GET(`${obj}:contents`, (err, snippet) => {
+
+          // Fetch metadata for snippet and store in local generator snippet cache
+          redis.hgetall(obj, (err, info) => {
+            this.snippetCache[obj] = {
+              added: new Date().getTime(),
+              snippet,
+              owner: info.owner,
+              lastUsed: new Date().getTime()
+            };
+            contents = snippet;
+            done = true;
+          });
+        });
+      }
+    });
+    require('deasync').loopWhile(function(){return !done;});
+    return contents;
+  }
 };
 
 Generator.prototype.checkCache = function() {
@@ -464,8 +526,114 @@ Generator.prototype.checkCache = function() {
   }
 };
 
+Generator.prototype.checkSnippetCache = function() {
+  let sizes = {};
+  _.each(this.snippetCache, (obj, ref) => {
+    if (new Date().getTime() - obj.lastUsed > settings.generators[this.name].localSnippetTTL * 1000) {
+      delete this.cache[ref];
+    }
+  });
+};
+
 Generator.prototype.emptyListCache = function() {
   this.cache = {};
+};
+
+Generator.prototype.emptySnippetCache = function() {
+  this.snippetCache = {};
+};
+
+Generator.prototype.updateRequires = function() {
+  return new Promise((resolve, reject) => {
+    // Don't let snippets include other snippets in snippet edit mode
+    if (this.mode === 'snippet') resolve();
+    else {
+      let rawMatches = this.src.match(/require\('(.*)'\)/g);
+      let index = 0;
+
+      try {
+        // There are matches
+        if (rawMatches !== null) {
+          let reg = new RegExp(/require\('(.*)'\)/g);
+          let match = reg.exec(this.src);
+          while (match !== null) {
+            this.src = this.src.replace(rawMatches[index++], this.require(match[1]));
+            // matched text: match[0]
+            // match start: match.index
+            // capturing group n: match[n]
+            match = reg.exec(this.src);
+          }
+        }
+      } catch(e) {
+        reject(e);
+      }
+      resolve();
+    }
+  });
+};
+
+Generator.prototype.returnResults = function(err, output, cb) {
+  if (err === null) {
+    let json = {
+      results: output,
+      info: {
+        seed: String(this.seed),
+        results: numeral(this.results).format('0,0'),
+        page: numeral(this.page).format('0,0'),
+        version: this.version
+      }
+    };
+
+    if (this.user !== undefined) {
+      json.info.user = {
+        username: this.user.username,
+        tier: this.user.tierName + ` [${this.user.tierID}]`,
+        results: numeral(this.user.results).format('0,0') + " / " + String(this.user.tierResults !== 0 ? numeral(this.user.tierResults).format('0,0') : "unlimited"),
+        remaining: this.user.tierResults !== 0 ? numeral(this.user.tierResults - this.user.results).format('0,0') : "unlimited"
+      };
+    }
+
+    if (this.noInfo) delete json.info;
+    if (this.hideuserinfo && !this.noInfo) delete json.info.user;
+
+    if (this.format === 'yaml') {
+      cb(null, YAML.stringify(json, 4), 'yaml');
+    } else if (this.format === 'xml') {
+      cb(null, js2xmlparser('user', json), 'xml');
+    } else if (this.format === 'prettyjson' || this.format === 'pretty') {
+      cb(null, JSON.stringify(json, null, 2), 'json');
+    } else if (this.format === 'csv') {
+      converter.json2csv(json.results, (err, csv) => {
+        cb(null, csv, 'csv');
+      });
+    } else {
+      cb(null, JSON.stringify(json), 'json');
+    }
+  } else {
+    if ([
+      "SyntaxError: Unexpected token }",
+      "SyntaxError: Unexpected token catch",
+      "SyntaxError: Missing catch or finally after try"
+    ].indexOf(err.error) !== -1) {
+      err.error = "SyntaxError: Unexpected end of input";
+    }
+    try {
+      parseStack = err.stack.split('\n').slice(0, 2).join('').match(/evalmachine.*?:(\d+)(?::(\d+))?/);
+      let line = parseStack[1]-10;
+      if (this.mode === 'snippet') line -= 3;
+      let col  = parseStack[2];
+      if (line <= 0) {
+        err.error = "SyntaxError: Unexpected end of input";
+      }
+
+      parseStack = `${err.error.toString().split(':').join(':\n-')} on line ${line}${col === undefined ? "." : " column " + col}`;
+    } catch(e) {
+      parseStack = err.error;
+    }
+    err.formatted = parseStack;
+    delete err.stack;
+    cb(err, JSON.stringify({results: [{}]}), null);
+  }
 };
 
 const random = (mode = 1, length = 10, charset = "") => {
