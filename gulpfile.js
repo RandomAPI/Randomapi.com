@@ -4,6 +4,7 @@ const uglify  = require('gulp-uglifyjs');
 const concat  = require('gulp-concat');
 const exit    = require('gulp-exit');
 const ejsmin  = require('gulp-ejsmin');
+const babel   = require('gulp-babel');
 const through = require('through2')
 
 gulp.task('minify-ejs-pages', () => {
@@ -64,4 +65,12 @@ gulp.task('spec', ['default', 'testEnv'], () => {
     .pipe(exit());
 });
 
-gulp.task('default', ['minify-ejs-pages', 'minify-ejs-snippets']);
+gulp.task('es6toes5', () => {
+  return gulp.src('src/js/*.js')
+    .pipe(babel({
+      presets: ["es2015-without-strict"]
+    }))
+    .pipe(gulp.dest('public/js'))
+});
+
+gulp.task('default', ['minify-ejs-pages', 'minify-ejs-snippets', 'es6toes5']);

@@ -44,8 +44,10 @@
     "yamljs": "^0.2.7"
   },
   "devDependencies": {
+    "babel-preset-es2015-without-strict": "0.0.2",
     "chai": "^3.5.0",
     "gulp": "^3.9.1",
+    "gulp-babel": "^6.1.2",
     "gulp-concat": "^2.6.0",
     "gulp-ejsmin": "0.0.1",
     "gulp-exit": "0.0.2",
