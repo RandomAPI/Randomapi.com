@@ -60,23 +60,28 @@ router.post('/api/:ref', (req, res, next) => {
   if (req.session.subscription.status !== 3) {
     API.getCond({ref: req.params.ref}).then(doc => {
       if (doc.owner !== req.session.user.id) {
-        res.redirect(baseURL + '/view/api');
+        res.send(baseURL + '/view/api');
       } else {
         let name = req.body.rename;
         if (name === undefined || name === "") name = doc.name;
-        API.update({name}, doc.ref).then(() => {
-          fs.writeFile('./data/apis/' + doc.id + '.api', req.body.code.replace(/\r\n/g, '\n').slice(0, 8192), 'utf8', err => {
-            req.flash('info', `API ${name} [${doc.ref}] was updated successfully!`);
-            res.send(baseURL + '/view/api');
+        if (name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/) === null) {
+          req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
+          res.send(baseURL + '/edit/api/' + req.params.ref);
+        } else {
+          API.update({name}, doc.ref).then(() => {
+            fs.writeFile('./data/apis/' + doc.id + '.api', req.body.code.replace(/\r\n/g, '\n').slice(0, 8192), 'utf8', err => {
+              req.flash('info', `API ${name} [${doc.ref}] was updated successfully!`);
+              res.send(baseURL + '/view/api');
+            });
           });
-        });
+        }
       }
     });
   } else {
     if (req.session.subscription.status === 3) {
-      res.redirect(baseURL + '/settings/subscription/paymentOverdue');
+      res.send(baseURL + '/settings/subscription/paymentOverdue');
     } else {
-      res.redirect(baseURL + '/');
+      res.send(baseURL + '/');
     }
   }
 });
@@ -101,26 +106,29 @@ router.post('/list/:ref', upload.any(), (req, res, next) => {
     List.getCond({ref: req.params.ref}).then(doc => {
 
       if (doc.owner !== req.session.user.id) {
-        res.redirect(baseURL + '/view/list');
+        res.send(baseURL + '/view/list');
 
       } else if (req.files.length !== 0 && req.files[0].originalname.match(/(?:\.([^.]+))?$/)[1] !== 'txt') {
         req.flash('warning', 'Looks like you provided an invalid file...please try again.');
         fs.unlink('./'+ req.files[0].path);
-        res.redirect(baseURL + '/edit/list/' + req.params.ref);
+        res.send(baseURL + '/edit/list/' + req.params.ref);
 
       // Is user within their tier limits?
       } else if (req.files.length !== 0 && req.session.user.memory - doc.memory + req.files[0].size > req.session.tier.memory && req.session.tier.memory !== 0) {
         req.flash('warning', 'Replacing this list would go over your List quota for the ' + req.session.tier.name + ' tier.');
         fs.unlink('./'+ req.files[0].path);
-        res.redirect(baseURL + '/edit/list/' + req.params.ref);
+        res.send(baseURL + '/edit/list/' + req.params.ref);
 
       } else {
         let name = req.body.rename;
         if (name === undefined || name === "") name = doc.name;
-        if (req.files.length === 0) {
+        if (name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/) === null) {
+          req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
+          res.send(baseURL + '/view/api/' + req.params.ref);
+        } else if (req.files.length === 0) {
           List.update({name}, doc.ref).then((asdf) => {
             req.flash('info', `List ${name} [${doc.ref}] was updated successfully!`);
-            res.redirect(baseURL + '/view/list');
+            res.send(baseURL + '/view/list');
           });
         } else {
           List.update({name, memory: req.files[0].size}, doc.ref).then(() => {
@@ -130,7 +138,7 @@ router.post('/list/:ref', upload.any(), (req, res, next) => {
 
               User.incVal('memory', newSize-oldSize, req.session.user.username).then(() => {
                 req.flash('info', `List ${name} [${doc.ref}] was updated successfully!`);
-                res.redirect(baseURL + '/view/list');
+                res.send(baseURL + '/view/list');
               });
             });
           });
@@ -139,9 +147,9 @@ router.post('/list/:ref', upload.any(), (req, res, next) => {
     });
   } else {
     if (req.session.subscription.status === 3) {
-      res.redirect(baseURL + '/settings/subscription/paymentOverdue');
+      res.send(baseURL + '/settings/subscription/paymentOverdue');
     } else {
-      res.redirect(baseURL + '/');
+      res.send(baseURL + '/');
     }
   }
 });
@@ -172,23 +180,28 @@ router.post('/snippet/:ref', (req, res, next) => {
   if (req.session.subscription.status !== 3) {
     Snippet.getCond({ref: req.params.ref}).then(doc => {
       if (doc.owner !== req.session.user.id) {
-        res.redirect(baseURL + '/view/snippet');
+        res.send(baseURL + '/view/snippet');
       } else {
         let name = req.body.rename;
         if (name === undefined || name === "") name = doc.name;
-        Snippet.update({name}, doc.ref).then(() => {
-          fs.writeFile('./data/snippets/' + doc.id + '.snippet', req.body.code.replace(/\r\n/g, '\n').slice(0, 8192), 'utf8', err => {
-            req.flash('info', `Snippet ${name} was updated successfully!`);
-            res.send(baseURL + '/view/snippet');
+        if (name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/) === null) {
+          req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
+          res.send(baseURL + '/edit/snippet/' + req.params.ref);
+        } else {
+          Snippet.update({name}, doc.ref).then(() => {
+            fs.writeFile('./data/snippets/' + doc.id + '.snippet', req.body.code.replace(/\r\n/g, '\n').slice(0, 8192), 'utf8', err => {
+              req.flash('info', `Snippet ${name} was updated successfully!`);
+              res.send(baseURL + '/view/snippet');
+            });
           });
-        });
+        }
       }
     });
   } else {
     if (req.session.subscription.status === 3) {
-      res.redirect(baseURL + '/settings/subscription/paymentOverdue');
+      res.send(baseURL + '/settings/subscription/paymentOverdue');
     } else {
-      res.redirect(baseURL + '/');
+      res.send(baseURL + '/');
     }
   }
 });

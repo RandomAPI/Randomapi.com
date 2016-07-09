@@ -46,6 +46,10 @@
   height: 30px;
 }
 
+.rename input {
+  margin-right: 10px;
+}
+
 .info {
   margin-top: -15px;
   margin-bottom: 10px;

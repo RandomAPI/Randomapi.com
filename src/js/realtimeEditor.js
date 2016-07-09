@@ -8,7 +8,7 @@ editor.setValue(editor.getValue(), 1);
 editor.focus();
 
 $("#submit").click(() => {
-  $.post('', {rename: $("#rename").val(), code: editor.getValue()}, url => {
+  $.post('', {rename: $("#limitsInput").val(), code: editor.getValue()}, url => {
     window.location.replace(url);
   });
 });

@@ -329,3 +329,8 @@ section.triplesec {
   margin-top: 5px;
   margin-bottom: 5px;
 }
+
+#submit:disabled {
+  background-color: #FF8181;
+  color: white;
+}

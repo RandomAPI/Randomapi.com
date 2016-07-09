@@ -15,7 +15,7 @@
     <div class="ten columns">
       <h3>Editing Snippet <%=snippet.name%></h3>
       <div class='info'>
-        <span id='charCount'><span id='currentCharCount'>0</span> / 8,192 chars</span><div class='rename'> Rename: <input id='rename' type='text' name='rename' value='<%=snippet.name%>'></div>
+        <span id='charCount'><span id='currentCharCount'>0</span> / 8,192 chars</span><div class='rename'> Rename: <input id='limitsInput' type='text' maxlength='32' name='rename' value='<%=snippet.name%>'><span class='red' id='limits'>Accepted chars: a-zA-Z0-9 _-.+[]{}()</span></div>
       </div>
       <pre id="aceEditor" name="code"><%=snippet.code%></pre>
       <div id="preview">
@@ -30,5 +30,6 @@ Loading...
   <script src="js/socket.io.min.js"></script>
   <script src="js/ace/ace.js"></script>
   <script src="js/realtimeSnippetEditor.js"></script>
+  <script src="js/nameLimits.js"></script>
 </body>
 </html>
