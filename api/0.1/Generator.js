@@ -260,11 +260,18 @@ ${this.src}
             try {
 ${this.src}
 var _APISnippetKeys = Object.keys(snippet);
-for (var _APIi = 0; _APIi < _APISnippetKeys.length; _APIi++) {
-  if (typeof snippet[_APISnippetKeys[_APIi]] !== 'function') {
-    throw new Error("Snippet " + _APISnippetKeys[_APIi] + " is not a function");
-  } else {
-    snippet[_APISnippetKeys[_APIi]] = snippet[_APISnippetKeys[_APIi]]();
+// Assume default function
+if (_APISnippetKeys.length === 0) {
+  if (typeof snippet === 'function') {
+    snippet = snippet();
+  }
+} else {
+  for (var _APIi = 0; _APIi < _APISnippetKeys.length; _APIi++) {
+    if (typeof snippet[_APISnippetKeys[_APIi]] !== 'function') {
+      throw new Error("Snippet " + _APISnippetKeys[_APIi] + " is not a function");
+    } else {
+      snippet[_APISnippetKeys[_APIi]] = snippet[_APISnippetKeys[_APIi]]();
+    }
   }
 }
             } catch (e) {
@@ -615,6 +622,7 @@ Generator.prototype.returnResults = function(err, output, cb) {
     if ([
       "SyntaxError: Unexpected token }",
       "SyntaxError: Unexpected token catch",
+      "SyntaxError: Unexpected token var",
       "SyntaxError: Missing catch or finally after try"
     ].indexOf(err.error) !== -1) {
       err.error = "SyntaxError: Unexpected end of input";
@@ -622,13 +630,12 @@ Generator.prototype.returnResults = function(err, output, cb) {
     try {
       parseStack = err.stack.split('\n').slice(0, 2).join('').match(/evalmachine.*?:(\d+)(?::(\d+))?/);
       let line = parseStack[1]-10;
-      if (this.mode === 'snippet') line -= 3;
       let col  = parseStack[2];
       if (line <= 0) {
         err.error = "SyntaxError: Unexpected end of input";
       }
 
-      parseStack = `${err.error.toString().split(':').join(':\n-')} on line ${line}${col === undefined ? "." : " column " + col}`;
+      parseStack = `${err.error.toString().split(':').join(':\n-')} near line ${line}${col === undefined ? "." : " column " + col}`;
     } catch(e) {
       parseStack = err.error;
     }
