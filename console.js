@@ -192,7 +192,7 @@ screen.key(['C-r'], (ch, key) => {
   logger('Emptying Redis List Cache');
   redis.keys("*", (err, lists) => {
     lists
-      .filter(item => item.match(/list\:/) !== null)
+      .filter(item => item.match(/(list\:|snippet\:)/) !== null)
       .map(list => redis.del(list));
   });
 });
