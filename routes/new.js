@@ -54,8 +54,8 @@ router.post('/api', (req, res, next) => {
       req.flash('warning', 'Please provide a name for your API');
       res.redirect(baseURL + '/new/api');
 
-    } else if (!req.body.name.match(/^[a-zA-Z0-9]{1,20}$/)) {
-      req.flash('warning', 'Only 20 alphanumeric chars max please!');
+    } else if (!req.body.name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/)) {
+      req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
       res.redirect(baseURL + '/new/api');
 
     // Is user OVER their limits from a recent downgrade?
@@ -112,8 +112,8 @@ router.post('/list', upload.any(), (req, res, next) => {
       fs.unlink('./'+ req.files[0].path);
       res.redirect(baseURL + '/new/list');
 
-    } else if (!req.body.name.match(/^[a-zA-Z0-9]{1,20}$/)) {
-      req.flash('warning', 'Only 20 alphanumeric chars max please!');
+    } else if (!req.body.name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/)) {
+      req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
       res.redirect(baseURL + '/new/list');
 
     // Is user OVER their limits from a recent downgrade?
@@ -167,8 +167,8 @@ router.post('/snippet', (req, res, next) => {
       req.flash('warning', 'Please provide a name for your Snippet');
       res.redirect(baseURL + '/new/snippet');
 
-    } else if (!req.body.name.match(/^[a-zA-Z0-9]{1,20}$/)) {
-      req.flash('warning', 'Only 20 alphanumeric chars max please!');
+    } else if (!req.body.name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/)) {
+      req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
       res.redirect(baseURL + '/new/snippet');
 
     // Make sure snippet name meets requirements

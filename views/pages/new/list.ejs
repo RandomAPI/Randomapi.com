@@ -13,7 +13,8 @@
       <h3>New List</h3>
       <p><span class='<%= session.user.memory > session.tier.memory ? "red" : "green" %>'><%= filesize(session.user.memory) %></span> of <span class="green"><%= session.tier.memory === 0 ? 'unlimited' : filesize(session.tier.memory) %></span> used.</p>
       <form enctype="multipart/form-data" action="" method="POST">
-      <input type="text" name="name" placeholder="List Name" autofocus required autocomplete="off"><br><br>
+      <span class='red' id='limits'>Only 32 chars max please! Accepted chars: a-zA-Z0-9 _-.+[]{}()</span><br>
+      <input type="text" id="limitsInput" name="name" placeholder="List Name" autofocus required autocomplete="off"><br><br>
       Choose a file to upload:<br>
       <input name="file" type="file" required><br>
       <input type="submit" value="Upload File" />
@@ -21,5 +22,6 @@
     </div>
   </div>
   <% include ../../snippets/footer %>
+  <script src="js/nameLimits.js"></script>
 </body>
 </html>

@@ -308,3 +308,24 @@ section.triplesec {
   background-color: #B80414 !important;
   color: white !important;
 }
+
+#limits {
+  display: none;
+}
+
+.announcements {
+  margin-top: 25px;
+}
+
+.announcements .entry {
+  margin-top: -15px;
+}
+
+.announcements .entry .title {
+  font-size: 14pt;
+}
+
+.announcements .entry p {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}

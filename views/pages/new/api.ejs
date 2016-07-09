@@ -13,11 +13,13 @@
       <h3>New API</h3>
       <p><span id='quotaResults' class='<%= session.tier.apis !== 0 && session.user.apis > session.tier.apis ? "red" : "green" %>'><%= session.user.apis %></span> of <span id='tierResults' class="green"><%= session.tier.apis === 0 ? 'unlimited' : session.tier.apis %></span> APIs used.</p>
       <form action="" method="POST">
-      <input type="text" name="name" placeholder="API Name" autofocus required autocomplete="off"><br>
+      <span class='red' id='limits'>Only 32 chars max please! Accepted chars: a-zA-Z0-9 _-.+[]{}()</span><br>
+      <input type="text" id="limitsInput" name="name" placeholder="API Name" autofocus required autocomplete="off"><br>
       <input type="submit" value="Add new API">
       </form>
     </div>
   </div>
   <% include ../../snippets/footer %>
+  <script src="js/nameLimits.js"></script>
 </body>
 </html>

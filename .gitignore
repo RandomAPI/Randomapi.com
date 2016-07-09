@@ -9,3 +9,4 @@ uploads
 data
 oldviews
 *test.js
+public/js/*

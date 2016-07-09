@@ -11,7 +11,7 @@
     </div>
     <div class="ten columns">
       <h3>Dashboard</h3>
-      <h4>Welcome <span class="green"><%= session.user.username %></span></h4>
+      <h5>Welcome <span class="green"><%= session.user.username %></span></h5>
       Your api key is <input class="green" onClick="this.select();" value="<%= session.user.apikey %>" readonly size="23"><br>
       Your tier is <span class="green"><%= session.user.tierName %></span>.<br>
 
@@ -22,9 +22,16 @@
       You have used <span class='<%= session.user.memory > session.tier.memory ? "red" : "green" %>'><%= filesize(session.user.memory) %></span> of your <span class="green"><%= session.tier.memory === 0 ? 'unlimited' : filesize(session.tier.memory) %></span> List memory.<br>
 
       You have used <span id='quotaResults' class='<%= session.tier.snippets !== 0 && session.user.snippets > session.tier.snippets ? "red" : "green" %>'><%= session.user.snippets %></span> of your <span id='tierResults' class="green"><%= session.tier.snippets === 0 ? 'unlimited' : session.tier.snippets %></span> Snippets.<br>
-
+      <div class="announcements">
+        <h3>Announcements</h3>
+        <div class="entry">
+          <span class="title"></span></span>
+          <p></p>
+        </div>
+      </div>
     </div>
   </div>
   <% include ../snippets/footer %>
+  <script src="js/moment.min.js"></script>
 </body>
 </html>
