@@ -18,7 +18,7 @@
             <th>#</th>
             <th>Name</th>
             <th>Ref ID</th>
-            <th>Version</th>
+            <!--<th>Version</th>-->
             <th>Actions</th>
           </tr>
         </thead>
@@ -31,7 +31,7 @@
             <td><%=index+1%></td>
             <td><%=snippet.name%></td>
             <td><%=snippet.ref%></td>
-            <td><%=snippet.version%></td>
+            <!--<td><%=snippet.version%></td>-->
             <td><a href="" onClick="snippetDeletePrompt('<%=snippet.ref%>');return false;">Delete</a> | <a href="edit/snippet/<%=snippet.ref%>">Edit</a></td>
           </tr>
         <%  });

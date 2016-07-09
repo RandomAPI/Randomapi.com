@@ -450,13 +450,15 @@ Generator.prototype.availableFuncs = function() {
 Generator.prototype.require = function(signature) {
   signature = signature !== undefined && signature.indexOf('/') !== -1 ? signature.split('/') : [];
 
-  // username/snippetName/versionNumber
-  if (signature.length !== 3) {
+  // username/snippetName/versionNumber - in the future
+  // for now, no version nums
+  if (signature.length !== 2) {
     throw new Error(`Invalid signature format`);
     return;
   }
 
-  let obj = `snippet:${signature[0]}/${signature[1]}/${signature[2]}`;
+  //let obj = `snippet:${signature[0]}/${signature[1]}/${signature[2]}`;
+  let obj = `snippet:${signature[0]}/${signature[1]}`;
 
   // Check if snippet is in local snippet cache
   // If not, fetch from redis snippet cache and add it to the local snippet cache
@@ -475,8 +477,8 @@ Generator.prototype.require = function(signature) {
   } else {
     process.send({type: 'lookup', mode: 'snippet', data: {
       user: signature[0],
-      name: signature[1],
-      version: signature[2]
+      name: signature[1]
+      //version: signature[2]
     }});
 
     let done = false;
