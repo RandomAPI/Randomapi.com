@@ -32,7 +32,7 @@ const Generator = function(name, options) {
   this.originalContext = [
     'random', 'list', 'hash', 'timestamp',
     'require', '_APIgetVars', '_APIresults',
-    '_APIstack', '_APIerror', 'getVar'
+    '_APIstack', '_APIerror', 'getVar', 'stacktrace'
   ];
 
   this.reservedObjects = {
@@ -229,8 +229,12 @@ Generator.prototype.generate = function(cb) {
           'use strict'
           var _APIgetVars = ${JSON.stringify(this.options)};
           var _APIresults = [];
+          var _APIlogs = [];
           var _APIerror = null;
           var _APIstack = null;
+          var console = {
+            log: txt => _APIlogs.push(txt)
+          };
           (function() {
             for (var _APIi = 0; _APIi < ${this.results}; _APIi++) {
               var api = {};
@@ -240,6 +244,9 @@ ${this.src}
                 api = {};
                 _APIerror = e.toString();
                 _APIstack = e.stack;
+              }
+              if (_APIlogs.length !== 0) {
+                api['_APIlogs'] = _APIlogs;
               }
               _APIresults.push(api);
             }
@@ -253,8 +260,12 @@ ${this.src}
           'use strict'
           var _APIgetVars = ${JSON.stringify(this.options)};
           var _APIresults = [];
+          var _APIlogs = [];
           var _APIerror = null;
           var _APIstack = null;
+          var console = {
+            log: txt => _APIlogs.push(txt)
+          };
           (function() {
             var snippet = {};
             try {
@@ -278,6 +289,9 @@ if (_APISnippetKeys.length === 0) {
               snippet = {};
               _APIerror = e.toString();
               _APIstack = e.stack;
+            }
+            if (_APIlogs.length !== 0) {
+              snippet['_APIlogs'] = _APIlogs;
             }
             _APIresults.push(snippet);
           })();
@@ -433,6 +447,19 @@ Generator.prototype.availableFuncs = function() {
     },
     timestamp: () => {
       return Math.floor(new Date().getTime()/1000);
+    },
+    stacktrace: () => {
+      try {
+        var obj = {};
+        Error.captureStackTrace(obj, this.availableFuncs.a);
+
+        let parseStack = obj.stack.toString().match(/evalmachine.*?:(\d+)(?::(\d+))?/);
+        let line = parseStack[1]-14;
+        let col  = parseStack[2];
+        return `Stack trace called from line ${line}${col === undefined ? "." : " column " + col}`;
+      } catch (e) {
+        return 'Error calling stack trace';
+      }
     }
   };
 
@@ -450,7 +477,7 @@ Generator.prototype.availableFuncs = function() {
       sha256: val => funcs.hash.sha256(val)
     },
     timestamp: () => funcs.timestamp(),
-    //require: signature => funcs.require(signature)
+    stacktrace: () => funcs.stacktrace()
   };
 };
 
@@ -567,9 +594,6 @@ Generator.prototype.updateRequires = function() {
           let match = reg.exec(this.src);
           while (match !== null) {
             this.src = this.src.replace(rawMatches[index++], this.require(match[1]));
-            // matched text: match[0]
-            // match start: match.index
-            // capturing group n: match[n]
             match = reg.exec(this.src);
           }
         }
