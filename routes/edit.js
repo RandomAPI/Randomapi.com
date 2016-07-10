@@ -106,29 +106,29 @@ router.post('/list/:ref', upload.any(), (req, res, next) => {
     List.getCond({ref: req.params.ref}).then(doc => {
 
       if (doc.owner !== req.session.user.id) {
-        res.send(baseURL + '/view/list');
+        res.redirect(baseURL + '/view/list');
 
       } else if (req.files.length !== 0 && req.files[0].originalname.match(/(?:\.([^.]+))?$/)[1] !== 'txt') {
         req.flash('warning', 'Looks like you provided an invalid file...please try again.');
         fs.unlink('./'+ req.files[0].path);
-        res.send(baseURL + '/edit/list/' + req.params.ref);
+        res.redirect(baseURL + '/edit/list/' + req.params.ref);
 
       // Is user within their tier limits?
       } else if (req.files.length !== 0 && req.session.user.memory - doc.memory + req.files[0].size > req.session.tier.memory && req.session.tier.memory !== 0) {
         req.flash('warning', 'Replacing this list would go over your List quota for the ' + req.session.tier.name + ' tier.');
         fs.unlink('./'+ req.files[0].path);
-        res.send(baseURL + '/edit/list/' + req.params.ref);
+        res.redirect(baseURL + '/edit/list/' + req.params.ref);
 
       } else {
         let name = req.body.rename;
         if (name === undefined || name === "") name = doc.name;
         if (name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/) === null) {
           req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
-          res.send(baseURL + '/view/api/' + req.params.ref);
+          res.redirect(baseURL + '/view/api/' + req.params.ref);
         } else if (req.files.length === 0) {
           List.update({name}, doc.ref).then((asdf) => {
             req.flash('info', `List ${name} [${doc.ref}] was updated successfully!`);
-            res.send(baseURL + '/view/list');
+            res.redirect(baseURL + '/view/list');
           });
         } else {
           List.update({name, memory: req.files[0].size}, doc.ref).then(() => {
@@ -138,7 +138,7 @@ router.post('/list/:ref', upload.any(), (req, res, next) => {
 
               User.incVal('memory', newSize-oldSize, req.session.user.username).then(() => {
                 req.flash('info', `List ${name} [${doc.ref}] was updated successfully!`);
-                res.send(baseURL + '/view/list');
+                res.redirect(baseURL + '/view/list');
               });
             });
           });
@@ -147,9 +147,9 @@ router.post('/list/:ref', upload.any(), (req, res, next) => {
     });
   } else {
     if (req.session.subscription.status === 3) {
-      res.send(baseURL + '/settings/subscription/paymentOverdue');
+      res.redirect(baseURL + '/settings/subscription/paymentOverdue');
     } else {
-      res.send(baseURL + '/');
+      res.redirect(baseURL + '/');
     }
   }
 });
