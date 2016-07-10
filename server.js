@@ -1,7 +1,7 @@
 const cookie     = require('cookie');
 const pad        = require('./utils').pad;
 const logger     = require('./utils').logger;
-const sessionDB  = require('./utils').redis;
+const redis      = require('./utils').redis;
 
 const server = require('./app').server;
 const app    = require('./app').app;
@@ -12,6 +12,13 @@ const db = require('./models/db').init(() => {
   // GUI - can be commented out if not required or too much overhead
   if (GUI) require('./console.js');
   require('./sockets.js');
+
+  // Clear Redis cache on launch
+  redis.keys("*", (err, lists) => {
+    lists
+      .filter(item => item.match(/(list\:|snippet\:)/) !== null)
+      .map(list => redis.del(list));
+  });
 
   server.listen(app.get('port'));
   server.on('error', error => {

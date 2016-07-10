@@ -98,26 +98,50 @@ const Generator = function(name, options) {
         this.emit('snippetResponse', msg.data);
       }
     } else if (msg.type === 'cmd') {
-      if (msg.data === 'getMemory') {
+      if (msg.mode === 'getMemory') {
         process.send({type: 'cmdComplete', mode: 'memory', content: process.memoryUsage().heapUsed});
-      } else if (msg.data === 'gc') {
+      } else if (msg.mode === 'gc') {
         global.gc();
-      } else if (msg.data === 'emptyListCache') {
+      } else if (msg.mode === 'emptyListCache') {
         this.emptyListCache();
-      } else if (msg.data === 'getListCache') {
+      } else if (msg.mode === 'getListCache') {
         this.cacheSize = 0;
         _.each(this.cache, item => {
           this.cacheSize += Number(item.size);
         });
         process.send({type: 'cmdComplete', mode: 'listCache', content: this.cacheSize});
-      } else if (msg.data === 'emptySnippetCache') {
+      } else if (msg.mode === 'emptySnippetCache') {
         this.emptySnippetCache();
-      } else if (msg.data === 'getSnippetCache') {
+      } else if (msg.mode === 'getSnippetCache') {
         this.snippetCacheSize = 0;
         _.each(this.snippetCache, item => {
           this.snippetCacheSize += Number(item.size);
         });
         process.send({type: 'cmdComplete', mode: 'snippetCache', content: this.snippetCacheSize});
+      } else if (msg.mode === 'removeList') {
+        let ref = msg.data;
+
+        if (ref in this.cache) {
+          // Update cache size and delete list from cache
+          this.cacheSize -= this.cache[ref].size;
+          delete this.cache[ref];
+        }
+
+        // Delete keys from Redis
+        redis.del(`list:${ref}`)
+        redis.del(`list:${ref}:contents`);
+      } else if (msg.mode === 'removeSnippet') {
+        let ref = msg.data;
+
+        if (ref in this.snippetCache) {
+          // Update cache size and delete list from cache
+          this.snippetCacheSize -= this.snippetCache[ref].size;
+          delete this.snippetCache[ref];
+        }
+
+        // Delete keys from Redis
+        redis.del(`snippet:${ref}`)
+        redis.del(`snippet:${ref}:contents`);
       }
     } else if (msg.type === 'pong') {
       this.emit('pong');
@@ -492,7 +516,7 @@ Generator.prototype.require = function(signature) {
   }
 
   //let obj = `snippet:${signature[0]}/${signature[1]}/${signature[2]}`;
-  let obj = `snippet:${signature[0]}/${signature[1]}`;
+  let obj = `${signature[0]}/${signature[1]}`;
 
   // Check if snippet is in local snippet cache
   // If not, fetch from redis snippet cache and add it to the local snippet cache
@@ -501,9 +525,9 @@ Generator.prototype.require = function(signature) {
     // Update local snippet cache lastUsed date
     // Also update redis snippet cache lastUsed date
     this.snippetCache[obj].lastUsed = new Date().getTime();
-    redis.exists(`${obj}:contents`, (err, result) => {
+    redis.exists(`snippet:${obj}:contents`, (err, result) => {
       if (result === 1) {
-        redis.hmset(obj, 'lastUsed', new Date().getTime());
+        redis.hmset(`snippet:${obj}`, 'lastUsed', new Date().getTime());
       }
     });
 
@@ -523,13 +547,14 @@ Generator.prototype.require = function(signature) {
         throw new Error(`Snippet signature ${obj.slice(8)} wasn't recognized`);
         done = true;
       } else {
-        redis.GET(`${obj}:contents`, (err, snippet) => {
+        redis.GET(`snippet:${obj}:contents`, (err, snippet) => {
 
           // Fetch metadata for snippet and store in local generator snippet cache
-          redis.hgetall(obj, (err, info) => {
+          redis.hgetall(`snippet:${obj}`, (err, info) => {
             this.snippetCache[obj] = {
               added: new Date().getTime(),
               snippet,
+              size: info.size,
               owner: info.owner,
               lastUsed: new Date().getTime()
             };

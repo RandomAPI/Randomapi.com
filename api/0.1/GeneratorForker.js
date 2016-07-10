@@ -125,7 +125,7 @@ const GeneratorForker = function(options) {
 
     self.send({
       type: 'cmd',
-      data: 'getMemory'
+      mode: 'getMemory'
     });
 
     self.once('memComplete', data => {
@@ -134,12 +134,12 @@ const GeneratorForker = function(options) {
 
     self.send({
       type: 'cmd',
-      data: 'getListCache'
+      mode: 'getListCache'
     });
 
     self.send({
       type: 'cmd',
-      data: 'getSnippetCache'
+      mode: 'getSnippetCache'
     });
 
     self.once('listCacheComplete', data => {
@@ -264,6 +264,7 @@ GeneratorForker.prototype.fork = function() {
 })()`;
                   redis.hmset(obj, {
                     added: new Date().getTime(),
+                    size: file.length,
                     owner: doc.owner,
                     lastUsed: new Date().getTime()
                   }, (err, res) => {
@@ -344,21 +345,37 @@ GeneratorForker.prototype.snippetCacheUsage = function() {
 GeneratorForker.prototype.gc = function() {
   this.send({
     type: 'cmd',
-    data: 'gc'
+    mode: 'gc'
   });
 };
 
 GeneratorForker.prototype.emptyListCache = function() {
   this.send({
     type: 'cmd',
-    data: 'emptyListCache'
+    mode: 'emptyListCache'
   });
 };
 
 GeneratorForker.prototype.emptySnippetCache = function() {
   this.send({
     type: 'cmd',
-    data: 'emptySnippetCache'
+    mode: 'emptySnippetCache'
+  });
+};
+
+GeneratorForker.prototype.removeList = function(ref) {
+  this.send({
+    type: 'cmd',
+    mode: 'removeList',
+    data: ref
+  });
+};
+
+GeneratorForker.prototype.removeSnippet = function(ref) {
+  this.send({
+    type: 'cmd',
+    mode: 'removeSnippet',
+    data: ref
   });
 };
 

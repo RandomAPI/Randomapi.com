@@ -40,6 +40,24 @@ Object.keys(settings.generators).forEach(generator => {
 // Store Generators in app
 app.set("Generators", Generators);
 
+// Cache removers
+app.set("removeList", list => {
+  Object.keys(settings.generators).forEach(generator => {
+    Generators[generator].forEach(generator => {
+      generator.removeList(list);
+    });
+  });
+});
+
+app.set("removeSnippet", snippet => {
+  Object.keys(settings.generators).forEach(generator => {
+    Generators[generator].forEach(generator => {
+      generator.removeSnippet(snippet);
+    });
+  });
+});
+/////////////////
+
 // view engine setup
 app.set('views', path.join(__dirname, '.viewsMin/pages'));
 app.set('view engine', 'ejs');
@@ -70,8 +88,8 @@ app.use(flash());
 app.use(favicon(__dirname + '/public/img/favicon.png'));
 
 //app.use(logger('dev'));
-app.use(bodyParser.json({limit: '8mb'}));
-app.use(bodyParser.urlencoded({ limit: '8mb', extended: false }));
+app.use(bodyParser.json({limit: '1mb'}));
+app.use(bodyParser.urlencoded({ limit: '1mb', extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Determine relative URLs (behindProxy)
