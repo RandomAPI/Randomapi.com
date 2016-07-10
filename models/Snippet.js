@@ -14,6 +14,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       let self = this;
       data.ref = this.genRandomRef();
+      data.description = "";
 
       db.query('INSERT INTO `snippet` SET ?', data, (err, result) => {
         err ? reject(err) : resolve({['s.id']: result.insertId});
