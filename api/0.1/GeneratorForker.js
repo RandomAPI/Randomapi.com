@@ -225,8 +225,16 @@ GeneratorForker.prototype.fork = function() {
           }
         });
       } else if (msg.mode === 'snippet') {
-        //let obj = `snippet:${msg.data.user}/${msg.data.name}/${msg.data.version}`;
-        let obj = `snippet:${msg.data.user}/${msg.data.name}`;
+        // global
+        let obj;
+        let glob = false;
+        if (msg.data.indexOf('/') === -1) {
+          obj = `snippet:${msg.data}`;
+          glob = true;
+        } else {
+          msg.data = msg.data.split('/');
+          obj = `snippet:${msg.data[0]}/${msg.data[1]}`;
+        }
 
         // Check if snippet exists in the cache
         redis.exists(obj, (err, result) => {
@@ -250,8 +258,7 @@ GeneratorForker.prototype.fork = function() {
 
           // Add snippet to cache if user has permission
           } else {
-            //Snippet.getCond({username: msg.data.user, name: msg.data.name, version: msg.data.version}).then(doc => {
-            Snippet.getCond({username: msg.data.user, name: msg.data.name}).then(doc => {
+            Snippet.getCond({username: msg.data[0], name: msg.data[1]}).then(doc => {
               if (doc === null) {
                 this.generator.send({type: 'response', mode: 'snippet', data: false});
               } else {

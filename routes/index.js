@@ -115,6 +115,8 @@ router.post('/register', (req, res, next) => {
     User.register(req.body).then(data => {
       req.session.loggedin = true;
       req.session.user = data.user;
+
+      logger(`[user]: New user registration "${data.user.username}"`);
       req.flash('info', data.flash);
       res.redirect(baseURL + data.redirect);
     }, err => {

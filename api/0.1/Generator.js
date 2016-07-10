@@ -484,6 +484,16 @@ Generator.prototype.availableFuncs = function() {
       } catch (e) {
         return 'Error calling stack trace';
       }
+    },
+    // Hardcoded native requires
+    require: function(lib) {
+      let globRequires = [];
+
+      if (globRequires.indexOf(lib) !== -1) {
+        return require(lib);
+      } else {
+        throw new Error(`Global require ${lib} was not found!`);
+      }
     }
   };
 
@@ -501,22 +511,34 @@ Generator.prototype.availableFuncs = function() {
       sha256: val => funcs.hash.sha256(val)
     },
     timestamp: () => funcs.timestamp(),
-    stacktrace: () => funcs.stacktrace()
+    stacktrace: () => funcs.stacktrace(),
+    require: lib => funcs.require(lib)
   };
 };
 
 Generator.prototype.require = function(signature) {
-  signature = signature !== undefined && signature.indexOf('/') !== -1 ? signature.split('/') : [];
-
-  // username/snippetName/versionNumber - in the future
-  // for now, no version nums
-  if (signature.length !== 2) {
-    throw new Error(`Invalid signature format`);
+  if (signature === undefined || signature.length === 0) {
+    throw new Error(`No snippet signature provided`);
     return;
   }
 
-  //let obj = `snippet:${signature[0]}/${signature[1]}/${signature[2]}`;
-  let obj = `${signature[0]}/${signature[1]}`;
+  //signature = signature !== undefined && signature.indexOf('/') !== -1 ? signature.split('/') : [];
+
+  // username/snippetName/versionNumber - in the future
+  // for now, no version nums
+  // if (signature.length !== 2) {
+  //   throw new Error(`Invalid signature format`);
+  //   return;
+  // }
+
+  // global
+  let obj;
+  if (signature.indexOf('/') === -1) {
+    obj = signature;
+  } else {
+    let tmp = signature.split('/');
+    obj = `${tmp[0]}/${tmp[1]}`;
+  }
 
   // Check if snippet is in local snippet cache
   // If not, fetch from redis snippet cache and add it to the local snippet cache
@@ -533,18 +555,18 @@ Generator.prototype.require = function(signature) {
 
     return this.snippetCache[obj].snippet;
   } else {
-    process.send({type: 'lookup', mode: 'snippet', data: {
-      user: signature[0],
-      name: signature[1]
-      //version: signature[2]
-    }});
+    process.send({
+      type: 'lookup',
+      mode: 'snippet',
+      data: signature
+    });
 
     let done = false;
     let contents = null;
 
     this.once('snippetResponse', result => {
       if (result === false) {
-        throw new Error(`Snippet signature ${obj.slice(8)} wasn't recognized`);
+        throw new Error(`Snippet signature ${obj} wasn't recognized`);
         done = true;
       } else {
         redis.GET(`snippet:${obj}:contents`, (err, snippet) => {
@@ -604,18 +626,19 @@ Generator.prototype.emptySnippetCache = function() {
   this.snippetCache = {};
 };
 
+// Only global snippets can be required in other snippets
 Generator.prototype.updateRequires = function() {
   return new Promise((resolve, reject) => {
     // Don't let snippets include other snippets in snippet edit mode
     if (this.mode === 'snippet') resolve();
     else {
-      let rawMatches = this.src.match(/require\('(.*)'\)/g);
+      let rawMatches = this.src.match(/require\('((?:.*)\/(?:.*))'\)/g);
       let index = 0;
 
       try {
         // There are matches
         if (rawMatches !== null) {
-          let reg = new RegExp(/require\('(.*)'\)/g);
+          let reg = new RegExp(/require\('((?:.*)\/(?:.*))'\)/g);
           let match = reg.exec(this.src);
           while (match !== null) {
             this.src = this.src.replace(rawMatches[index++], this.require(match[1]));
@@ -689,7 +712,7 @@ Generator.prototype.returnResults = function(err, output, cb) {
       parseStack = err.error;
     }
     err.formatted = parseStack;
-    delete err.stack;
+    //delete err.stack;
     cb(err, JSON.stringify({results: [{}]}), null);
   }
 };

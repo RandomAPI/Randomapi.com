@@ -15,7 +15,7 @@
     <div class="ten columns">
       <h3>Editing API <%=api.name%> [<%=api.ref%>]</h3>
       <div class='info'>
-        <span id='charCount'><span id='currentCharCount'>0</span> / 8,192 chars</span><div class='rename'> Rename: <input id='limitsInput' type='text' name='rename' value='<%=api.name%>' maxlength='32'><span class='red' id='limits'>Accepted chars: a-zA-Z0-9 _-.+[]{}()</span></div>
+        <span id='charCount'><span id='currentCharCount'>0</span> / 8,192 chars</span><div class='rename'> Rename: <input id='limitsInput' type='text' name='rename' placeholder='<%=api.name%>' value='<%=api.name%>' maxlength='32'><span class='red' id='limits'>Accepted chars: a-zA-Z0-9 _-.+[]{}()</span></div>
       </div>
       <pre id="aceEditor" name="code"><%=api.code%></pre>
       <div id="preview">
