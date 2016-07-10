@@ -16,6 +16,7 @@
         <% } else {
           if (tier.results === 0) tier.results = "unlimited";
           if (tier.apis === 0) tier.apis = "unlimited";
+          if (tier.snippets === 0) tier.snippets = "unlimited";
         %>
 
 
@@ -40,10 +41,11 @@
         <% } else { %>
           <p>You are currently on the <span class='green'><%= tier.name %></span> tier.<br>
           This plan gives you<br>
-          -<span class='green'><%= tier.memory/1024/1024 %></span> MB of list memory<br>
           -<span class='green' id="dailyResults"><%= tier.results %></span> daily results<br>
           -<span class='green' id="resultsPerRequest"><%= tier.per %></span> results per request<br>
+          -<span class='green'><%= tier.memory/1024/1024 %></span> MB of list memory<br>
           -<span class='green'><%= tier.apis %></span> APIs<br>
+          -<span class='green'><%= tier.snippets %></span> Snippets<br>
           at a rate of <span class='green' id="price">$<%= tier.price %></span> per month.<br><br>
           <% if (subscription.status === 2) { %>
                Your account will be downgraded to the <span class='green'>free</span> tier at the end of your subscription period.<br>
@@ -66,6 +68,7 @@
                 <li><span id="main">2,500</span> results / request</li>
                 <li><span id="main">25 MB</span> list data</li>
                 <li><span id="main">unlimited</span> APIs</li>
+                <li><span id="main">unlimited</span> Snippets</li>
                 <li><span id="main" class="check">✓</span> ads disabled</li>
                 <li><span id="main" class="check">✓</span> Offline APIs <sup>Coming soon</sup></li>
                 <li><span id="main">5</span> Generators <sup>1</sup></li>
