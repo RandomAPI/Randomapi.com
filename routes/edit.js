@@ -16,7 +16,12 @@ const storage = multer.diskStorage({
     });
   }
 });
-const upload = multer({ storage: storage });
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5*1024*1024
+  }
+}).single('file');
 
 const API  = require('../models/API');
 const User  = require('../models/User');
@@ -101,49 +106,58 @@ router.get('/list/:ref', (req, res, next) => {
   }
 });
 
-router.post('/list/:ref', upload.any(), (req, res, next) => {
+router.post('/list/:ref', (req, res, next) => {
   if (req.session.subscription.status !== 3) {
     List.getCond({ref: req.params.ref}).then(doc => {
 
-      if (doc.owner !== req.session.user.id) {
-        res.redirect(baseURL + '/view/list');
+      upload(req, res, err => {
+        if (err) {
+          req.flash('warning', 'This list is too big. Please keep your file size under 5MB.');
+          res.redirect(baseURL + '/edit/list/' + req.params.ref);
 
-      } else if (req.files.length !== 0 && req.files[0].originalname.match(/(?:\.([^.]+))?$/)[1] !== 'txt') {
-        req.flash('warning', 'Looks like you provided an invalid file...please try again.');
-        fs.unlink('./'+ req.files[0].path);
-        res.redirect(baseURL + '/edit/list/' + req.params.ref);
+        } else if (doc.owner !== req.session.user.id) {
+          res.redirect(baseURL + '/view/list');
 
-      // Is user within their tier limits?
-      } else if (req.files.length !== 0 && req.session.user.memory - doc.memory + req.files[0].size > req.session.tier.memory && req.session.tier.memory !== 0) {
-        req.flash('warning', 'Replacing this list would go over your List quota for the ' + req.session.tier.name + ' tier.');
-        fs.unlink('./'+ req.files[0].path);
-        res.redirect(baseURL + '/edit/list/' + req.params.ref);
+        } else if (req.file !== undefined && req.file.originalname.match(/(?:\.([^.]+))?$/)[1] !== 'txt') {
+          req.flash('warning', 'Looks like you provided an invalid file...please try again.');
+          if (req.file !== undefined) {
+            fs.unlink('./'+ req.file.path);
+          }
+          res.redirect(baseURL + '/edit/list/' + req.params.ref);
 
-      } else {
-        let name = req.body.rename;
-        if (name === undefined || name === "") name = doc.name;
-        if (name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/) === null) {
-          req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
-          res.redirect(baseURL + '/view/api/' + req.params.ref);
-        } else if (req.files.length === 0) {
-          List.update({name}, doc.ref).then((asdf) => {
-            req.flash('info', `List ${name} [${doc.ref}] was updated successfully!`);
-            res.redirect(baseURL + '/view/list');
-          });
+        // Is user within their tier limits?
+        } else if (req.file !== undefined && req.session.user.memory - doc.memory + req.file.size > req.session.tier.memory && req.session.tier.memory !== 0) {
+          req.flash('warning', 'Replacing this list would go over your List quota for the ' + req.session.tier.name + ' tier.');
+          fs.unlink('./'+ req.file.path);
+          res.redirect(baseURL + '/edit/list/' + req.params.ref);
+
         } else {
-          List.update({name, memory: req.files[0].size}, doc.ref).then(() => {
-            fs.rename('./'+ req.files[0].path, './data/lists/' + doc.id + '.list', err => {
-              let newSize = req.files[0].size;
-              let oldSize = doc.memory;
+          let name = req.body.rename;
+          if (name === undefined || name === "") name = doc.name;
+          if (name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/) === null) {
+            req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
+            res.redirect(baseURL + '/view/api/' + req.params.ref);
+          } else if (req.file === undefined) {
+            List.update({name}, doc.ref).then(() => {
+              req.flash('info', `List ${name} [${doc.ref}] was updated successfully!`);
+              res.redirect(baseURL + '/view/list');
+            });
+          } else {
+            List.update({name, memory: req.file.size}, doc.ref).then(() => {
+              fs.rename('./'+ req.file.path, './data/lists/' + doc.id + '.list', err => {
+                let newSize = req.file.size;
+                let oldSize = doc.memory;
 
-              User.incVal('memory', newSize-oldSize, req.session.user.username).then(() => {
-                req.flash('info', `List ${name} [${doc.ref}] was updated successfully!`);
-                res.redirect(baseURL + '/view/list');
+                User.incVal('memory', newSize-oldSize, req.session.user.username).then(() => {
+                  req.app.get('removeList')(`${doc.ref}`);
+                  req.flash('info', `List ${name} [${doc.ref}] was updated successfully!`);
+                  res.redirect(baseURL + '/view/list');
+                });
               });
             });
-          });
+          }
         }
-      }
+      })
     });
   } else {
     if (req.session.subscription.status === 3) {
@@ -190,6 +204,7 @@ router.post('/snippet/:ref', (req, res, next) => {
         } else {
           Snippet.update({name}, doc.ref).then(() => {
             fs.writeFile('./data/snippets/' + doc.id + '.snippet', req.body.code.replace(/\r\n/g, '\n').slice(0, 8192), 'utf8', err => {
+              req.app.get('removeSnippet')(`${req.session.user.username}/${doc.name}`);
               req.flash('info', `Snippet ${name} was updated successfully!`);
               res.send(baseURL + '/view/snippet');
             });

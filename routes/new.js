@@ -14,7 +14,12 @@ const storage = multer.diskStorage({
     });
   }
 });
-const upload = multer({ storage: storage });
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5*1024*1024
+  }
+}).single('file');
 
 const API  = require('../models/API');
 const List = require('../models/List');
@@ -105,40 +110,48 @@ router.get('/list', (req, res, next) => {
   }
 });
 
-router.post('/list', upload.any(), (req, res, next) => {
+router.post('/list', (req, res, next) => {
   if (req.session.subscription.status !== 3) {
-    if (req.body.name === undefined || req.body.name === "" || req.files.length === 0 || req.files[0].originalname.match(/(?:\.([^.]+))?$/)[1] !== 'txt') {
-      req.flash('warning', 'Looks like you provided an invalid file...please try again.');
-      fs.unlink('./'+ req.files[0].path);
-      res.redirect(baseURL + '/new/list');
+    upload(req, res, err => {
+      if (err) {
+        req.flash('warning', 'This list is too big. Please keep your file size under 5MB.');
+        res.redirect(baseURL + '/new/list');
 
-    } else if (!req.body.name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/)) {
-      req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
-      res.redirect(baseURL + '/new/list');
+      } else if (req.body.name === undefined || req.body.name === "" || req.file === undefined || req.file.originalname.match(/(?:\.([^.]+))?$/)[1] !== 'txt') {
+        req.flash('warning', 'Looks like you provided an invalid file...please try again.');
+        if (req.file !== undefined) {
+          fs.unlink('./'+ req.file.path);
+        }
+        res.redirect(baseURL + '/new/list');
 
-    // Is user OVER their limits from a recent downgrade?
-    } else if (req.session.subscription.status === 4) {
-      req.flash('warning', 'Your account is currently soft-locked until you fix your account quotas.');
-      fs.unlink('./'+ req.files[0].path);
-      res.redirect(baseURL + '/');
+      } else if (!req.body.name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/)) {
+        req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
+        res.redirect(baseURL + '/new/list');
 
-    // Is user within their tier limits?
-    } else if (req.session.user.memory + req.files[0].size > req.session.tier.memory && req.session.tier.memory !== 0) {
-      req.flash('warning', 'You have used up your List quota for the ' + req.session.tier.name + ' tier.');
-      fs.unlink('./'+ req.files[0].path);
-      res.redirect(baseURL + '/new/list');
+      // Is user OVER their limits from a recent downgrade?
+      } else if (req.session.subscription.status === 4) {
+        req.flash('warning', 'Your account is currently soft-locked until you fix your account quotas.');
+        fs.unlink('./'+ req.file.path);
+        res.redirect(baseURL + '/');
 
-    // Else, add the List
-    } else {
-      List.add({name: req.body.name, memory: req.files[0].size, owner: req.session.user.id}).then(List.getCond).then(model => {
-        fs.rename('./'+ req.files[0].path, './data/lists/' + model.id + '.list', err => {
-          User.incVal('memory', req.files[0].size, req.session.user.username).then(() => {
-            req.flash('info', `List ${model.name} [${model.ref}] was added successfully!`);
-            res.redirect(baseURL + '/view/list');
+      // Is user within their tier limits?
+      } else if (req.session.user.memory + req.file.size > req.session.tier.memory && req.session.tier.memory !== 0) {
+        req.flash('warning', 'You have used up your List quota for the ' + req.session.tier.name + ' tier.');
+        fs.unlink('./'+ req.file.path);
+        res.redirect(baseURL + '/new/list');
+
+      // Else, add the List
+      } else {
+        List.add({name: req.body.name, memory: req.file.size, owner: req.session.user.id}).then(List.getCond).then(model => {
+          fs.rename('./'+ req.file.path, './data/lists/' + model.id + '.list', err => {
+            User.incVal('memory', req.file.size, req.session.user.username).then(() => {
+              req.flash('info', `List ${model.name} [${model.ref}] was added successfully!`);
+              res.redirect(baseURL + '/view/list');
+            });
           });
         });
-      });
-    }
+      }
+    });
   } else {
     if (req.session.subscription.status === 3) {
       res.redirect(baseURL + '/settings/subscription/paymentOverdue');
