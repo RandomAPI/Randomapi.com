@@ -18,7 +18,7 @@
 api.age   = age; // Attached to api object
 api.phone = phoneNum(); // Calling user defined function
 
-function phoneNum (format) {
+function phoneNum(format) {
   format = format || "(xxx) xxx-xxxx";
   return String(format).split('').map(digit => {
     return digit === 'x' ? random.numeric(0, 9) : digit;
@@ -36,7 +36,7 @@ function phoneNum (format) {
     <div class="main">
       <div class="one-third column">
         <h4 class="tripleTitle">Simple</h4>
-        <p class="tripleInfo">If you know Javascript, you know how to code APIs. APIs are written in Vanilla Javascript. No learning a new language and its fancy syntax is required!</p>
+        <p class="tripleInfo">If you know Javascript, you know how to code APIs. APIs are written in Vanilla Javascript. No learning a new language and its fancy syntax required!</p>
       </div>
       <div class="one-third column">
         <h4 class="tripleTitle">Powerful</h4>

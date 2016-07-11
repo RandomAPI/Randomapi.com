@@ -17,7 +17,7 @@ router.get('/:ref?', (req, res, next) => {
     cb => {
       if (req.params.ref !== undefined && req.params.ref.length === 32) {
         API.getCond({hash: req.params.ref}).then(result => {
-          if (result === null) return cb({code: 403, error: "INVALID_API_HASH"});
+          if (result === null) return cb({code: 404, error: "INVALID_API_HASH"});
 
           api = result;
           req.params.ref = api.ref;
@@ -95,7 +95,7 @@ router.get('/:ref?', (req, res, next) => {
 
       // Make sure generator isn't offline
       if (!Generators[type][shortest].generator.connected) {
-        res.send({error: "Something bad has happened...please try again later."});
+        cb({code: 500, error: "GENERATOR_OFFLINE"});
       } else {
         if (isNaN(req.query.results) || req.query.results < 0 || req.query.results === '') req.query.results = 1;
         if (req.query.results > tier.per) {

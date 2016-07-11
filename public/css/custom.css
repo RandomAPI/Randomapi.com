@@ -334,3 +334,7 @@ section.triplesec {
   background-color: #FF8181;
   color: white;
 }
+
+.clear {
+  clear: both;
+}

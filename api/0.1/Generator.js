@@ -251,7 +251,7 @@ Generator.prototype.generate = function(cb) {
       if (this.mode !== 'snippet') {
         this.sandBox = new vm.Script(`
           'use strict'
-          var _APIgetVars = ${JSON.stringify(this.options)};
+          var _APIgetVars = ${JSON.stringify(_.defaults(this.options, {seed: this.seed, numericSeed: this.numericSeed}))};
           var _APIresults = [];
           var _APIlogs = [];
           var _APIerror = null;
@@ -270,9 +270,10 @@ ${this.src}
                 _APIstack = e.stack;
               }
               if (_APIlogs.length !== 0) {
-                api['_APIlogs'] = _APIlogs;
+                _APIresults.push({api, _APIlogs});
+              } else {
+                _APIresults.push(api);
               }
-              _APIresults.push(api);
             }
           })();
           function getVar(key) {
@@ -288,7 +289,7 @@ ${this.src}
           var _APIerror = null;
           var _APIstack = null;
           var console = {
-            log: txt => _APIlogs.push(txt)
+            log: (...args) => _APIlogs.push(...args)
           };
           (function() {
             var snippet = {};
@@ -315,9 +316,10 @@ if (_APISnippetKeys.length === 0) {
               _APIstack = e.stack;
             }
             if (_APIlogs.length !== 0) {
-              snippet['_APIlogs'] = _APIlogs;
+              _APIresults.push({snippet, _APIlogs});
+            } else {
+              _APIresults.push({snippet});
             }
-            _APIresults.push(snippet);
           })();
           function getVar(key) {
             return key in _APIgetVars ? _APIgetVars[key] : null;
@@ -487,7 +489,7 @@ Generator.prototype.availableFuncs = function() {
     },
     // Hardcoded native requires
     require: function(lib) {
-      let globRequires = ['faker', 'deity'];
+      let globRequires = ['faker', 'deity', 'moment'];
 
       if (globRequires.indexOf(lib) !== -1) {
         return require(lib);

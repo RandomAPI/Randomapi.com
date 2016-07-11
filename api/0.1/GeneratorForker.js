@@ -156,7 +156,7 @@ util.inherits(GeneratorForker, EventEmitter);
 
 GeneratorForker.prototype.fork = function() {
   // Fork new Generator with provided info
-  this.generator = fork(__dirname + '/Generator', [this.name, JSON.stringify(this.info)]);
+  this.generator = fork(__dirname + '/Generator', [this.name, JSON.stringify(this.info)], {silent: true});
 
   // Handle all events
   // {type, mode, data}
