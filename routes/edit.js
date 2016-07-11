@@ -202,12 +202,25 @@ router.post('/snippet/:ref', (req, res, next) => {
           req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
           res.send(baseURL + '/edit/snippet/' + req.params.ref);
         } else {
-          Snippet.update({name}, doc.ref).then(() => {
-            fs.writeFile('./data/snippets/' + doc.id + '.snippet', req.body.code.replace(/\r\n/g, '\n').slice(0, 8192), 'utf8', err => {
-              req.app.get('removeSnippet')(`${req.session.user.username}/${doc.name}`);
-              req.flash('info', `Snippet ${name} was updated successfully!`);
-              res.send(baseURL + '/view/snippet');
-            });
+          Snippet.getCond({name: req.body.rename}).then(dup => {
+
+            if ((req.body.rename !== doc.name && dup === null) || (req.body.rename === doc.name)) {
+              Snippet.update({name}, doc.ref).then(() => {
+                fs.writeFile('./data/snippets/' + doc.id + '.snippet', req.body.code.replace(/\r\n/g, '\n').slice(0, 8192), 'utf8', err => {
+                  req.app.get('removeSnippet')(`${req.session.user.username}/${doc.name}`);
+                  req.flash('info', `Snippet ${name} was updated successfully!`);
+                  res.send(baseURL + '/view/snippet');
+                });
+              });
+
+            // Duplicate name - still update the file contents though
+            } else {
+              fs.writeFile('./data/snippets/' + doc.id + '.snippet', req.body.code.replace(/\r\n/g, '\n').slice(0, 8192), 'utf8', err => {
+                req.app.get('removeSnippet')(`${req.session.user.username}/${doc.name}`);
+                req.flash('warning', `You already have another snippet named ${req.body.rename}`);
+                res.send(baseURL + '/edit/snippet/' + req.params.ref);
+              });
+            }
           });
         }
       }

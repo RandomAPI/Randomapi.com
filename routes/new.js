@@ -180,13 +180,9 @@ router.post('/snippet', (req, res, next) => {
       req.flash('warning', 'Please provide a name for your Snippet');
       res.redirect(baseURL + '/new/snippet');
 
+    // Make sure snippet name meets requirements
     } else if (!req.body.name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/)) {
       req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
-      res.redirect(baseURL + '/new/snippet');
-
-    // Make sure snippet name meets requirements
-    } else if (req.session.user.snippets + 1 > req.session.tier.snippets && req.session.tier.snippets !== 0) {
-      req.flash('warning', 'You have used up your Snippet quota for the ' + req.session.tier.name + ' tier.');
       res.redirect(baseURL + '/new/snippet');
 
     // Is user OVER their limits from a recent downgrade?
@@ -199,19 +195,28 @@ router.post('/snippet', (req, res, next) => {
       req.flash('warning', 'You have used up your Snippet quota for the ' + req.session.tier.name + ' tier.');
       res.redirect(baseURL + '/new/snippet');
 
-    // Else, add the Snippet
     } else {
-      Snippet.add({name: req.body.name, description: req.body.description, owner: req.session.user.id}).then(Snippet.getCond).then(model => {
-        fs.writeFile('./data/snippets/' + model.id + '.snippet', `
+      // Check for duplicate names
+      Snippet.getCond({name: req.body.name}).then(dup => {
+
+        // Add snippet
+        if (dup === null) {
+          Snippet.add({name: req.body.name, description: req.body.description, owner: req.session.user.id}).then(Snippet.getCond).then(model => {
+            fs.writeFile('./data/snippets/' + model.id + '.snippet', `
 // Documentation: http://localhost:3000/documentation
 // Your awesome Snippet code here...`, 'utf8', err => {
 
-          // Increment total Snippets for user
-          User.incVal('snippets', 1, req.session.user.username).then(() => {
-            req.flash('info', `Snippet ${model.name} was added successfully!`);
-            res.redirect(baseURL + '/edit/snippet/' + model.ref);
+              // Increment total Snippets for user
+              User.incVal('snippets', 1, req.session.user.username).then(() => {
+                req.flash('info', `Snippet ${model.name} was added successfully!`);
+                res.redirect(baseURL + '/edit/snippet/' + model.ref);
+              });
+            });
           });
-        });
+        } else {
+          req.flash('warning', `You already have another snippet named ${req.body.name}`);
+          res.redirect(baseURL + '/new/snippet');
+        }
       });
     }
   } else {
