@@ -112,16 +112,26 @@ router.get('/register/guest', (req, res, next) => {
 
 router.post('/register', (req, res, next) => {
   if (!req.session.loggedin) {
-    User.register(req.body).then(data => {
-      req.session.loggedin = true;
-      req.session.user = data.user;
-
-      logger(`[user]: New user registration "${data.user.username}"`);
-      req.flash('info', data.flash);
-      res.redirect(baseURL + data.redirect);
+    User.login({username: req.body.username, password: req.body.password}).then(data => {
+      Tier.getCond({id: data.user.tierID}).then(tier => {
+        req.session.loggedin = true;
+        req.session.user = data.user;
+        req.session.tier = tier;
+        req.flash('info', data.flash);
+        res.redirect(baseURL + data.redirect);
+      });
     }, err => {
-      req.flash('warning', err.flash);
-      res.redirect(baseURL + err.redirect);
+      User.register(req.body).then(data => {
+        req.session.loggedin = true;
+        req.session.user = data.user;
+
+        logger(`[user]: New user registration "${data.user.username}"`);
+        req.flash('info', data.flash);
+        res.redirect(baseURL + data.redirect);
+      }, err => {
+        req.flash('warning', err.flash);
+        res.redirect(baseURL + err.redirect);
+      });
     });
   } else {
     res.redirect(baseURL + '/index');
