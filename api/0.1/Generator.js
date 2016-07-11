@@ -12,7 +12,7 @@ const logger       = require('../../utils').logger;
 const redis        = require('../../utils').redis;
 const settings     = require('../../utils').settings;
 const numeral      = require('numeral')
-const Promise      = require('Bluebird').Promise;
+const Promise      = require('bluebird').Promise;
 const EventEmitter = require('events').EventEmitter;
 
 const Generator = function(name, options) {

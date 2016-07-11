@@ -181,7 +181,7 @@ app.use((req, res, next) => {
   res.redirect(baseURL + '/');
 });
 
-app.use((err, req, res, next) => res.send(err.stack));
+app.use((err, req, res, next) => res.send('Something bad happened'));
 
 module.exports = {
   server,
