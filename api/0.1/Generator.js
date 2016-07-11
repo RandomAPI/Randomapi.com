@@ -257,7 +257,7 @@ Generator.prototype.generate = function(cb) {
           var _APIerror = null;
           var _APIstack = null;
           var console = {
-            log: txt => _APIlogs.push(txt)
+            log: (...args) => _APIlogs.push(...args)
           };
           (function() {
             for (var _APIi = 0; _APIi < ${this.results}; _APIi++) {
@@ -487,7 +487,7 @@ Generator.prototype.availableFuncs = function() {
     },
     // Hardcoded native requires
     require: function(lib) {
-      let globRequires = [];
+      let globRequires = ['faker', 'deity'];
 
       if (globRequires.indexOf(lib) !== -1) {
         return require(lib);
@@ -629,7 +629,7 @@ Generator.prototype.emptySnippetCache = function() {
 // Only global snippets can be required in other snippets
 Generator.prototype.updateRequires = function() {
   return new Promise((resolve, reject) => {
-    // Don't let snippets include other snippets in snippet edit mode
+    // Don't let snippets include other snippets or global requires in snippet edit mode
     if (this.mode === 'snippet') resolve();
     else {
       let rawMatches = this.src.match(/require\('((?:.*)\/(?:.*))'\)/g);
@@ -701,7 +701,7 @@ Generator.prototype.returnResults = function(err, output, cb) {
     }
     try {
       parseStack = err.stack.split('\n').slice(0, 2).join('').match(/evalmachine.*?:(\d+)(?::(\d+))?/);
-      let line = parseStack[1]-10;
+      let line = parseStack[1]-14;
       let col  = parseStack[2];
       if (line <= 0) {
         err.error = "SyntaxError: Unexpected end of input";

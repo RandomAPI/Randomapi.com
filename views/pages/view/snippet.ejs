@@ -32,7 +32,7 @@
             <td><%=snippet.name%></td>
             <!--<td><%=snippet.ref%></td>-->
             <!--<td><%=snippet.version%></td>-->
-            <td><a href="" onClick="snippetDeletePrompt('<%=snippet.ref%>');return false;">Delete</a> | <a href="edit/snippet/<%=snippet.ref%>">Edit</a></td>
+            <td><a href="" onClick="snippetDeletePrompt('<%=snippet.ref%>', '<%=snippet.name%>');return false;">Delete</a> | <a href="edit/snippet/<%=snippet.ref%>">Edit</a></td>
           </tr>
         <%  });
         }
