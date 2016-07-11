@@ -17,6 +17,8 @@
           <tr>
             <th>#</th>
             <th>Name</th>
+            <th>Created</th>
+            <th>Modified</th>
             <th>Ref ID</th>
             <th>Size</th>
             <th>Actions</th>
@@ -30,6 +32,8 @@
           <tr>
             <td><%=index+1%></td>
             <td><%=list.name%></td>
+            <td><span class="date" data-date="<%=list.created%>"></span></td>
+            <td><span class="date" data-date="<%=list.modified%>"></span></td>
             <td><%=list.ref%></td>
             <td><%=filesize(list.memory)%></td>
             <td><a href="" onClick="listDeletePrompt('<%=list.ref%>');return false;">Delete</a> | <a href="edit/list/<%=list.ref%>">Edit</a></td>
@@ -42,5 +46,6 @@
     </div>
   </div>
   <% include ../../snippets/footer %>
+  <script src="js/moment.min.js"></script>
 </body>
 </html>

@@ -70,7 +70,7 @@ module.exports = {
   },
   getSnippets(owner) {
     return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM `snippet` WHERE ?', {owner}, (err, data) => {
+      db.query('SELECT * FROM `snippet` WHERE ? ORDER BY `modified` DESC', {owner}, (err, data) => {
         if (err) reject(err);
         else if (data.length === 0) resolve(null);
         else resolve(data);

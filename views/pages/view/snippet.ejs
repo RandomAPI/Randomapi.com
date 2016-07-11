@@ -17,6 +17,8 @@
           <tr>
             <th>#</th>
             <th>Name</th>
+            <th>Created</th>
+            <th>Modified</th>
             <!--<th>Ref ID</th>-->
             <!--<th>Version</th>-->
             <th>Actions</th>
@@ -30,6 +32,8 @@
           <tr>
             <td><%=index+1%></td>
             <td><%=snippet.name%></td>
+            <td><span class="date" data-date="<%=snippet.created%>"></span></td>
+            <td><span class="date" data-date="<%=snippet.modified%>"></span></td>
             <!--<td><%=snippet.ref%></td>-->
             <!--<td><%=snippet.version%></td>-->
             <td><a href="" onClick="snippetDeletePrompt('<%=snippet.ref%>', '<%=snippet.name%>');return false;">Delete</a> | <a href="edit/snippet/<%=snippet.ref%>">Edit</a></td>
@@ -42,5 +46,6 @@
     </div>
   </div>
   <% include ../../snippets/footer %>
+  <script src="js/moment.min.js"></script>
 </body>
 </html>

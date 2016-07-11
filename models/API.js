@@ -90,7 +90,7 @@ module.exports = {
   },
   getAPIs(owner) {
     return new Promise((resolve, reject) => {
-      db.query('SELECT a.id, a.ref, a.name, a.hash, g.version generator, a.owner FROM `api` a INNER JOIN `generator` g ON (a.generator=g.id) WHERE ?', {owner}, (err, data) => {
+      db.query('SELECT a.* FROM `api` a INNER JOIN `generator` g ON (a.generator=g.id) WHERE ? ORDER BY `modified` DESC', {owner}, (err, data) => {
         if (err) reject(err);
         else if (data.length === 0) resolve(null);
         else resolve(data);
