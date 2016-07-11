@@ -3,6 +3,7 @@ const range   = require('../utils').range;
 const logger  = require('../utils').logger;
 const andify  = require('../utils').andify;
 const db      = require('./db').connection;
+const moment  = require('moment');
 const Promise = require('bluebird');
 
 module.exports = {
@@ -76,6 +77,15 @@ module.exports = {
   update(vals, ref) {
     return new Promise((resolve, reject) => {
       db.query('UPDATE `list` SET ? WHERE ?', [vals, {ref}], (err, result) => {
+        this.modified(ref).then(() => {
+          resolve({err: err, result: result});
+        });
+      });
+    });
+  },
+  modified(ref) {
+    return new Promise((resolve, reject) => {
+      db.query('UPDATE `list` SET ? WHERE ?', [{modified: moment(new Date().getTime()).format("YYYY-MM-DD HH:mm:ss")}, {ref}], (err, result) => {
         resolve({err: err, result: result});
       });
     });

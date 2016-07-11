@@ -3,11 +3,8 @@ const range   = require('../utils').range;
 const logger  = require('../utils').logger;
 const andify  = require('../utils').andify;
 const db      = require('./db').connection;
+const moment  = require('moment');
 const Promise = require('bluebird');
-
-//const cc = snippet('keitharm/credit_card_generator/0.1');
-//snippets can be drafted and edited and tested in the snippet preview, but in order
-//to use them in an API, they much be saved with a version number and they can't be edited anymore.
 
 module.exports = {
   add(data) {
@@ -83,12 +80,17 @@ module.exports = {
   update(vals, ref) {
     return new Promise((resolve, reject) => {
       db.query('UPDATE `snippet` SET ? WHERE ?', [vals, {ref}], (err, result) => {
+        this.modified(ref).then(() => {
+          resolve({err: err, result: result});
+        });
+      });
+    });
+  },
+  modified(ref) {
+    return new Promise((resolve, reject) => {
+      db.query('UPDATE `snippet` SET ? WHERE ?', [{modified: moment(new Date().getTime()).format("YYYY-MM-DD HH:mm:ss")}, {ref}], (err, result) => {
         resolve({err: err, result: result});
       });
     });
   }
 };
-
-
-
-//

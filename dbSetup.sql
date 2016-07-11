@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jul 09, 2016 at 10:11 PM
+-- Generation Time: Jul 11, 2016 at 01:25 AM
 -- Server version: 5.7.13
 -- PHP Version: 5.5.36
 
@@ -30,6 +30,8 @@ CREATE TABLE `api` (
   `id` int(11) NOT NULL,
   `ref` varchar(8) NOT NULL,
   `name` varchar(32) NOT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `generator` tinyint(4) NOT NULL,
   `owner` int(11) NOT NULL,
   `hash` varchar(32) NOT NULL
@@ -63,6 +65,8 @@ CREATE TABLE `list` (
   `id` int(11) NOT NULL,
   `ref` varchar(8) NOT NULL,
   `name` varchar(32) NOT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `memory` int(11) NOT NULL,
   `owner` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -102,6 +106,8 @@ CREATE TABLE `snippet` (
   `id` int(11) NOT NULL,
   `ref` varchar(8) NOT NULL,
   `name` varchar(32) NOT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `description` text NOT NULL,
   `version` int(11) NOT NULL DEFAULT '1',
   `owner` int(11) NOT NULL
