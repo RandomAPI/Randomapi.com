@@ -41,23 +41,29 @@
             "results": 100,
             "localTTL": 60,
             "localCache": 5,
-            "redisTTL": 120
+            "redisTTL": 120,
+            "localSnippetTTL": 60,
+            "redisSnippetTTL": 120
         },
         "standard": {
-            "count": 2,
+            "count": 3,
             "execTime": 10,
             "results": 1000,
             "localTTL": 120,
             "localCache": 10,
-            "redisTTL": 240
+            "redisTTL": 240,
+            "localSnippetTTL": 120,
+            "redisSnippetTTL": 240
         },
         "premium": {
-            "count": 3,
+            "count": 5,
             "execTime": 20,
             "results": 10000,
             "localTTL": 240,
             "localCache": 20,
-            "redisTTL": 480
+            "redisTTL": 480,
+            "localSnippetTTL":240,
+            "redisSnippetTTL": 480
         },
         "realtime": {
             "count": 3,
@@ -65,7 +71,9 @@
             "results": 1,
             "localTTL": 60,
             "localCache": 5,
-            "redisTTL": 120
+            "redisTTL": 120,
+            "localSnippetTTL": 60,
+            "redisSnippetTTL": 120
         },
         "demo": {
             "count": 3,
@@ -73,7 +81,9 @@
             "results": 1,
             "localTTL": 1,
             "localCache": 1,
-            "redisTTL": 1
+            "redisTTL": 1,
+            "localSnippetTTL": 60,
+            "redisSnippetTTL": 120
         }
     }
 }
