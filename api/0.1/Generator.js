@@ -28,6 +28,7 @@ const Generator = function(name, options) {
   };
   this.cache = {};
   this.snippetCache = {};
+  this.timeoutCache = {};
   this.context = vm.createContext(this.availableFuncs());
   this.originalContext = [
     'random', 'list', 'hash', 'timestamp',
@@ -244,6 +245,11 @@ Generator.prototype.generate = function(cb) {
   this.results = this.results || 1;
   let output = [];
 
+  // Check if src code causes timeout
+  if (crypto.createHash('md5').update(this.src).digest('hex') in this.timeoutCache) {
+    return this.returnResults({error: "Error: Script execution timed out."}, [{}], cb);
+  }
+
   // Replaces requires with the src code so that they can run in sandbox
   this.updateRequires().then(() => {
 
@@ -338,6 +344,9 @@ if (_APISnippetKeys.length === 0) {
         this.returnResults({error: this.context._APIerror, stack: this.context._APIstack}, [{}], cb);
       }
     } catch(e) {
+      if (e.toString().indexOf('Script execution timed out') !== -1) {
+        this.timeoutCache[crypto.createHash('md5').update(this.src).digest('hex')] = true;
+      }
       this.returnResults({error: e.toString(), stack: e.stack}, [{}], cb);
     }
 
