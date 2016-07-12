@@ -73,6 +73,9 @@ function phoneNum(format) {
       <p>In order to keep other users and the server safe from malicious code, all APIs are executed in a sandboxed environment in a seperate process with limited native Node.js/Javascript functions available. Features like requiring native built-in modules, spawning child processes, access the file system, etc. are all disabled. All code is run in strict mode as well.</p>
       <p>Native methods and built-in objects such as type casting using <b>String</b> and <b>Number</b> and using <b>JSON.stringify</b> are enabled and methods that can be chained to those data types such as <b>.toString()</b> are also available for use.
 
+      <div class="ads">
+        <% include ../snippets/ads %>
+      </div>
 
       <h4 class='title'><a name="availableFunctions">Available functions</a></h4>
       <p>RandomAPI includes some basic data generation functions that your API can make use of. All of these included functions respect the <b>seed</b> value that is sent in through an API request (except for timestamp since it returns the <b>current</b> time).</p>

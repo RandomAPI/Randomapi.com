@@ -385,3 +385,9 @@ section.triplesec {
     color: #fff;
     top: 5px;
 }
+
+.ads {
+  clear: both;
+  margin: 10px auto 10px auto;
+  width: 50%;
+}

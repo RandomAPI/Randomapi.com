@@ -22,6 +22,9 @@
       You have used <span class='<%= session.user.memory > session.tier.memory ? "red" : "green" %>'><%= filesize(session.user.memory) %></span> of your <span class="green"><%= session.tier.memory === 0 ? 'unlimited' : filesize(session.tier.memory) %></span> List memory.<br>
 
       You have used <span id='quotaResults' class='<%= session.tier.snippets !== 0 && session.user.snippets > session.tier.snippets ? "red" : "green" %>'><%= session.user.snippets %></span> of your <span id='tierResults' class="green"><%= session.tier.snippets === 0 ? 'unlimited' : session.tier.snippets %></span> Snippets.<br>
+      <div class="ads">
+        <% include ../snippets/ads %>
+      </div>
       <div class="announcements">
         <h3>Announcements</h3>
         <div class="entry">
