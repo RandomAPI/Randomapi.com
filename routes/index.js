@@ -4,6 +4,7 @@ const router  = express.Router();
 const logger  = require('../utils').logger;
 const stripe  = require('../utils').stripe;
 const moment  = require('moment');
+const request = require('request');
 const settings  = require('../utils').settings;
 
 const User = require('../models/User');
@@ -73,7 +74,7 @@ router.post('/login', (req, res, next) => {
         req.session.loggedin = true;
         req.session.user = data.user;
         req.session.tier = tier;
-        req.flash('info', data.flash);
+        req.flash('info', 'Logged in successfully!');
         res.redirect(baseURL + data.redirect);
       });
     }, err => {
@@ -90,6 +91,7 @@ router.get('/logout', (req, res, next) => {
     delete req.session.user;
     delete req.session.subscription;
     delete req.session.tier;
+    req.flash('info', 'You\'ve been logged out!');
     res.redirect(baseURL + '/');
   } else {
     res.redirect(baseURL + '/');
@@ -117,20 +119,41 @@ router.post('/register', (req, res, next) => {
         req.session.loggedin = true;
         req.session.user = data.user;
         req.session.tier = tier;
-        req.flash('info', data.flash);
+        req.flash('info', 'Logged in successfully!');
         res.redirect(baseURL + data.redirect);
       });
     }, err => {
-      User.register(req.body).then(data => {
-        req.session.loggedin = true;
-        req.session.user = data.user;
+      request.post({
+        url: 'https://www.google.com/recaptcha/api/siteverify',
+        form: {
+          secret: settings.recaptcha.secretKey,
+          response: req.body['g-recaptcha-response'],
+          remoteip: req.headers['x-forwarded-for'] || req.connection.remoteAddress
+        }
+      }, function(err, httpResponse, body) {
+        try {
+          let json = JSON.parse(body);
 
-        logger(`[user]: New user registration "${data.user.username}"`);
-        req.flash('info', data.flash);
-        res.redirect(baseURL + data.redirect);
-      }, err => {
-        req.flash('warning', err.flash);
-        res.redirect(baseURL + err.redirect);
+          if (json.success === true) {
+            User.register({username: req.body.username, password: req.body.password, timezone: req.body.timezone}).then(data => {
+              req.session.loggedin = true;
+              req.session.user = data.user;
+
+              logger(`[user]: New user registration "${data.user.username}"`);
+              req.flash('info', 'Account created, thanks for signing up!');
+              res.redirect(baseURL + data.redirect);
+            }, err => {
+              req.flash('warning', err.flash);
+              res.redirect(baseURL + err.redirect);
+            });
+          } else {
+            req.flash('warning', 'Recaptcha check failed...please try again.');
+            res.redirect(baseURL + '/register');
+          }
+        } catch(e) {
+          req.flash('warning', 'Recaptcha check failed...please try again.');
+          res.redirect(baseURL + '/register');
+        }
       });
     });
   } else {

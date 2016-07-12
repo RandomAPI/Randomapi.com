@@ -112,7 +112,7 @@ app.use('*', (req, res, next) => {
     app.set('baseURL', settings.general.baseURL);
     app.set('basehref', settings.general.basehref);
 
-    defaultVars = {filesize, messages, session: req.session, publishableKey: settings.stripe.publishableKey, basehref: settings.general.basehref, title: null, originalUrl: req.originalUrl };
+    defaultVars = {filesize, messages, session: req.session, recaptcha: settings.recaptcha.siteKey, publishableKey: settings.stripe.publishableKey, basehref: settings.general.basehref, title: null, originalUrl: req.originalUrl };
     app.set('defaultVars', defaultVars);
     if (req.session.loggedin) {
       User.getCond({username: req.session.user.username}).then(user => {

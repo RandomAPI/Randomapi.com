@@ -7,6 +7,10 @@
         "basehref": "http://localhost:3000/",
         "baseURL": ""
     },
+    "recaptcha": {
+        "siteKey": "",
+        "secretKey": ""
+    },
     "session": {
         "key": "RandomAPI Session",
         "secret": "CHANGE THIS TO SOMETHING SECRET",

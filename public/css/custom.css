@@ -338,3 +338,8 @@ section.triplesec {
 .clear {
   clear: both;
 }
+
+.recaptcha {
+  width: 50%;
+  margin: 0 auto 15px auto;
+}

@@ -57,6 +57,19 @@
                <p><br>Your account will be downgraded to the <span class='green'>free</span> tier at the end of your subscription period.<br>
                Your current subscription period is set to end on <span class='green' id="renewalDate"><%= subscription.current_period_end %></span>.
                </p>
+               <form action="charge/updateCard" method="POST">
+                 <script 
+                   src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                   data-key="<%=publishableKey%>"
+                   data-name="RandomAPI"
+                   data-image="https://s3.amazonaws.com/stripe-uploads/acct_102bx12y2KIUsl34merchant-icon-499777-logo.png"
+                   data-locale="auto"
+                   data-panel-label="Update Card Details"
+                   data-label="Update Card Details"
+                   data-email="<%= session.subscription.email %>"
+                   data-zip-code="true">
+                 </script>
+               </form>
             <input type='button' class='greenButton' id='restartSubscription' value='Restart Subscription'>
           <% } else { %>
                <p><br>Your current subscription will be renewed on <span class='green' id="renewalDate"><%= subscription.current_period_end %></span>.
