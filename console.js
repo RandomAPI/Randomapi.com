@@ -32,7 +32,9 @@ const barOpts = {
 const bars = {
   basic:    grid.set(0, 0, 2, 1, contrib.bar, _.merge(barOpts, {label: 'Basic', barBgColor: 'red'})),
   standard: grid.set(0, 1, 2, 1, contrib.bar, _.merge(barOpts, {label: 'Standard', barBgColor: 'green'})),
-  premium:  grid.set(0, 2, 2, 1, contrib.bar, _.merge(barOpts, {label: 'Premium', barBgColor: 'cyan'}))
+  premium:  grid.set(0, 2, 2, 1, contrib.bar, _.merge(barOpts, {label: 'Premium', barBgColor: 'cyan'})),
+  realtime: grid.set(0, 3, 2, 1, contrib.bar, _.merge(barOpts, {label: 'Realtime', barBgColor: 'yellow'})),
+  demo:     grid.set(0, 4, 2, 1, contrib.bar, _.merge(barOpts, {label: 'Demo', barBgColor: 'magenta'}))
 };
 
 _.each(bars, bar => screen.append(bar));
@@ -44,19 +46,23 @@ const tableOpts = {
 };
 
 const tables = {
-  basic:    grid.set(0, 3, 2, 1, contrib.table, _.merge(tableOpts, {label: 'Basic', fg: 'red'})),
-  standard: grid.set(0, 4, 2, 1, contrib.table, _.merge(tableOpts, {label: 'Standard', fg: 'green'})),
-  premium:  grid.set(0, 5, 2, 1, contrib.table, _.merge(tableOpts, {label: 'Premium', fg: 'cyan'})),
+  basic:    grid.set(2, 0, 2, 1, contrib.table, _.merge(tableOpts, {label: 'Basic', fg: 'red'})),
+  standard: grid.set(2, 1, 2, 1, contrib.table, _.merge(tableOpts, {label: 'Standard', fg: 'green'})),
+  premium:  grid.set(2, 2, 2, 1, contrib.table, _.merge(tableOpts, {label: 'Premium', fg: 'cyan'})),
+  realtime: grid.set(2, 3, 2, 1, contrib.table, _.merge(tableOpts, {label: 'Realtime', fg: 'yellow'})),
+  demo:     grid.set(2, 4, 2, 1, contrib.table, _.merge(tableOpts, {label: 'Demo', fg: 'magenta'}))
 };
 
 const generateTables = () => {
   let data = {
     basic:    [],
     standard: [],
-    premium:  []
+    premium:  [],
+    realtime: [],
+    demo:     []
   };
 
-  for (let j = 0; j < 3; j++) {
+  for (let j = 0; j < 5; j++) {
     for (let i = 0; i < Generators[types[j]].length; i++) {
       let row = [];
       row.push(i);
@@ -112,6 +118,8 @@ const eventLoopResponseAvg = grid.set(4, 8, 3, 4, contrib.line, {
 let basicStats    = { title: '', style: {line: 'red'}, y: [] };
 let standardStats = { title: '', style: {line: 'green'}, y: [] };
 let premiumStats  = { title: '', style: {line: 'cyan'}, y: [] };
+let realtimeStats = { title: '', style: {line: 'yellow'}, y: [] };
+let demoStats     = { title: '', style: {line: 'magenta'}, y: [] };
 let botline       = { title: '', style: {line: 'white'}, x:[], y: [] };
 
 let redisLine     = { title: '', style: {line: 'red'}, x:[], y: [] };
@@ -120,7 +128,7 @@ let listCacheLine = { title: '', style: {line: 'cyan'}, x:[], y: [] };
 
 let eventLine = { title: 'eventLine', style: {line: 'green'}, x:[], y: [] };
 
-totalQueues.setData([botline, basicStats, standardStats, premiumStats]);
+totalQueues.setData([botline, basicStats, standardStats, premiumStats, realtimeStats, demoStats]);
 totalMemory.setData([botline, redisLine, memoryLine, listCacheLine]);
 
 let time = Math.floor(new Date().getTime()/1000);
@@ -138,10 +146,12 @@ let loadOpts = {
 };
 
 let loads = {
-  basic:    grid.set(2, 0, 2, 1, contrib.donut, _.merge(loadOpts, {label: 'Basic Load', data: [{label: 'Basic Load', percent: 0}]})),
-  standard: grid.set(2, 1, 2, 1, contrib.donut, _.merge(loadOpts, {label: 'Standard Load', data: [{label: 'Standard Load', percent: 0}]})),
-  premium:  grid.set(2, 2, 2, 1, contrib.donut, _.merge(loadOpts, {label: 'Premium Load', data: [{label: 'Premium Load', percent: 0}]})),
-  overall:  grid.set(2, 3, 2, 1, contrib.donut, _.merge(loadOpts, {label: 'Overall Load', data: [{label: 'Overall Load', percent: 0}]})),
+  basic:    grid.set(2, 6, 2, 1, contrib.donut, _.merge(loadOpts, {label: 'Basic Load', data: [{label: 'Basic Load', percent: 0}]})),
+  standard: grid.set(2, 7, 2, 1, contrib.donut, _.merge(loadOpts, {label: 'Standard Load', data: [{label: 'Standard Load', percent: 0}]})),
+  premium:  grid.set(2, 8, 2, 1, contrib.donut, _.merge(loadOpts, {label: 'Premium Load', data: [{label: 'Premium Load', percent: 0}]})),
+  realtime: grid.set(2, 9, 2, 1, contrib.donut, _.merge(loadOpts, {label: 'Realtime Load', data: [{label: 'Realtime Load', percent: 0}]})),
+  demo:     grid.set(2, 10, 2, 1, contrib.donut, _.merge(loadOpts, {label: 'Demo Load', data: [{label: 'Demo Load', percent: 0}]})),
+  overall:  grid.set(2, 11, 2, 1, contrib.donut, _.merge(loadOpts, {label: 'Overall Load', data: [{label: 'Overall Load', percent: 0}]})),
 };
 
 let instructions = grid.set(11, 0, 1, 12, contrib.markdown, {
@@ -232,7 +242,6 @@ setInterval(() => {
     listCacheStats[type] = new Array(Generators[type].length).fill().map((v, k) => Generators[type][k].listCacheUsage());
     jobStats[type] = new Array(Generators[type].length).fill().map((v, k) => Generators[type][k].totalJobs());
 
-    if (type === 'speedtest' || type === 'realtime' || type === 'demo') return;
     bars[type].setData({
       titles: new Array(Generators[type].length).fill().map((v, k) => '#' + k),
       data: queueStats[type]
@@ -267,8 +276,26 @@ setInterval(() => {
   premiumStats.y.push(_.sum(queueStats.premium));
   premiumStats.title = String(_.sum(queueStats.premium));
 
-  let memSum   = _.sum([_.sum(memStats.basic), _.sum(memStats.standard), _.sum(memStats.premium)]);
-  let cacheSum = _.sum([_.sum(listCacheStats.basic), _.sum(listCacheStats.standard), _.sum(listCacheStats.premium)]);
+  realtimeStats.y.push(_.sum(queueStats.realtime));
+  realtimeStats.title = String(_.sum(queueStats.realtime));
+
+  demoStats.y.push(_.sum(queueStats.demo));
+  demoStats.title = String(_.sum(queueStats.demo));
+
+  let memSum   = _.sum([
+    _.sum(memStats.basic),
+    _.sum(memStats.standard),
+    _.sum(memStats.premium),
+    _.sum(memStats.realtime),
+    _.sum(memStats.demo)
+  ]);
+  let cacheSum = _.sum([
+    _.sum(listCacheStats.basic),
+    _.sum(listCacheStats.standard),
+    _.sum(listCacheStats.premium),
+    _.sum(listCacheStats.realtime),
+    _.sum(listCacheStats.demo)
+  ]);
 
   memoryLine.y.push(memSum);
   memoryLine.title = String(memSum + ' MB');
@@ -293,12 +320,14 @@ setInterval(() => {
     basicStats.y.shift();
     standardStats.y.shift();
     premiumStats.y.shift();
+    realtimeStats.y.shift();
+    demoStats.y.shift();
     memoryLine.y.shift();
     redisLine.y.shift();
     listCacheLine.y.shift();
     eventLine.y.shift();
   }
-  totalQueues.setData([botline, basicStats, standardStats, premiumStats]);
+  totalQueues.setData([botline, basicStats, standardStats, premiumStats, realtimeStats, demoStats]);
   totalMemory.setData([botline, memoryLine, redisLine, listCacheLine]);
 
   eventLoopResponseAvg.setData([botline, eventLine]);
