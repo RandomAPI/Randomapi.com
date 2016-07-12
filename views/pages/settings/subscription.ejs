@@ -46,17 +46,37 @@
           -<span class='green'><%= tier.memory/1024/1024 %></span> MB of list memory<br>
           -<span class='green'><%= tier.apis %></span> APIs<br>
           -<span class='green'><%= tier.snippets %></span> Snippets<br>
-          at a rate of <span class='green' id="price">$<%= tier.price %></span> per month.<br><br>
+          at a rate of <span class='green' id="price">$<%= tier.price %></span> per month.
+          </p>
+
+          Current card on file:<br>
+          Type: <%=card.brand%><br>
+          Last 4 digits: <%=card.last4%><br>
+          Expiration Date: <span id="exp"><%=card.exp_month%>/<%=card.exp_year%></span><br>
           <% if (subscription.status === 2) { %>
-               Your account will be downgraded to the <span class='green'>free</span> tier at the end of your subscription period.<br>
-               Your current subscription period is set to end on <span class='green' id="renewalDate"><%= subscription.current_period_end %></span>.<br><br>
+               <p><br>Your account will be downgraded to the <span class='green'>free</span> tier at the end of your subscription period.<br>
+               Your current subscription period is set to end on <span class='green' id="renewalDate"><%= subscription.current_period_end %></span>.
+               </p>
             <input type='button' class='greenButton' id='restartSubscription' value='Restart Subscription'>
           <% } else { %>
-               Your current subscription will be renewed on <span class='green' id="renewalDate"><%= subscription.current_period_end %></span>.<br><br>
+               <p><br>Your current subscription will be renewed on <span class='green' id="renewalDate"><%= subscription.current_period_end %></span>.
+               </p>
+               <form action="charge/updateCard" method="POST">
+                 <script 
+                   src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                   data-key="<%=publishableKey%>"
+                   data-name="RandomAPI"
+                   data-image="https://s3.amazonaws.com/stripe-uploads/acct_102bx12y2KIUsl34merchant-icon-499777-logo.png"
+                   data-locale="auto"
+                   data-panel-label="Update Card Details"
+                   data-label="Update Card Details"
+                   data-email="<%= session.subscription.email %>"
+                   data-zip-code="true">
+                 </script>
+               </form>
                <input type='button' class='redButton' id='cancelSubscription' value='Cancel Subscription'>
           <% } %>
         <% } %>
-        </p>
         <% if (tier.name !== "Premium" && subscription.status !== 3) { %>
           <h4>Available upgrades</h4>
           <div class="card">

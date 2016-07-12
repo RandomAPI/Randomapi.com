@@ -3,12 +3,23 @@ $(() => {
   let dailyResults = $('#dailyResults');
   let resultsPerRequest = $('#resultsPerRequest');
   let price = $('#price');
+  let expDate = $('#exp');
+  let expDiff = moment(expDate.html(), "MM/YYYY").unix() - ~~(new Date().getTime()/1000);
 
   renewalDate.html(moment(new Date(renewalDate.html())).format('LL'));
 
   if (dailyResults.html() !== 'unlimited') {
     dailyResults.html(numeral(Number(dailyResults.html())).format(','))
   }
+
+  if (expDiff <= 86400 * 30 && expDiff > 0) {
+    expDate.css('color', 'orange');
+    expDate.html(expDate.html() + " - Expiring soon");
+  } else if (expDiff <= 0) {
+    expDate.css('color', 'red');
+    expDate.html(expDate.html() + " - Expired");
+  }
+
   resultsPerRequest.html(numeral(Number(resultsPerRequest.html())).format(','))
   price.html(numeral(price.html()).format('$0.00'))
 

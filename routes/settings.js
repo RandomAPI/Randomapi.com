@@ -47,75 +47,65 @@ router.post('/', (req, res, next) => {
 });
 
 router.get('/subscription', (req, res, next) => {
-  Subscription.getCond({uid: req.session.user.id}).then(subscription => {
-    Plan.getCond({id: subscription.plan}).then(plan => {
-      Tier.getCond({id: plan.tier}).then(tier => {
-        res.render('settings/subscription', _.merge(defaultVars, {title: 'Subscription', plan, tier, subscription}));
-      });
-    });
+  stripe.customers.retrieve(req.session.subscription.cid, (err, customer) => {
+    res.render('settings/subscription', _.merge(defaultVars, {title: 'Subscription', tier: req.session.tier, subscription: req.session.subscription, card: customer.sources.data[0]}));
   });
 });
 
 router.get('/subscription/cancel', (req, res, next) => {
-  Subscription.getCond({uid: req.session.user.id}).then(subscription => {
-    stripe.subscriptions.del(subscription.sid, {at_period_end: true}, (err, confirmation) => {
-      if (err) {
-        req.flash('warning', 'There was a problem canceling your subscription!');
+  stripe.subscriptions.del(req.session.subscription.sid, {at_period_end: true}, (err, confirmation) => {
+    if (err) {
+      req.flash('warning', 'There was a problem canceling your subscription!');
+      res.sendStatus(200);
+    } else {
+      Subscription.update(req.session.user.id, {canceled: moment(new Date().getTime()).format("YYYY-MM-DD HH:mm:ss"), status: 2}).then(subscription => {
+        req.flash('info', 'Your subscription will be canceled at the end of your billing period!');
         res.sendStatus(200);
-      } else {
-        Subscription.update(req.session.user.id, {canceled: moment(new Date().getTime()).format("YYYY-MM-DD HH:mm:ss"), status: 2}).then(subscription => {
-          req.flash('info', 'Your subscription will be canceled at the end of your billing period!');
-          res.sendStatus(200);
-        });
-      }
-    });
+      });
+    }
   });
 });
 
 router.get('/subscription/restart', (req, res, next) => {
-  Subscription.getCond({uid: req.session.user.id}).then(subscription => {
-    if (subscription.status !== 2) {
-      req.flash('warning', 'There was a problem restarting your subscription!');
-      res.sendStatus(200);
-    } else {
-      Plan.getCond({id: subscription.plan}).then(plan => {
-        stripe.subscriptions.update(subscription.sid, {plan: plan.name}, (err, confirmation) => {
-          if (err) {
-            req.flash('warning', 'There was a problem restarting your subscription!');
+  if (req.session.subscription.status !== 2) {
+    req.flash('warning', 'There was a problem restarting your subscription!');
+    res.sendStatus(200);
+  } else {
+    Plan.getCond({id: subscription.plan}).then(plan => {
+      stripe.subscriptions.update(subscription.sid, {plan: plan.name}, (err, confirmation) => {
+        if (err) {
+          req.flash('warning', 'There was a problem restarting your subscription!');
+          res.sendStatus(200);
+        } else {
+          Subscription.update(req.session.user.id, {canceled: null, status: 1}).then(subscription => {
+            req.flash('info', 'Your subscription was restarted successfully!');
             res.sendStatus(200);
-          } else {
-            Subscription.update(req.session.user.id, {canceled: null, status: 1}).then(subscription => {
-              req.flash('info', 'Your subscription was restarted successfully!');
-              res.sendStatus(200);
-            });
-          }
-        });
+          });
+        }
       });
-    }
-  });
+    });
+  }
 });
 
 router.get('/subscription/upgrade', (req, res, next) => {
-  Subscription.getCond({uid: req.session.user.id}).then(subscription => {
-    if (subscription.status > 2) {
-      req.flash('warning', 'There was a problem upgrading your subscription!');
-      res.sendStatus(200);
-    } else {
-      Plan.getCond({id: 4}).then(plan => {
-        stripe.subscriptions.update(subscription.sid, {plan: plan.name}, (err, confirmation) => {
-          if (err) {
-            req.flash('warning', 'There was a problem upgrading your subscription!');
+  if (req.session.subscription.status > 2) {
+    req.flash('warning', 'There was a problem upgrading your subscription!');
+    res.sendStatus(200);
+  } else {
+    Plan.getCond({id: 4}).then(plan => {
+      stripe.subscriptions.update(req.session.subscription.sid, {plan: plan.name}, (err, confirmation) => {
+        if (err) {
+          req.flash('warning', 'There was a problem upgrading your subscription!');
+          res.sendStatus(200);
+        } else {
+          Subscription.update(req.session.user.id, {canceled: null, status: 1, plan: 4}).then(subscription => {
+            req.flash('info', 'Your subscription was upgraded successfully!');
             res.sendStatus(200);
-          } else {
-            Subscription.update(req.session.user.id, {canceled: null, status: 1, plan: 4}).then(subscription => {
-              req.flash('info', 'Your subscription was upgraded successfully!');
-              res.sendStatus(200);
-            });
-          }
-        });
+          });
+        }
       });
-    }
-  });
+    });
+  }
 });
 
 router.get('/subscription/attemptPayment', (req, res, next) => {
