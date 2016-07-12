@@ -48,7 +48,11 @@ router.post('/', (req, res, next) => {
 
 router.get('/subscription', (req, res, next) => {
   stripe.customers.retrieve(req.session.subscription.cid, (err, customer) => {
-    res.render('settings/subscription', _.merge(defaultVars, {title: 'Subscription', tier: req.session.tier, subscription: req.session.subscription, card: customer.sources.data[0]}));
+    if (!err) {
+      res.render('settings/subscription', _.merge(defaultVars, {title: 'Subscription', tier: req.session.tier, subscription: req.session.subscription, card: customer.sources.data[0]}));
+    } else {
+      res.render('settings/subscription', _.merge(defaultVars, {title: 'Subscription', tier: req.session.tier, subscription: req.session.subscription}));
+    }
   });
 });
 
