@@ -28,6 +28,7 @@ const GeneratorForker = function(options) {
   this.memory    = 0;
   this.listCache = 0;
   this.snippetCache = 0;
+  this.attempted = false;
 
   // Queue to push generate requests into
   this.queue = async.queue((task, callback) => {
@@ -111,16 +112,19 @@ const GeneratorForker = function(options) {
   function generatorChecks() {
     self.childReplied = false;
     setTimeout(() => {
-      if (!self.childReplied) {
+      if (new Date().getTime()/1000 - self.lastReplied > 10 && !self.attempted) {
         self.generator = null;
+        logger(`[generator ${self.name}]: Generator crashed...attempting to restart`)
         self.fork();
+        self.attempted = true;
       }
     }, 5000)
     try {
       self.send({type: 'ping'});
     } catch(e) {}
     self.once('pong', () => {
-      self.childReplied = true;
+      self.lastReplied = new Date().getTime()/1000;
+      self.attempted = false;
     });
 
     self.send({
@@ -128,8 +132,15 @@ const GeneratorForker = function(options) {
       mode: 'getMemory'
     });
 
+    var statTimeouts = setTimeout(() => {
+      self.memory = 0;
+      self.listCache = 0;
+      self.snippetCache = 0;
+    }, 10000);
+
     self.once('memComplete', data => {
       self.memory = Math.floor(data/1024/1024);
+      clearTimeout(statTimeouts);
     });
 
     self.send({
@@ -137,17 +148,19 @@ const GeneratorForker = function(options) {
       mode: 'getListCache'
     });
 
+    self.once('listCacheComplete', data => {
+      self.listCache = Math.floor(data/1024/1024);
+      clearTimeout(statTimeouts);
+    });
+
     self.send({
       type: 'cmd',
       mode: 'getSnippetCache'
     });
 
-    self.once('listCacheComplete', data => {
-      self.listCache = Math.floor(data/1024/1024);
-    });
-
     self.once('snippetCacheComplete', data => {
       self.snippetCache = Math.floor(data/1024/1024);
+      clearTimeout(statTimeouts);
     });
   }
 };
