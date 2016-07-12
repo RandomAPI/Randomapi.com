@@ -489,12 +489,13 @@ Generator.prototype.availableFuncs = function() {
     },
     // Hardcoded native requires
     require: function(lib) {
+      if (lib === undefined || lib.length === 0) throw new Error(`No snippet signature provided`);
       let globRequires = ['faker', 'deity', 'moment'];
 
       if (globRequires.indexOf(lib) !== -1) {
         return require(lib);
       } else {
-        throw new Error(`Global require ${lib} was not found!`);
+        throw new Error(`Global require ${lib} was not found`);
       }
     }
   };
@@ -520,7 +521,7 @@ Generator.prototype.availableFuncs = function() {
 
 Generator.prototype.require = function(signature) {
   if (signature === undefined || signature.length === 0) {
-    throw new Error(`No snippet signature provided`);
+    throw new Error(`"${signature}"No snippet signature provideda`);
     return;
   }
 
@@ -634,16 +635,20 @@ Generator.prototype.updateRequires = function() {
     // Don't let snippets include other snippets or global requires in snippet edit mode
     if (this.mode === 'snippet') resolve();
     else {
-      let rawMatches = this.src.match(/require\('((?:.*)\/(?:.*))'\)/g);
+      let rawMatches = this.src.match(/require\('(?:((?:.*)\/(?:.*))|(@.*))'\)/g);
       let index = 0;
 
       try {
         // There are matches
         if (rawMatches !== null) {
-          let reg = new RegExp(/require\('((?:.*)\/(?:.*))'\)/g);
+          let reg = new RegExp(/require\('(?:((?:.*)\/(?:.*))|(@.*))'\)/g);
           let match = reg.exec(this.src);
           while (match !== null) {
-            this.src = this.src.replace(rawMatches[index++], this.require(match[1]));
+            let result = match[1] || match[2];
+            if (result.indexOf('@') === 0) {
+              result = this.user.username + '/' + result.slice(1);
+            }
+            this.src = this.src.replace(rawMatches[index++], this.require(result));
             match = reg.exec(this.src);
           }
         }
