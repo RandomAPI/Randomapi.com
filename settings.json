@@ -7,6 +7,13 @@
         "basehref": "http://localhost:3000/",
         "baseURL": ""
     },
+    "console": {
+        "queueLength": 250,
+        "generatorTables": 1000,
+        "charts": 1000,
+        "donuts": 250
+
+    },
     "recaptcha": {
         "siteKey": "",
         "secretKey": ""

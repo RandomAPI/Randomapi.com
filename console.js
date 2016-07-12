@@ -63,13 +63,18 @@ const generateTables = () => {
   };
 
   for (let j = 0; j < 5; j++) {
+    let row = [];
+    let jobs = 0;
+    let mem  = 0;
+
+    row.push(Generators[types[j]].length);
     for (let i = 0; i < Generators[types[j]].length; i++) {
-      let row = [];
-      row.push(i);
-      row.push(Generators[types[j]][i].totalJobs());
-      row.push(Generators[types[j]][i].memUsage());
-      data[types[j]].push(row);
+      jobs += Generators[types[j]][i].totalJobs();
+      mem  += Generators[types[j]][i].memUsage();
     }
+    row.push(jobs);
+    row.push(mem);
+    data[types[j]].push(row);
   }
 
   _.each(tables, (table, val) => {
@@ -249,10 +254,10 @@ setInterval(() => {
   });
 
   screen.render();
-}, 250);
+}, settings.console.queueLength);
 
 // Generator Tables
-setInterval(generateTables, 1000)
+setInterval(generateTables, settings.console.generatorTables)
 
 // Queue, Memory, and Event Chart
 let oldEventTime = Math.floor(new Date().getTime());
@@ -334,11 +339,11 @@ setInterval(() => {
   oldEventTime = tmp;
 
   screen.render();
-}, 1000)
+}, settings.console.charts)
 
 // Donut Loads
 setInterval(() => {
    updateDonut();
    screen.render()
-}, 250)
+}, settings.console.donuts)
 ////////////
