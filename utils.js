@@ -3,7 +3,7 @@ const _        = require('lodash');
 const fs       = require('fs');
 const redis    = require('redis').createClient();
 const settings = require('./settings.json');
-const stripe   = require("stripe")(settings.stripe.key);
+const stripe   = require("stripe")(settings.stripe.secretKey);
 
 redis.config('SET', 'maxmemory', settings.general.redisMaxMemory);
 redis.on('error', err => module.exports.logger(err));

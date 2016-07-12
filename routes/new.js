@@ -3,6 +3,7 @@ const _        = require('lodash');
 const fs       = require('fs');
 const router   = express.Router();
 const multer   = require('multer');
+const settings = require('../utils').settings;
 const crypto   = require('crypto');
 const storage = multer.diskStorage({
   destination(req, file, cb) {
@@ -77,7 +78,7 @@ router.post('/api', (req, res, next) => {
     } else {
       API.add({name: req.body.name, generator: req.body.generator, owner: req.session.user.id}).then(API.getCond).then(model => {
         fs.writeFile('./data/apis/' + model.id + '.api', `
-// Documentation: http://localhost:3000/documentation
+// Documentation: ${settings.general.basehref}documentation
 // Your awesome API code here...`, 'utf8', err => {
 
           // Increment total APIs for user
@@ -203,7 +204,7 @@ router.post('/snippet', (req, res, next) => {
         if (dup === null) {
           Snippet.add({name: req.body.name, description: req.body.description, owner: req.session.user.id}).then(Snippet.getCond).then(model => {
             fs.writeFile('./data/snippets/' + model.id + '.snippet', `
-// Documentation: http://localhost:3000/documentation
+// Documentation: ${settings.general.basehref}documentation
 // Your awesome Snippet code here...`, 'utf8', err => {
 
               // Increment total Snippets for user

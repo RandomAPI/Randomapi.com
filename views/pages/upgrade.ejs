@@ -49,7 +49,7 @@
               <form action="charge" method="POST">
                 <script 
                   src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-                  data-key="pk_test_Kz9PkZwjRRlC4g6vMqzIRHGk"
+                  data-key="<%=publishableKey%>"
                   data-amount="250"
                   data-name="RandomAPI"
                   data-description="RandomAPI Standard Tier (Beta)"
@@ -82,7 +82,7 @@
               <form action="/charge" method="POST">
                 <script 
                   src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-                  data-key="pk_test_Kz9PkZwjRRlC4g6vMqzIRHGk"
+                  data-key="<%=publishableKey%>"
                   data-amount="500"
                   data-name="RandomAPI"
                   data-description="RandomAPI Premium Tier (Beta)"

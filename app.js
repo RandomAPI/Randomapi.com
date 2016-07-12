@@ -92,17 +92,12 @@ app.use(bodyParser.json({limit: '1mb'}));
 app.use(bodyParser.urlencoded({ limit: '1mb', extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Determine relative URLs (behindProxy)
-let baseURL     = null;  // For redirects
-let basehref    = null;  // For relative JS and CSS in pages
 let defaultVars = {};    // Default vars to send into views
-let firstRun    = false;
 
 app.use('*', (req, res, next) => {
   // Skip if user is accessing api
   if (req.params[0].slice(0, 5) === '/api/') next();
   else {
-    if (baseURL === null && basehref === null) firstRun = true;
     let info = req.flash('info');
     let warning = req.flash('warning');
 
@@ -114,53 +109,29 @@ app.use('*', (req, res, next) => {
       messages = "";
     }
 
-    defaultVars = {filesize, messages, session: req.session, basehref, title: null, originalUrl: req.originalUrl };
-    if (settings.general.behindReverseProxy) {
-      let uri  = req.headers.uri.replace(/(\/)+$/,'');
-      let path = req.originalUrl.replace(/(\/)+$/,'');
+    app.set('baseURL', settings.general.baseURL);
+    app.set('basehref', settings.general.basehref);
 
-      if (path === '') {
-        baseURL = uri;
-      } else {
-        baseURL = uri.slice(0, uri.indexOf(path));
-      }
-      basehref = req.headers.hostpath + baseURL + '/';
-    } else {
-      baseURL  = '';
-      basehref = baseURL + '/';
-    }
-
+    defaultVars = {filesize, messages, session: req.session, publishableKey: settings.stripe.publishableKey, basehref: settings.general.basehref, title: null, originalUrl: req.originalUrl };
     app.set('defaultVars', defaultVars);
-
-    if (firstRun) {
-      firstRun = false;
-      app.set('baseURL', baseURL);
-      app.set('basehref', basehref);
-      if (settings.general.behindReverseProxy) {
-        res.redirect(baseURL + req.params[0]);
-      } else {
-        res.redirect(req.originalUrl);
-      }
-    } else {
-      if (req.session.loggedin) {
-        User.getCond({username: req.session.user.username}).then(user => {
-          if (user === null) {
-            delete req.session.loggedin;
-            res.redirect(baseURL + '/logout');
-            return;
-          }
-          Tier.getCond({id: user.tierID}).then(tier => {
-            Subscription.getCond({uid: user.id}).then(subscription => {
-              req.session.user = user;
-              req.session.tier = tier;
-              req.session.subscription = subscription;
-              next();
-            });
+    if (req.session.loggedin) {
+      User.getCond({username: req.session.user.username}).then(user => {
+        if (user === null) {
+          delete req.session.loggedin;
+          res.redirect(baseURL + '/logout');
+          return;
+        }
+        Tier.getCond({id: user.tierID}).then(tier => {
+          Subscription.getCond({uid: user.id}).then(subscription => {
+            req.session.user = user;
+            req.session.tier = tier;
+            req.session.subscription = subscription;
+            next();
           });
         });
-      } else {
-        next();
-      }
+      });
+    } else {
+      next();
     }
   }
 });
@@ -178,10 +149,10 @@ app.use('/settings', require('./routes/settings'));
 // production error handler
 // no stacktraces leaked to user
 app.use((req, res, next) => {
-  res.redirect(baseURL + '/');
+  res.sendStatus(404);
 });
 
-app.use((err, req, res, next) => res.send('Something bad happened'));
+app.use((err, req, res, next) => res.send(err.stack));
 
 module.exports = {
   server,
