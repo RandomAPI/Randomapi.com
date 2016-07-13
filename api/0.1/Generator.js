@@ -644,17 +644,17 @@ Generator.prototype.updateRequires = function() {
     // Don't let snippets include other snippets or global requires in snippet edit mode
     if (this.mode === 'snippet') resolve();
     else {
-      let rawMatches = this.src.match(/require\('(?:((?:.*)\/(?:.*))|(@.*))'\)/g);
+      let rawMatches = this.src.match(/require\(['"](?:((?:.*)\/(?:.*))|(~.*))['"]\)/g);
       let index = 0;
 
       try {
         // There are matches
         if (rawMatches !== null) {
-          let reg = new RegExp(/require\('(?:((?:.*)\/(?:.*))|(@.*))'\)/g);
+          let reg = new RegExp(/require\(['"](?:((?:.*)\/(?:.*))|(~.*))['"]\)/g);
           let match = reg.exec(this.src);
           while (match !== null) {
             let result = match[1] || match[2];
-            if (result.indexOf('@') === 0) {
+            if (result.indexOf('~') === 0) {
               result = this.user.username + '/' + result.slice(1);
             }
             this.src = this.src.replace(rawMatches[index++], this.require(result));
