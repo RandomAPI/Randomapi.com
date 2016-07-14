@@ -24,6 +24,10 @@
           <p>You are currently on the <span class='green'><%= tier.name %></span> tier, however, your account is currently on hold due to an unpaid subscription charge.<br>
           You will not be able to use your account until your subscription status is resolved.<br><br>
           What would you like to do?</p>
+          Current card on file:<br>
+          Type: <%=card.brand%><br>
+          Last 4 digits: <%=card.last4%><br>
+          Expiration Date: <span id="exp"><%=card.exp_month%>/<%=card.exp_year%></span><br><br>
           <input type='button' class='button greenButton' id='attemptPayment' value='Attempt Payment with current card'>
           <form action="charge/updateCard" method="POST">
             <script 
