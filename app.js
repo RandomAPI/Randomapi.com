@@ -88,8 +88,8 @@ app.use(flash());
 app.use(favicon(__dirname + '/public/img/favicon.png'));
 
 //app.use(logger('dev'));
-app.use(bodyParser.json({limit: '1mb'}));
-app.use(bodyParser.urlencoded({ limit: '1mb', extended: false }));
+app.use(bodyParser.json({limit: '5mb'}));
+app.use(bodyParser.urlencoded({ limit: '5mb', extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 let defaultVars = {};    // Default vars to send into views
@@ -118,7 +118,7 @@ app.use('*', (req, res, next) => {
       User.getCond({username: req.session.user.username}).then(user => {
         if (user === null) {
           delete req.session.loggedin;
-          res.redirect(baseURL + '/logout');
+          res.redirect(settings.general.baseURL + '/logout');
           return;
         }
         Tier.getCond({id: user.tierID}).then(tier => {
