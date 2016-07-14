@@ -99,14 +99,15 @@ router.get('/list', (req, res, next) => {
 });
 
 router.post('/list', (req, res, next) => {
-  if (missingProps(req.body, ['name']) || req.file === undefined) {
-    req.flash('warning', 'Missing expected form properties');
-    res.redirect(baseURL + '/new/snippet');
-    return;
-  }
-
   upload(req, res, err => {
-    if (err) {
+    if (missingProps(req.body, ['name']) || req.file === undefined) {
+      req.flash('warning', 'Missing expected form properties');
+      res.redirect(baseURL + '/new/list');
+      if (req.file !== undefined) {
+        fs.unlink('./'+ req.file.path);
+      }
+      return;
+    } else if (err) {
       req.flash('warning', 'This list is too big. Please keep your file size under 5MB.');
       res.redirect(baseURL + '/new/list');
 
@@ -153,7 +154,7 @@ router.post('/snippet', (req, res, next) => {
     return;
   }
 
-  let tags = req.body.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== "");
+  let tags = _.uniq(req.body.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== ""));
   let rejects = tags.filter(tag => tag.match(/^([a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32})$/g) === null);
 
   if (req.body.name === '') {
@@ -167,7 +168,7 @@ router.post('/snippet', (req, res, next) => {
 
   // Check tag requirements
   } else if (rejects.length > 0 || req.body.tags.length > 255) {
-    req.flash('warning', 'Snippet tags invalid! Accepted chars: a-Z0-9 _-.+[]{}()');
+    req.flash('warning', 'Snippet tags invalid! 32 chars per tag, accepted chars: a-Z0-9 _-.+[]{}()');
     res.redirect(baseURL + '/new/snippet');
 
   // Is user within their snippet limits?
@@ -177,26 +178,26 @@ router.post('/snippet', (req, res, next) => {
 
   } else {
     // Check for duplicate names
-    Snippet.getCond({name: req.body.name}).then(dup => {
+    Snippet.getCond({name: req.body.name, owner: req.session.user.id}).then(dup => {
 
       // Add snippet
-      if (dup === null) {
-        Snippet.add({name: req.body.name, description: req.body.description, owner: req.session.user.id}).then(Snippet.getCond).then(model => {
-          fs.writeFile('./data/snippets/' + model.id + '.snippet', `
+      if (dup !== null) {
+        req.flash('warning', `You already have another snippet named ${req.body.name}`);
+        res.redirect(baseURL + '/new/snippet');
+        return;
+      }
+      Snippet.add({name: req.body.name, description: req.body.description, owner: req.session.user.id, tags}).then(Snippet.getCond).then(model => {
+        fs.writeFile('./data/snippets/' + model.id + '.snippet', `
 // Documentation: ${settings.general.basehref}documentation
 // Your awesome Snippet code here...`, 'utf8', err => {
 
-            // Increment total Snippets for user
-            User.incVal('snippets', 1, req.session.user.username).then(() => {
-              req.flash('info', `Snippet ${model.name} was added successfully!`);
-              res.redirect(baseURL + '/edit/snippet/' + model.ref);
-            });
+          // Increment total Snippets for user
+          User.incVal('snippets', 1, req.session.user.username).then(() => {
+            req.flash('info', `Snippet ${model.name} was added successfully!`);
+            res.redirect(baseURL + '/edit/snippet/' + model.ref);
           });
         });
-      } else {
-        req.flash('warning', `You already have another snippet named ${req.body.name}`);
-        res.redirect(baseURL + '/new/snippet');
-      }
+      });
     });
   }
 });
