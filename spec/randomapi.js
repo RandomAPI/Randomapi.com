@@ -50,13 +50,6 @@ describe('RandomAPI', () => {
 
   describe('Website', () => {
     describe('Basic Pages', () => {
-      it('should return 302 when visiting home page (/) on first visit', done => {
-        request(server).get('/').expect(302)
-        .end((err, res) => {
-          if (err) return done(err);
-          done();
-        });
-      });
 
       let pages = ['', 'pricing', 'documentation', 'login', 'register'];
 
@@ -82,6 +75,27 @@ describe('RandomAPI', () => {
       pages.forEach(page => {
         it(`should redirect to home page when visiting (/${page})`, done => {
           request(server).get(`/${page}`)
+          .end((err, res) => {
+            expect(res.header['location']).to.equal('/');
+            done();
+          });
+        });
+      });
+    });
+
+    describe('User account creation', () => {
+
+      it(`should create a new user`, done => {
+        request(server).get(`/`)
+        .end((err, res) => {
+          request(server)
+          .post('/register')
+          .type('form')
+          .send({
+            'username': 'test',
+            'password': 'test',
+            'timezone': '-6.0'
+          })
           .end((err, res) => {
             expect(res.header['location']).to.equal('/');
             done();
