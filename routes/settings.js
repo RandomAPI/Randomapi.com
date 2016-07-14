@@ -4,6 +4,7 @@ const router  = express.Router();
 const logger  = require('../utils').logger;
 const syslog  = require('../utils').syslog;
 const stripe  = require('../utils').stripe;
+const missingProps = require('../utils').missingProps;
 const moment  = require('moment');
 
 const User = require('../models/User');
@@ -28,6 +29,12 @@ router.get('/', (req, res, next) => {
 });
 
 router.post('/', (req, res, next) => {
+  if (missingProps(req.body, ['current', 'new', 'confirm'])) {
+    req.flash('warning', 'Missing expected form properties');
+    res.redirect(baseURL + '/settings');
+    return;
+  }
+
   User.getVal('password', req.session.user.username).then(curPass => {
     if (User.validPass(req.body.current, curPass)) {
       if (req.body.new !== req.body.confirm) {
@@ -116,6 +123,7 @@ router.get('/subscription/attemptPayment', (req, res, next) => {
   let results = [];
   let error = false;
   Subscription.getUnpaidInvoices(req.session.subscription.cid).then(data => {
+    // This should never happen
     if (data === null) {
       req.flash('warning', 'No unpaid invoices were found.');
       res.sendStatus(200);

@@ -76,6 +76,9 @@ module.exports = {
       return cond;
     }
   },
+  missingProps(obj, expected) {
+    return !expected.every(prop => prop in obj && obj[prop] !== undefined);
+  },
   redis,
   stripe,
   settings

@@ -3,6 +3,7 @@ const _       = require('lodash');
 const router  = express.Router();
 const logger  = require('../utils').logger;
 const stripe  = require('../utils').stripe;
+const missingProps = require('../utils').missingProps;
 const moment  = require('moment');
 const request = require('request');
 const settings  = require('../utils').settings;
@@ -69,12 +70,16 @@ router.post('/login', (req, res, next) => {
   if (req.session.loggedin) {
     res.redirect(baseURL + '/');
   } else {
+    if (missingProps(req.body, ['username', 'password'])) {
+      req.flash('warning', 'Missing expected form properties');
+      res.redirect(baseURL + '/login');
+      return;
+    }
     User.login({username: req.body.username, password: req.body.password}).then(data => {
       Tier.getCond({id: data.user.tierID}).then(tier => {
         req.session.loggedin = true;
         req.session.user = data.user;
         req.session.tier = tier;
-        req.flash('info', 'Logged in successfully!');
         res.redirect(baseURL + data.redirect);
       });
     }, err => {
@@ -91,11 +96,8 @@ router.get('/logout', (req, res, next) => {
     delete req.session.user;
     delete req.session.subscription;
     delete req.session.tier;
-    req.flash('info', 'You\'ve been logged out!');
-    res.redirect(baseURL + '/');
-  } else {
-    res.redirect(baseURL + '/');
   }
+  res.redirect(baseURL + '/');
 });
 
 // Registration //
@@ -113,13 +115,18 @@ router.get('/register/guest', (req, res, next) => {
 });
 
 router.post('/register', (req, res, next) => {
+  if (missingProps(req.body, ['username', 'password', 'timezone', 'g-recaptcha-response']) && process.env.spec !== "true") {
+    req.flash('warning', 'Missing expected form properties');
+    res.redirect(baseURL + '/register');
+    return;
+  }
+
   if (!req.session.loggedin) {
     User.login({username: req.body.username, password: req.body.password}).then(data => {
       Tier.getCond({id: data.user.tierID}).then(tier => {
         req.session.loggedin = true;
         req.session.user = data.user;
         req.session.tier = tier;
-        req.flash('info', 'Logged in successfully!');
         res.redirect(baseURL + data.redirect);
       });
     }, err => {
@@ -134,7 +141,7 @@ router.post('/register', (req, res, next) => {
         try {
           let json = JSON.parse(body);
 
-          if (json.success === true) {
+          if (json.success === true || process.env.spec === "true") {
             User.register({username: req.body.username, password: req.body.password, timezone: req.body.timezone}).then(data => {
               req.session.loggedin = true;
               req.session.user = data.user;

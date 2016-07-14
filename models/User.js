@@ -10,10 +10,17 @@ const Subscription = require('./Subscription');
 
 module.exports = {
   register(data, cb) {
+    var timezones = [
+      '-12.0', '-11.0', '-10.0', '-9.0', '-8.0', '-7.0', '-6.0',
+      '-5.0', '-4.0', '-3.5', '-3.0', '-2.0', '-1.0', '0.0', '1.0',
+      '2.0', '3.0', '3.5', '4.0', '4.5', '5.0', '5.5', '5.75', '6.0',
+      '7.0', '8.0', '9.0', '9.5', '10.0', '11.0', '12.0'];
     return new Promise((resolve, reject) => {
       if (data.username.match(/^[a-zA-Z0-9]{1,20}$/)) {
         if (data.password === '') {
           reject({flash: 'Please provide a password!', redirect: '/register'});
+        } else if (timezones.indexOf(data.timezone) === -1) {
+          reject({flash: 'Invalid timezone selected!', redirect: '/register'});
         } else {
           this.getCond({username: data.username}).then(user => {
             if (user !== null) {
