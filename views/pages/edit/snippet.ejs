@@ -2,37 +2,29 @@
 <html lang="en">
 <head>
   <% include ../../snippets/header %>
-  <link rel="stylesheet" href="css/editor.css">
 </head>
 <body>
-  <server hidden><%=socket%></server>
-  <ref hidden><%=snippet.ref%></ref>
   <% include ../../snippets/navbar %>
-  <div class="main editor">
+  <div class="main">
     <div class="two columns">
       <% include ../../snippets/subnav %>
     </div>
     <div class="ten columns">
-      <h3>Editing Snippet <%=snippet.name%></h3>
-      <div class='info'>
-        <span id='charCount'><span id='currentCharCount'>0</span> / 8,192 chars</span><div class='rename'> Rename: <input id='limitsInput' type='text' maxlength='32' name='rename' placeholder='<%=snippet.name%>' value='<%=snippet.name%>'><span class='red' id='limits'>Accepted chars: a-zA-Z0-9 _-.+[]{}()</span></div>
-      </div>
-      <pre id="aceEditor" name="code"><%=snippet.code%></pre>
-      <div id="preview">
-        <input type="submit" id="submit" value="Save"> <button id="lintButton" onClick="lintCode()">Test Snippet</button>
-        <pre id="results">
-Loading...
-        </pre>
-      </div>
+      <h3>Edit Snippet</h3>
+      <p><span id='quotaResults' class='<%= session.tier.snippets !== 0 && session.user.snippets > session.tier.snippets ? "red" : "green" %>'><%= session.user.snippets %></span> of <span id='tierResults' class="green"><%= session.tier.snippets === 0 ? 'unlimited' : session.tier.snippets %></span> snippets used.</p>
+      <form action="" method="POST">
+        <span class='red' id='limits'>Accepted chars: a-zA-Z0-9 _-.+[]{}()</span><br>
+        <input type="text" id="limitsInput" name="rename" maxlength='32' value="<%=snippet.name%>" placeholder="<%=snippet.name%>" autofocus required autocomplete="off"><br>
+        <span class='red' id='tagLimits'>32 chars per tag, accepted chars: a-zA-Z0-9 _-.+[]{}()</span><br>
+        <input type="text" id="tagsInput" name="tags" maxlength='255' value="<%=tags%>" placeholder="<%=tags%>" autocomplete="off"><br>
+        <input type="submit" id="submit" value="Update Snippet">
+      </form>
     </div>
   </div>
   <div class="ads">
     <% include ../../snippets/ads %>
   </div>
   <% include ../../snippets/footer %>
-  <script src="js/socket.io.min.js"></script>
-  <script src="js/ace/ace.js"></script>
-  <script src="js/realtimeSnippetEditor.js"></script>
   <script src="js/nameLimits.js"></script>
 </body>
 </html>

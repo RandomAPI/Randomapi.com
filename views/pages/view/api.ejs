@@ -36,7 +36,7 @@
             <td><span class="date" data-date="<%=api.created%>"></span></td>
             <td><span class="date" data-date="<%=api.modified%>"></span></td>
             <!-- <td><%=api.generator%></td> -->
-            <td><a href="" onClick="apiDeletePrompt('<%=api.ref%>');return false;">Delete</a> | <a href="edit/api/<%=api.ref%>">Edit</a> | <a href="api/<%=api.ref%>?key=<%=session.user.apikey%>" target="_blank">Run API</a> | <a href="api/<%=api.hash%>" target="_blank">Run API (public URL)</a></td>
+            <td><a href="" onClick="apiDeletePrompt('<%=api.ref%>');return false;">Delete</a> | <a href="code/api/<%=api.ref%>">Code API</a> | <a href="edit/api/<%=api.ref%>">Edit</a> | <a href="api/<%=api.ref%>?key=<%=session.user.apikey%>" target="_blank">Run API</a> | <a href="api/<%=api.hash%>" target="_blank">Run API (public URL)</a></td>
           </tr>
         <%  });
         }

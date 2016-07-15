@@ -2,37 +2,27 @@
 <html lang="en">
 <head>
   <% include ../../snippets/header %>
-  <link rel="stylesheet" href="css/editor.css">
 </head>
 <body>
-  <server hidden><%=socket%></server>
-  <ref hidden><%=api.ref%></ref>
   <% include ../../snippets/navbar %>
-  <div class="main editor">
+  <div class="main">
     <div class="two columns">
       <% include ../../snippets/subnav %>
     </div>
     <div class="ten columns">
-      <h3>Editing API <%=api.name%> [<%=api.ref%>]</h3>
-      <div class='info'>
-        <span id='charCount'><span id='currentCharCount'>0</span> / 8,192 chars</span><div class='rename'> Rename: <input id='limitsInput' type='text' name='rename' placeholder='<%=api.name%>' value='<%=api.name%>' maxlength='32'><span class='red' id='limits'>Accepted chars: a-zA-Z0-9 _-.+[]{}()</span></div>
-      </div>
-      <pre id="aceEditor" name="code"><%=api.code%></pre>
-      <div id="preview">
-        <input type="submit" id="submit" value="Save"> <button id="lintButton" onClick="lintCode()">Test API</button>
-        <pre id="results">
-Loading...
-        </pre>
-      </div>
+      <h3>Edit API</h3>
+      <p><span id='quotaResults' class='<%= session.tier.apis !== 0 && session.user.apis > session.tier.apis ? "red" : "green" %>'><%= session.user.apis %></span> of <span id='tierResults' class="green"><%= session.tier.apis === 0 ? 'unlimited' : session.tier.apis %></span> APIs used.</p>
+      <form action="" method="POST">
+        <span class='red' id='limits'>Accepted chars: a-zA-Z0-9 _-.+[]{}()</span><br>
+        <input type="text" id="limitsInput" name="rename" maxlength='32' value="<%=api.name%>" placeholder="<%=api.name%>" autofocus required autocomplete="off"><br>
+        <input type="submit" id="submit" value="Update API">
+      </form>
     </div>
   </div>
   <div class="ads">
     <% include ../../snippets/ads %>
   </div>
   <% include ../../snippets/footer %>
-  <script src="js/socket.io.min.js"></script>
-  <script src="js/ace/ace.js"></script>
-  <script src="js/realtimeEditor.js"></script>
   <script src="js/nameLimits.js"></script>
 </body>
 </html>

@@ -56,35 +56,33 @@ router.get('/api/:ref?', (req, res, next) => {
       res.redirect(baseURL + '/view/api');
     } else {
       doc.code = fs.readFileSync('./data/apis/' + doc.id + '.api'); // Read api src into this...
-      res.render('edit/api', _.merge(defaultVars, {api: doc, socket: ':' + settings.general.socket, title: `Edit API ${doc.name} [${doc.ref}]`}));
+      res.render('edit/api', _.merge(defaultVars, {api: doc, title: `Edit API ${doc.name} [${doc.ref}]`}));
     }
-  }).catch(err => {
+  }, () => {
     res.redirect(baseURL + '/view/api');
   });
 });
 
 router.post('/api/:ref', (req, res, next) => {
-  if (missingProps(req.body, ['rename', 'code'])) {
+  if (missingProps(req.body, ['rename'])) {
     req.flash('warning', 'Missing expected form properties');
-    res.send(baseURL + '/edit/api/' + req.params.ref);
+    res.redirect(baseURL + '/edit/api/' + req.params.ref);
     return;
   }
 
   API.getCond({ref: req.params.ref}).then(doc => {
     if (doc.owner !== req.session.user.id) {
-      res.send(baseURL + '/view/api');
+      res.redirect(baseURL + '/view/api');
     } else {
       let name = req.body.rename;
       if (name === undefined || name === "") name = doc.name;
       if (name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/) === null) {
         req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
-        res.send(baseURL + '/edit/api/' + req.params.ref);
+        res.redirect(baseURL + '/edit/api/' + req.params.ref);
       } else {
         API.update({name}, doc.ref).then(() => {
-          fs.writeFile('./data/apis/' + doc.id + '.api', req.body.code.replace(/\r\n/g, '\n').slice(0, 8192), 'utf8', err => {
-            req.flash('info', `API ${name} [${doc.ref}] was updated successfully!`);
-            res.send(baseURL + '/view/api');
-          });
+          req.flash('info', `API ${name} [${doc.ref}] was updated successfully!`);
+          res.redirect(baseURL + '/view/api');
         });
       }
     }
@@ -161,52 +159,57 @@ router.post('/list/:ref', (req, res, next) => {
 // Snippets
 router.get('/snippet/:ref?', (req, res, next) => {
   Snippet.getCond({ref: req.params.ref}).then(doc => {
-    if (doc.owner !== req.session.user.id) {
-      res.redirect(baseURL + '/view/snippet');
-    } else {
-      doc.code = fs.readFileSync('./data/snippets/' + doc.id + '.snippet'); // Read snippet src into this...
-      res.render('edit/snippet', _.merge(defaultVars, {snippet: doc, socket: ':' + settings.general.socket, title: `Edit Snippet ${doc.name}`}));
-    }
-  }).catch(err => {
+    Snippet.getTags(doc.id).then(tags => {
+      if (doc.owner !== req.session.user.id) {
+        res.redirect(baseURL + '/view/snippet');
+      } else {
+        doc.code = fs.readFileSync('./data/snippets/' + doc.id + '.snippet'); // Read snippet src into this...
+        res.render('edit/snippet', _.merge(defaultVars, {snippet: doc, tags, socket: ':' + settings.general.socket, title: `Edit Snippet ${doc.name}`}));
+      }
+    });
+  }, () => {
     res.redirect(baseURL + '/view/snippet');
   });
 });
 
 router.post('/snippet/:ref', (req, res, next) => {
-  if (missingProps(req.body, ['name', 'tags'])) {
+  if (missingProps(req.body, ['rename', 'tags'])) {
     req.flash('warning', 'Missing expected form properties');
-    res.send(baseURL + '/edit/snippet/' + req.params.ref);
+    res.redirect(baseURL + '/edit/snippet/' + req.params.ref);
     return;
   }
+
+  let tags = _.uniq(req.body.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== ""));
+  let rejects = tags.filter(tag => tag.match(/^([a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32})$/g) === null);
+
   Snippet.getCond({ref: req.params.ref}).then(doc => {
     if (doc.owner !== req.session.user.id) {
-      res.send(baseURL + '/view/snippet');
+      res.redirect(baseURL + '/view/snippet');
     } else {
       let name = req.body.rename;
       if (name === undefined || name === "") name = doc.name;
       if (name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/) === null) {
         req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
-        res.send(baseURL + '/edit/snippet/' + req.params.ref);
+        res.redirect(baseURL + '/edit/snippet/' + req.params.ref);
+
+      } else if (rejects.length > 0 || req.body.tags.length > 255) {
+        req.flash('warning', 'Snippet tags invalid! 32 chars per tag, accepted chars: a-Z0-9 _-.+[]{}()');
+        res.redirect(baseURL + '/edit/snippet/' + req.params.ref);
+
       } else {
         Snippet.getCond({name: req.body.rename, owner: req.session.user.id}).then(dup => {
-
-          if ((req.body.rename !== doc.name && dup === null) || (req.body.rename === doc.name)) {
-            Snippet.update({name}, doc.ref).then(() => {
-              fs.writeFile('./data/snippets/' + doc.id + '.snippet', req.body.code.replace(/\r\n/g, '\n').slice(0, 8192), 'utf8', err => {
-                req.app.get('removeSnippet')(`${req.session.user.username}/${doc.name}`);
-                req.flash('info', `Snippet ${name} was updated successfully!`);
-                res.send(baseURL + '/view/snippet');
-              });
-            });
-
-          // Duplicate name - still update the file contents though
-          } else {
-            fs.writeFile('./data/snippets/' + doc.id + '.snippet', req.body.code.replace(/\r\n/g, '\n').slice(0, 8192), 'utf8', err => {
-              req.app.get('removeSnippet')(`${req.session.user.username}/${doc.name}`);
-              req.flash('warning', `You already have another snippet named ${req.body.rename}`);
-              res.send(baseURL + '/edit/snippet/' + req.params.ref);
-            });
+          if (req.body.rename !== doc.name && dup !== null) {
+            req.flash('warning', `You already have another snippet named ${req.body.rename}`);
+            res.redirect(baseURL + '/edit/snippet/' + req.params.ref);
+            return;
           }
+
+          Snippet.update({name}, doc.id).then(() => {
+            Snippet.updateTags(tags, doc.id).then(() => {
+              req.flash('info', `Snippet ${name} was updated successfully!`);
+              res.redirect(baseURL + '/view/snippet');
+            });
+          });
         });
       }
     }

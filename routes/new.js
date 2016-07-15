@@ -86,7 +86,7 @@ router.post('/api', (req, res, next) => {
         // Increment total APIs for user
         User.incVal('apis', 1, req.session.user.username).then(() => {
           req.flash('info', `API ${model.name} [${model.ref}] was added successfully!`);
-          res.redirect(baseURL + '/edit/api/' + model.ref);
+          res.redirect(baseURL + '/code/api/' + model.ref);
         });
       });
     });
@@ -194,7 +194,7 @@ router.post('/snippet', (req, res, next) => {
           // Increment total Snippets for user
           User.incVal('snippets', 1, req.session.user.username).then(() => {
             req.flash('info', `Snippet ${model.name} was added successfully!`);
-            res.redirect(baseURL + '/edit/snippet/' + model.ref);
+            res.redirect(baseURL + '/code/snippet/' + model.ref);
           });
         });
       });
