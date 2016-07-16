@@ -244,9 +244,10 @@ Generator.prototype.instruct = function(options, done) {
 Generator.prototype.generate = function(cb) {
   this.results = this.results || 1;
   let output = [];
+  let hash = crypto.createHash('md5').update(this.src).digest('hex');
 
   // Check if src code causes timeout
-  if (crypto.createHash('md5').update(this.src).digest('hex') in this.timeoutCache) {
+  if (hash in this.timeoutCache) {
     return this.returnResults({error: "Error: Script execution timed out."}, [{}], cb);
   }
 
@@ -345,7 +346,7 @@ if (_APISnippetKeys.length === 0) {
       }
     } catch(e) {
       if (e.toString().indexOf('Script execution timed out') !== -1) {
-        this.timeoutCache[crypto.createHash('md5').update(this.src).digest('hex')] = true;
+        this.timeoutCache[hash] = true;
       }
       this.returnResults({error: e.toString(), stack: e.stack}, [{}], cb);
     }
@@ -391,6 +392,7 @@ Generator.prototype.availableFuncs = function() {
       }
     },
     list: (obj, num) => {
+      if (this.mode === 'snippet') throw new Error(`Lists are not available in Snippets`);
       if (num !== '' && num !== undefined) num = Number(num); // Convert string to num if it isn't undefined
       if (num === '') num = undefined;
       if (obj === '' || obj === undefined) throw new Error(`Empty list value provided`);
@@ -530,7 +532,7 @@ Generator.prototype.availableFuncs = function() {
 
 Generator.prototype.require = function(signature) {
   if (signature === undefined || signature.length === 0) {
-    throw new Error(`"${signature}"No snippet signature provideda`);
+    throw new Error(`"${signature}"No snippet signature provided`);
     return;
   }
 
@@ -641,7 +643,7 @@ Generator.prototype.emptySnippetCache = function() {
 // Only global snippets can be required in other snippets
 Generator.prototype.updateRequires = function() {
   return new Promise((resolve, reject) => {
-    // Don't let snippets include other snippets or global requires in snippet edit mode
+    // Don't let snippets include other snippets
     if (this.mode === 'snippet') resolve();
     else {
       let rawMatches = this.src.match(/require\(['"](?:((?:.*)\/(?:.*))|(~.*))['"]\)/g);
