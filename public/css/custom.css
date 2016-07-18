@@ -199,6 +199,11 @@ section.triplesec {
   color: #0CB863;
 }
 
+.apikey {
+  color: #0CB863 !important;
+  background-color: initial !important;
+}
+
 .docGreen {
   color: #0CB863;
   font-weight: bold;
@@ -390,4 +395,18 @@ section.triplesec {
   clear: both;
   margin: 10px auto 10px auto;
   width: 50%;
+}
+
+#version {
+  margin-left: 30px;
+}
+
+.snippetDisclaimer {
+  width: 750px;
+  height: auto;
+}
+
+input:read-only {
+  background-color: #d1d1d1;
+  color: #414141;
 }

@@ -88,3 +88,11 @@ function snippetDeletePrompt(ref, name) {
 
   });
 }
+
+function snippetDeletePrompt(ref, name) {
+  notyPrompt(`Are you sure you want to delete Snippet ${name}?`, () => {
+    window.location.replace(`delete/snippet/${ref}`);
+  }, () => {
+
+  });
+}

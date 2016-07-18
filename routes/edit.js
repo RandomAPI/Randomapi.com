@@ -25,9 +25,10 @@ const upload = multer({
 }).single('file');
 
 const API  = require('../models/API');
-const User  = require('../models/User');
+const User = require('../models/User');
 const List = require('../models/List');
 const Snippet = require('../models/Snippet');
+const Version = require('../models/Version');
 
 // Setup defaultVars and baseURL for all routes
 let defaultVars, baseURL;
@@ -157,61 +158,95 @@ router.post('/list/:ref', (req, res, next) => {
 });
 
 // Snippets
-router.get('/snippet/:ref?', (req, res, next) => {
-  Snippet.getCond({ref: req.params.ref}).then(doc => {
-    Snippet.getTags(doc.id).then(tags => {
-      if (doc.owner !== req.session.user.id) {
-        res.redirect(baseURL + '/view/snippet');
-      } else {
-        doc.code = fs.readFileSync('./data/snippets/' + doc.id + '.snippet'); // Read snippet src into this...
-        res.render('edit/snippet', _.merge(defaultVars, {snippet: doc, tags, socket: ':' + settings.general.socket, title: `Edit Snippet ${doc.name}`}));
-      }
-    });
-  }, () => {
+router.get('/snippet/:ref?/:version?', (req, res, next) => {
+  let ref     = req.params.ref;
+  let version = req.params.version;
+
+  if (ref === undefined || version === undefined) {
+    req.flash('warning', `Missing ref and/or version number`);
     res.redirect(baseURL + '/view/snippet');
+    return;
+  }
+
+  Snippet.getCond({ref}).then(doc => {
+    Version.getVersion(ref, version).then(ver => {
+      if (doc === null || ver === null) {
+        res.redirect(baseURL + '/view/snippet');
+        return;
+      }
+
+      Snippet.getTags(doc.id).then(tags => {
+        if (doc.owner !== req.session.user.id) {
+          res.redirect(baseURL + '/view/snippet');
+        } else {
+          doc.code = fs.readFileSync(`./data/snippets/${doc.id}-${ver.version}.snippet`); // Read snippet src into this...
+          res.render('edit/snippet', _.merge(defaultVars, {snippet: doc, tags, socket: ':' + settings.general.socket, title: `Edit Snippet ${doc.name}`}));
+        }
+      });
+    });
   });
 });
 
-router.post('/snippet/:ref', (req, res, next) => {
-  if (missingProps(req.body, ['rename', 'tags'])) {
+router.post('/snippet/:ref?/:version?', (req, res, next) => {
+  let ref     = req.params.ref;
+  let version = req.params.version;
+  let description = req.body.description;
+
+  if (ref === undefined || version === undefined) {
+    req.flash('warning', `Missing ref and/or version number`);
+    res.redirect(`${baseURL}/edit/snippet/${ref}/${version}`);
+    return;
+  }
+
+  if (missingProps(req.body, ['rename', 'tags', 'description'])) {
     req.flash('warning', 'Missing expected form properties');
-    res.redirect(baseURL + '/edit/snippet/' + req.params.ref);
+    res.redirect(`${baseURL}/edit/snippet/${ref}/${version}`);
     return;
   }
 
   let tags = _.uniq(req.body.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== ""));
   let rejects = tags.filter(tag => tag.match(/^([a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32})$/g) === null);
 
-  Snippet.getCond({ref: req.params.ref}).then(doc => {
+  Snippet.getCond({ref}).then(doc => {
     if (doc.owner !== req.session.user.id) {
       res.redirect(baseURL + '/view/snippet');
+      return;
+    }
+
+    let name = req.body.rename;
+    let desc = req.body.description;
+    if (name === undefined || name === "") name = doc.name;
+    if (doc.published === 1 && name !== doc.name) {
+      req.flash('warning', 'Names can\'t be changed for Published Snippets');
+      res.redirect(`${baseURL}/edit/snippet/${ref}/${version}`);
+
+    } else if (name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/) === null) {
+      req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
+      res.redirect(`${baseURL}/edit/snippet/${ref}/${version}`);
+
+    } else if (rejects.length > 0 || req.body.tags.length > 255) {
+      req.flash('warning', 'Snippet tags invalid! 32 chars per tag, accepted chars: a-Z0-9 _-.+[]{}()');
+      res.redirect(`${baseURL}/edit/snippet/${ref}/${version}`);
+
+    } else if (description.length > 65535) {
+      req.flash('warning', 'Description is too large');
+      res.redirect(`${baseURL}/edit/snippet/${ref}/${version}`);
+
     } else {
-      let name = req.body.rename;
-      if (name === undefined || name === "") name = doc.name;
-      if (name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/) === null) {
-        req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
-        res.redirect(baseURL + '/edit/snippet/' + req.params.ref);
+      Snippet.getCond({name: req.body.rename, owner: req.session.user.id}).then(dup => {
+        if (req.body.rename !== doc.name && dup !== null) {
+          req.flash('warning', `You already have another snippet named ${req.body.rename}`);
+          res.redirect(`${baseURL}/edit/snippet/${ref}/${version}`);
+          return;
+        }
 
-      } else if (rejects.length > 0 || req.body.tags.length > 255) {
-        req.flash('warning', 'Snippet tags invalid! 32 chars per tag, accepted chars: a-Z0-9 _-.+[]{}()');
-        res.redirect(baseURL + '/edit/snippet/' + req.params.ref);
-
-      } else {
-        Snippet.getCond({name: req.body.rename, owner: req.session.user.id}).then(dup => {
-          if (req.body.rename !== doc.name && dup !== null) {
-            req.flash('warning', `You already have another snippet named ${req.body.rename}`);
-            res.redirect(baseURL + '/edit/snippet/' + req.params.ref);
-            return;
-          }
-
-          Snippet.update({name}, doc.id).then(() => {
-            Snippet.updateTags(tags, doc.id).then(() => {
-              req.flash('info', `Snippet ${name} was updated successfully!`);
-              res.redirect(baseURL + '/view/snippet');
-            });
+        Snippet.update({name, description}, doc.id).then(() => {
+          Snippet.updateTags(tags, doc.id).then(() => {
+            req.flash('info', `Snippet ${name} was updated successfully!`);
+            res.redirect(baseURL + '/view/snippet' + (doc.published === 1 ? "#publish" : ""));
           });
         });
-      }
+      });
     }
   });
 });

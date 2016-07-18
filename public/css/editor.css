@@ -1,5 +1,5 @@
 #preview {
-  margin-top: -25px;
+  margin-top: -35px;
   position: relative;
   float: right;
   width: 35%;
@@ -18,7 +18,7 @@
 #aceEditor {
   float: left;
   width: 60%;
-  margin-top: 5px;
+  margin-top: 15px;
   height: 500px;
 }
 
@@ -55,4 +55,18 @@
   margin-bottom: 10px;
   width: 60%;
   height: 20px;
+}
+
+#publish {
+  background-color: #4BC3DB;
+  color: white;
+}
+
+#publish:hover {
+  background-color: #43B0C4;
+  -webkit-transition: background-color 0.2s ease-in-out;
+  -moz-transition: background-color 0.2s ease-in-out;
+  -ms-transition: background-color 0.2s ease-in-out;
+  -o-transition: background-color 0.2s ease-in-out;
+  transition: background-color 0.2s ease-in-out;
 }

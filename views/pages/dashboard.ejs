@@ -12,7 +12,7 @@
     <div class="ten columns">
       <h3>Dashboard</h3>
       <h5>Welcome <span class="green"><%= session.user.username %></span></h5>
-      Your api key is <input class="green" onClick="this.select();" value="<%= session.user.apikey %>" readonly size="23"><br>
+      Your api key is <input class="apikey" onClick="this.select();" value="<%= session.user.apikey %>" readonly size="23"><br>
       Your tier is <span class="green"><%= session.user.tierName %></span>.<br>
 
       You have used <span id='quotaResults' class='green'><%= session.user.results %></span> of your daily <span id='tierResults' class="green"><%= session.tier.results === 0 ? 'unlimited' : session.tier.results %></span> results.<br>

@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <% include ../../snippets/header %>
-  <link rel="stylesheet" href="css/editor.css">
 </head>
 <body>
   <ref hidden><%=list.ref%></ref>
@@ -12,14 +11,15 @@
       <% include ../../snippets/subnav %>
     </div>
     <div class="ten columns">
-      <h3>Editing List <%=list.name%> [<%=list.ref%>]</h3>
+      <h3>Edit List <%=list.name%> [<%=list.ref%>]</h3>
       <p><span class='<%= session.user.memory > session.tier.memory ? "red" : "green" %>'><%= filesize(session.user.memory) %></span> of <span class="green"><%= session.tier.memory === 0 ? 'unlimited' : filesize(session.tier.memory) %></span> used.</p>
       <form enctype="multipart/form-data" action="" method="POST">
         <span class='red' id='limits'>Accepted chars: a-zA-Z0-9 _-.+[]{}()</span><br>
+        Name<br>
         <input type="text" name='rename' id="limitsInput" maxlength='32' value="<%= list.name %>" placeholder="<%= list.name %>" autofocus autocomplete="off"><br><br>
         Choose a file to replace the list:<br>
         <input name="file" type="file"><br>
-        <input type="submit" id="submit" value="Upload File" />
+        <input type="submit" id="submit" value="Update List" />
       </form>
     </div>
   </div>

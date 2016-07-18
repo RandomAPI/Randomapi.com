@@ -8,18 +8,21 @@ const async   = require('async');
 const _       = require('lodash');
 const Promise = require('bluebird');
 
+const Version = require('./Version');
+
 module.exports = {
   add(data) {
     return new Promise((resolve, reject) => {
       let tags = data.tags;
       delete data.tags;
       data.ref = this.genRandomRef();
-      data.description = "";
 
       db.query('INSERT INTO `snippet` SET ?', data, (err, result) => {
         if (err) reject(err);
         else {
-          this.addTags(tags, result.insertId).then(() => {
+          this.addTags(tags, result.insertId)
+          .then(Version.add({snippetID: result.insertId, description: ''}))
+          .then(() => {
             resolve({['s.id']: result.insertId});
           });
         }
@@ -29,8 +32,10 @@ module.exports = {
   remove(cond) {
     return new Promise((resolve, reject) => {
       db.query('DELETE FROM `snippettags` WHERE ?', {snippetID: cond.id}, () => {
-        db.query('DELETE FROM `snippet` WHERE ?', cond, (err, data) => {
-          err ? reject(err) : resolve();
+        db.query('DELETE FROM `snippet` WHERE ?', {id: cond.id}, (err, data) => {
+          Version.remove(cond.id).then((err, data) => {
+            err ? reject(err) : resolve();
+          });
         });
       });
     });
@@ -128,27 +133,44 @@ module.exports = {
       }, resolve);
     });
   },
-  getSnippets(owner) {
+  getPrivateSnippets(owner) {
     return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM `snippet` WHERE ? ORDER BY `modified` DESC', {owner}, (err, data) => {
+      db.query(`SELECT a.*, b.version FROM snippet a INNER JOIN \
+      snippetversion b ON a.id = b.snippetID WHERE \
+      b.version = (SELECT max(version) FROM snippetversion c \
+      WHERE c.snippetID = a.id) AND owner = ${db.escape(owner)} \
+      AND a.published = 0 ORDER BY modified DESC`, (err, data) => {
         if (err) reject(err);
         else if (data.length === 0) resolve(null);
         else resolve(data);
       });
     });
   },
-  update(vals, ref) {
+  getPublicSnippets(owner) {
     return new Promise((resolve, reject) => {
-      db.query('UPDATE `snippet` SET ? WHERE ?', [vals, {ref}], (err, result) => {
-        this.modified(ref).then(() => {
+      db.query(`SELECT a.*, b.version FROM snippet a INNER JOIN \
+      snippetversion b ON a.id = b.snippetID WHERE \
+      b.version = (SELECT max(version) FROM snippetversion c \
+      WHERE c.snippetID = a.id) AND owner = ${db.escape(owner)} \
+      AND a.published = 1 ORDER BY modified DESC`, (err, data) => {
+        if (err) reject(err);
+        else if (data.length === 0) resolve(null);
+        else resolve(data);
+      });
+    });
+  },
+  update(vals, id) {
+    return new Promise((resolve, reject) => {
+      db.query('UPDATE `snippet` SET ? WHERE ?', [vals, {id}], (err, result) => {
+        this.modified(id).then(() => {
           resolve({err: err, result: result});
         });
       });
     });
   },
-  modified(ref) {
+  modified(id) {
     return new Promise((resolve, reject) => {
-      db.query('UPDATE `snippet` SET ? WHERE ?', [{modified: moment(new Date().getTime()).format("YYYY-MM-DD HH:mm:ss")}, {ref}], (err, result) => {
+      db.query('UPDATE `snippet` SET ? WHERE ?', [{modified: moment(new Date().getTime()).format("YYYY-MM-DD HH:mm:ss")}, {id}], (err, result) => {
         resolve({err: err, result: result});
       });
     });

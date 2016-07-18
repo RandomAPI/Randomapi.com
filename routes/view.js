@@ -53,8 +53,10 @@ router.get('/list', (req, res, next) => {
 // snippet //
 router.get('/snippet', (req, res, next) => {
   if (req.session.subscription.status !== 3) {
-    Snippet.getSnippets(req.session.user.id).then(snippets => {
-      res.render('view/snippet', _.merge(defaultVars, {snippets, title: 'View Snippets'}));
+    Snippet.getPrivateSnippets(req.session.user.id).then(privateSnippets => {
+      Snippet.getPublicSnippets(req.session.user.id).then(publicSnippets => {
+        res.render('view/snippet', _.merge(defaultVars, {privateSnippets, publicSnippets, title: 'View Snippets'}));
+      });
     });
   } else {
     if (req.session.subscription.status === 3) {

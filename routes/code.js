@@ -1,6 +1,6 @@
 const express  = require('express');
 const _        = require('lodash');
-const fs       = require('fs');
+const fs       = require('fs-extra');
 const router   = express.Router();
 const settings = require('../settings.json');
 const logger   = require('../utils').logger;
@@ -25,9 +25,10 @@ const upload = multer({
 }).single('file');
 
 const API  = require('../models/API');
-const User  = require('../models/User');
+const User = require('../models/User');
 const List = require('../models/List');
 const Snippet = require('../models/Snippet');
+const Version = require('../models/Version');
 
 // Setup defaultVars and baseURL for all routes
 let defaultVars, baseURL;
@@ -85,37 +86,109 @@ router.post('/api/:ref', (req, res, next) => {
 });
 
 // Snippets
-router.get('/snippet/:ref?', (req, res, next) => {
-  Snippet.getCond({ref: req.params.ref}).then(doc => {
-    if (doc.owner !== req.session.user.id) {
-      res.redirect(baseURL + '/view/snippet');
-    } else {
-      doc.code = fs.readFileSync('./data/snippets/' + doc.id + '.snippet'); // Read snippet src into this...
-      res.render('code/snippet', _.merge(defaultVars, {snippet: doc, socket: ':' + settings.general.socket, title: `Coding Snippet ${doc.name}`}));
+router.get('/snippet/:ref?/:version?', (req, res, next) => {
+  let ref     = req.params.ref;
+  let version = req.params.version;
+
+  if (ref === undefined || version === undefined) {
+    req.flash('warning', `Missing ref and/or version number`);
+    res.redirect(baseURL + '/view/snippet');
+    return;
+  }
+
+  Snippet.getCond({ref}).then(doc => {
+
+    // Create new revision
+    if (version === "newRevision") {
+
+      // Get current version
+      Version.getCond({snippetID: doc.id})
+      .then(ver => {
+        if (ver.published === 0) {
+          req.flash('warning', 'You already have a revision in progress that hasn\'t been published yet');
+          res.redirect(baseURL + '/view/snippet#publish');
+          return;
+        }
+
+        // Copy contents of current version to new version
+        fs.copy(
+          `./data/snippets/${doc.id}-${ver.version}.snippet`,
+          `./data/snippets/${doc.id}-${ver.version+1}.snippet`,
+        () => {
+          // Create new revision
+          Version.newRevision(doc.id)
+          .then(id => {
+            req.flash('info', `Revision ${ver.version+1} for Snippet ${doc.name} has been created successfully!`);
+            res.redirect(`${baseURL}/code/snippet/${doc.ref}/${ver.version+1}`);
+          });
+        });
+      });
+      return;
     }
+
+    // Get specific version
+    Version.getVersion(ref, version).then(ver => {
+      if (ver === null || doc.owner !== req.session.user.id) {
+        res.redirect(baseURL + '/view/snippet');
+      } else {
+        doc.code = fs.readFileSync(`./data/snippets/${doc.id}-${ver.version}.snippet`); // Read snippet src into this...
+        res.render('code/snippet', _.merge(defaultVars, {snippet: doc, version: ver, socket: ':' + settings.general.socket, title: `Coding Snippet ${doc.name}`}));
+      }
+    }).catch(err => {
+      res.redirect(baseURL + '/view/snippet');
+    });
   }).catch(err => {
     res.redirect(baseURL + '/view/snippet');
   });
 });
 
-router.post('/snippet/:ref', (req, res, next) => {
-  if (missingProps(req.body, ['code'])) {
-    req.flash('warning', 'Missing expected form properties');
-    res.send(baseURL + '/code/snippet/' + req.params.ref);
+router.post('/snippet/:ref?/:version?', (req, res, next) => {
+  let ref     = req.params.ref;
+  let version = req.params.version;
+
+  if (ref === undefined || version === undefined) {
+    req.flash('warning', `Missing ref and/or version number`);
+    res.send(`${baseURL}/code/snippet/${req.params.ref}/${req.params.version}`);
     return;
   }
-  Snippet.getCond({ref: req.params.ref}).then(doc => {
+
+  if (missingProps(req.body, ['code'])) {
+    req.flash('warning', 'Missing expected form properties');
+    res.send(`${baseURL}/code/snippet/${req.params.ref}/${req.params.version}`);
+    return;
+  }
+
+  Snippet.getCond({ref}).then(doc => {
     if (doc.owner !== req.session.user.id) {
       res.send(baseURL + '/view/snippet');
-    } else {
-      Snippet.modified(doc.ref).then(() => {
-        fs.writeFile('./data/snippets/' + doc.id + '.snippet', req.body.code.replace(/\r\n/g, '\n').slice(0, 8192), 'utf8', err => {
-          req.app.get('removeSnippet')(`${req.session.user.username}/${doc.name}`);
-          req.flash('info', `Snippet ${doc.name} was updated successfully!`);
-          res.send(baseURL + '/view/snippet');
+      return;
+    }
+
+    Version.getVersion(ref, version).then(ver => {
+      if (ver === null || ver.published === 1) {
+        res.send(baseURL + '/view/snippet');
+        return;
+      }
+
+      Snippet.modified(doc.id)
+      .then(() => {
+
+        Version.modified(ver.id)
+        .then(() => {
+
+          fs.writeFile(`./data/snippets/${doc.id}-${version}.snippet`, req.body.code.replace(/\r\n/g, '\n').slice(0, 8192), 'utf8', err => {
+            req.app.get('removeSnippet')(`${req.session.user.username}/${doc.name}/${ver.version}`);
+            req.app.get('removeSnippet')(`${req.session.user.username}/${doc.name}`);
+            req.flash('info', `Snippet ${doc.name} was updated successfully!`);
+            if (ver.version > 1) {
+              res.send(baseURL + '/view/snippet#publish');
+            } else {
+              res.send(baseURL + '/view/snippet');
+            }
+          });
         });
       });
-    }
+    })
   });
 });
 

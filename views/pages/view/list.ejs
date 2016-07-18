@@ -12,7 +12,7 @@
     <div class="ten columns">
       <h3>View Lists</h3>
       <p><span class='<%= session.user.memory > session.tier.memory ? "red" : "green" %>'><%= filesize(session.user.memory) %></span> of <span class="green"><%= session.tier.memory === 0 ? 'unlimited' : filesize(session.tier.memory) %></span> used.</p>
-      <table class="table table-striped" style="width: 75%">
+      <table class="table table-striped" style="width: 90%">
         <thead>
           <tr>
             <th>#</th>

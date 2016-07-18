@@ -13,6 +13,7 @@ const API  = require('../../models/API');
 const List = require('../../models/List');
 const User = require('../../models/User');
 const Snippet = require('../../models/Snippet');
+const Version = require('../../models/Version');
 
 const GeneratorForker = function(options) {
   let self = this;
@@ -168,6 +169,7 @@ const GeneratorForker = function(options) {
 util.inherits(GeneratorForker, EventEmitter);
 
 GeneratorForker.prototype.fork = function() {
+  let self = this;
   // Fork new Generator with provided info
   this.generator = fork(__dirname + '/Generator', [this.name, JSON.stringify(this.info)], {silent: true});
 
@@ -238,15 +240,13 @@ GeneratorForker.prototype.fork = function() {
           }
         });
       } else if (msg.mode === 'snippet') {
-        // global
-        let obj;
-        let glob = false;
-        if (msg.data.indexOf('/') === -1) {
-          obj = `snippet:${msg.data}`;
-          glob = true;
+        let obj, tmp = msg.data.signature.split('/');
+
+        // No version supplied
+        if (tmp.length === 2) {
+          obj = `snippet:${tmp[0]}/${tmp[1]}`;
         } else {
-          msg.data = msg.data.split('/');
-          obj = `snippet:${msg.data[0]}/${msg.data[1]}`;
+          obj = `snippet:${tmp[0]}/${tmp[1]}/${tmp[2]}`;
         }
 
         // Check if snippet exists in the cache
@@ -271,34 +271,62 @@ GeneratorForker.prototype.fork = function() {
 
           // Add snippet to cache if user has permission
           } else {
-            Snippet.getCond({username: msg.data[0], name: msg.data[1]}).then(doc => {
-              if (doc === null) {
-                this.generator.send({type: 'response', mode: 'snippet', data: false});
-              } else {
-                fs.readFile(process.cwd() + '/data/snippets/' + doc.id + '.snippet', 'utf8', (err, file) => {
-                  // prepend and append
-                  file = `(function() {
+            User.getCond({username: msg.data.user.username}).then(user => {
+              let query = {username: tmp[0], name: tmp[1]};
+
+              Snippet.getCond(query).then(doc => {
+                // No matching snippet found
+                if (doc === null) {
+                  this.generator.send({type: 'response', mode: 'snippet', data: false});
+                  return;
+                }
+
+                // If not published, use version 1
+                let version = doc.published === 0 ? 1 : tmp[2];
+
+                // Published snippets require version number
+                if (doc.published && version === undefined) {
+                  this.generator.send({type: 'response', mode: 'snippet', data: "missing_version"});
+                  return;
+                }
+
+                Version.getVersion(doc.ref, version).then(ver => {
+                  if (ver === null) {
+                    this.generator.send({type: 'response', mode: 'snippet', data: "invalid_version"});
+                    return;
+                  }
+
+                  // If snippet isn't published and this is a demo user OR the user doesn't own snippet
+                  if ((!ver.published && user === null) || (!ver.published && user.id !== doc.owner)) {
+                    this.generator.send({type: 'response', mode: 'snippet', data: false});
+
+                  } else {
+                    fs.readFile(process.cwd() + '/data/snippets/' + doc.id + '-' + ver.version + '.snippet', 'utf8', (err, file) => {
+                      // prepend and append
+                      file = `(function() {
   let snippet = {};
   ${file}
   return snippet;
 })()`;
-                  redis.hmset(obj, {
-                    added: new Date().getTime(),
-                    size: file.length,
-                    owner: doc.owner,
-                    lastUsed: new Date().getTime()
-                  }, (err, res) => {
-                    redis.SET(`${obj}:contents`, file, (a, b) => {
+                      redis.hmset(obj, {
+                        added: new Date().getTime(),
+                        size: file.length,
+                        owner: doc.owner,
+                        published: doc.published,
+                        lastUsed: new Date().getTime()
+                      }, (err, res) => {
+                        redis.SET(`${obj}:contents`, file, (a, b) => {
 
-                      // Add TTL
-                      redis.expire(obj, settings.generators[this.name].redisSnippetTTL);
-                      redis.expire(`${obj}:contents`, settings.generators[this.name].redisSnippetTTL);
-
-                      this.generator.send({type: 'response', mode: 'snippet', data: true});
+                          // Add TTL
+                          redis.expire(obj, settings.generators[this.name].redisSnippetTTL);
+                          redis.expire(`${obj}:contents`, settings.generators[this.name].redisSnippetTTL);
+                          this.generator.send({type: 'response', mode: 'snippet', data: true});
+                        });
+                      });
                     });
-                  });
+                  }
                 });
-              }
+              });
             });
           }
         });

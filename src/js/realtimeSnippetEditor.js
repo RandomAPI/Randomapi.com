@@ -8,7 +8,7 @@ editor.setValue(editor.getValue(), 1);
 editor.focus();
 
 $("#submit").click(() => {
-  $.post('', {rename: $("#limitsInput").val(), code: editor.getValue()}, url => {
+  $.post('', {code: editor.getValue()}, url => {
     window.location.replace(url);
   });
 });
@@ -47,4 +47,16 @@ function updateCharCount() {
     editor.setValue(editor.getValue().slice(0, 8192), 1);
   }
   $("#currentCharCount").html(numeral(len).format(','));
+}
+
+function revisionPublishPrompt(ref, name, rev) {
+  notyPrompt(`Are you sure you want to publish revision ${rev} of Snippet ${name}?`, () => {
+    $.post('', {code: editor.getValue()}, () => {
+      $.get('publish/snippet/' + ref + '/confirm', function (loc) {
+        window.location.replace(loc);
+      });
+    });
+  }, () => {
+
+  });
 }

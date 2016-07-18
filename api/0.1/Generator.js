@@ -500,13 +500,19 @@ Generator.prototype.availableFuncs = function() {
     },
     // Hardcoded native requires
     require: function(lib) {
+      if (lib === undefined || lib.toString().length === 0) {
+        throw new Error(`No snippet signature provided`);
+        return;
+      }
+
+      lib = lib.toString().trim();
       if (lib === undefined || lib.length === 0) throw new Error(`No snippet signature provided`);
       let globRequires = ['faker', 'deity', 'moment'];
 
       if (globRequires.indexOf(lib) !== -1) {
         return require(lib);
       } else {
-        throw new Error(`Global require ${lib} was not found`);
+        throw new Error(`Global snippet ${lib} was not found`);
       }
     }
   };
@@ -532,47 +538,42 @@ Generator.prototype.availableFuncs = function() {
 
 Generator.prototype.require = function(signature) {
   if (signature === undefined || signature.length === 0) {
-    throw new Error(`"${signature}"No snippet signature provided`);
+    throw new Error(`No snippet signature provided`);
     return;
   }
 
-  //signature = signature !== undefined && signature.indexOf('/') !== -1 ? signature.split('/') : [];
+  let tmp = signature.split('/');
 
-  // username/snippetName/versionNumber - in the future
-  // for now, no version nums
-  // if (signature.length !== 2) {
-  //   throw new Error(`Invalid signature format`);
-  //   return;
-  // }
-
-  // global
-  let obj;
-  if (signature.indexOf('/') === -1) {
-    obj = signature;
-  } else {
-    let tmp = signature.split('/');
+  // No version supplied
+  if (tmp.length === 2) {
     obj = `${tmp[0]}/${tmp[1]}`;
+  } else {
+    obj = `${tmp[0]}/${tmp[1]}/${tmp[2]}`;
   }
 
   // Check if snippet is in local snippet cache
   // If not, fetch from redis snippet cache and add it to the local snippet cache
   if (obj in this.snippetCache) {
+    if (this.snippetCache[obj].published === 1 || this.snippetCache[obj].owner === this.user.id) {
 
-    // Update local snippet cache lastUsed date
-    // Also update redis snippet cache lastUsed date
-    this.snippetCache[obj].lastUsed = new Date().getTime();
-    redis.exists(`snippet:${obj}:contents`, (err, result) => {
-      if (result === 1) {
-        redis.hmset(`snippet:${obj}`, 'lastUsed', new Date().getTime());
-      }
-    });
+      // Update local snippet cache lastUsed date
+      // Also update redis snippet cache lastUsed date
+      this.snippetCache[obj].lastUsed = new Date().getTime();
+      redis.exists(`snippet:${obj}:contents`, (err, result) => {
+        if (result === 1) {
+          redis.hmset(`snippet:${obj}`, 'lastUsed', new Date().getTime());
+        }
+      });
 
-    return this.snippetCache[obj].snippet;
+      return this.snippetCache[obj].snippet;
+    } else {
+      throw new Error(`Snippet signature ${obj} wasn't recognized`);
+    }
   } else {
     process.send({
       type: 'lookup',
       mode: 'snippet',
-      data: signature
+      data: {signature, user: this.user}
     });
 
     let done = false;
@@ -581,6 +582,13 @@ Generator.prototype.require = function(signature) {
     this.once('snippetResponse', result => {
       if (result === false) {
         throw new Error(`Snippet signature ${obj} wasn't recognized`);
+        done = true;
+
+      } else if (result === "missing_version") {
+        throw new Error(`Version number is missing`);
+        done = true;
+      } else if (result === "invalid_version") {
+        throw new Error(`Invalid version number`);
         done = true;
       } else {
         redis.GET(`snippet:${obj}:contents`, (err, snippet) => {
@@ -591,7 +599,8 @@ Generator.prototype.require = function(signature) {
               added: new Date().getTime(),
               snippet,
               size: info.size,
-              owner: info.owner,
+              owner: Number(info.owner),
+              published: Number(info.published),
               lastUsed: new Date().getTime()
             };
             contents = snippet;
@@ -655,7 +664,7 @@ Generator.prototype.updateRequires = function() {
           let reg = new RegExp(/require\(['"](?:((?:.*)\/(?:.*))|(~.*))['"]\)/g);
           let match = reg.exec(this.src);
           while (match !== null) {
-            let result = match[1] || match[2];
+            let result = (match[1] || match[2]).trim();
             if (result.indexOf('~') === 0) {
               result = this.user.username + '/' + result.slice(1);
             }

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jul 11, 2016 at 01:25 AM
+-- Generation Time: Jul 18, 2016 at 11:23 PM
 -- Server version: 5.7.13
 -- PHP Version: 5.5.36
 
@@ -109,8 +109,36 @@ CREATE TABLE `snippet` (
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `description` text NOT NULL,
-  `version` int(11) NOT NULL DEFAULT '1',
+  `published` tinyint(1) NOT NULL DEFAULT '0',
   `owner` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `snippettags`
+--
+
+CREATE TABLE `snippettags` (
+  `id` int(11) NOT NULL,
+  `snippetID` int(11) NOT NULL,
+  `tagID` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `snippetversion`
+--
+
+CREATE TABLE `snippetversion` (
+  `id` int(11) NOT NULL,
+  `snippetID` int(11) NOT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `description` text NOT NULL,
+  `published` tinyint(1) NOT NULL DEFAULT '0',
+  `version` int(11) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -130,6 +158,17 @@ CREATE TABLE `subscription` (
   `plan` int(11) NOT NULL DEFAULT '1',
   `current_period_end` timestamp NULL DEFAULT NULL,
   `status` int(11) NOT NULL DEFAULT '1'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tags`
+--
+
+CREATE TABLE `tags` (
+  `id` int(11) NOT NULL,
+  `name` varchar(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -216,14 +255,33 @@ ALTER TABLE `plan`
 -- Indexes for table `snippet`
 --
 ALTER TABLE `snippet`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `snippettags`
+--
+ALTER TABLE `snippettags`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `ref` (`ref`);
+  ADD UNIQUE KEY `combo` (`snippetID`,`tagID`);
+
+--
+-- Indexes for table `snippetversion`
+--
+ALTER TABLE `snippetversion`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `subscription`
 --
 ALTER TABLE `subscription`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `tags`
+--
+ALTER TABLE `tags`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `name` (`name`);
 
 --
 -- Indexes for table `tier`
@@ -269,9 +327,24 @@ ALTER TABLE `plan`
 ALTER TABLE `snippet`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
+-- AUTO_INCREMENT for table `snippettags`
+--
+ALTER TABLE `snippettags`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `snippetversion`
+--
+ALTER TABLE `snippetversion`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
 -- AUTO_INCREMENT for table `subscription`
 --
 ALTER TABLE `subscription`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `tags`
+--
+ALTER TABLE `tags`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `tier`
