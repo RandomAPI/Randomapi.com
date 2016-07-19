@@ -18,6 +18,7 @@ lintCode();
 
 let typingTimer;
 let codeArea = $(editor.textInput.getElement());
+
 codeArea.keyup(() => {
   clearTimeout(typingTimer);
   typingTimer = setTimeout(lintCode, 250);

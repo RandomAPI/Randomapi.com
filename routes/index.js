@@ -3,10 +3,10 @@ const _       = require('lodash');
 const router  = express.Router();
 const logger  = require('../utils').logger;
 const stripe  = require('../utils').stripe;
-const missingProps = require('../utils').missingProps;
 const moment  = require('moment');
 const request = require('request');
-const settings  = require('../utils').settings;
+const settings     = require('../utils').settings;
+const missingProps = require('../utils').missingProps;
 
 const User = require('../models/User');
 const Tier = require('../models/Tier');
@@ -31,6 +31,7 @@ router.get('/', (req, res, next) => {
 
 router.get('/upgrade', (req, res, next) => {
   if (req.session.loggedin) {
+
     // Is user OVER their limits from a recent downgrade?
     if (req.session.subscription.status === 4) {
       req.flash('warning', 'Your account is currently soft-locked until your account quotas are within their limits.');

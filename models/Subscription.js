@@ -25,6 +25,7 @@ module.exports = {
   getCond(cond) {
     return new Promise((resolve, reject) => {
       cond = andify(cond);
+
       if (cond.query !== undefined) {
         db.query('SELECT * FROM `subscription` WHERE ' + cond.query, (err, data) => {
           if (err) reject(err);
@@ -45,6 +46,7 @@ module.exports = {
   getUnpaidInvoices(customer) {
     return new Promise((resolve, reject) => {
       let unpaid = [];
+
       stripe.invoices.list({
         customer,
       }, (err, invoices) => {
@@ -55,8 +57,7 @@ module.exports = {
               unpaid.push(invoice);
             }
           });
-          if (unpaid.length === 0) resolve(null);
-          else resolve(unpaid);
+          unpaid.length === 0 ? resolve(null) : resolve(unpaid);
         }
       });
     });
@@ -64,8 +65,7 @@ module.exports = {
   payInvoice(invoice) {
     return new Promise((resolve, reject) => {
       stripe.invoices.pay(invoice, (err, invoice) => {
-        if (err) reject(err);
-        else resolve(invoice);
+        err ? reject(err) : resolve(invoice);
       });
     });
   }

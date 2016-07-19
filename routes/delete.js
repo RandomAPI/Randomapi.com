@@ -2,9 +2,9 @@ const express  = require('express');
 const fs       = require('fs');
 const router   = express.Router();
 
-const API = require('../models/API');
-const List = require('../models/List');
-const User = require('../models/User');
+const API     = require('../models/API');
+const List    = require('../models/List');
+const User    = require('../models/User');
 const Snippet = require('../models/Snippet');
 const Subscription = require('../models/Subscription');
 
@@ -13,6 +13,7 @@ let defaultVars, baseURL;
 router.all('*', (req, res, next) => {
   defaultVars = req.app.get('defaultVars');
   baseURL     = req.app.get('baseURL');
+
   if (!req.session.loggedin) {
     res.redirect(baseURL + '/');
   } else {

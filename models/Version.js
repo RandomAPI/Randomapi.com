@@ -11,10 +11,8 @@ const Promise = require('bluebird');
 module.exports = {
   add(data) {
     return new Promise((resolve, reject) => {
-
       db.query('INSERT INTO `snippetversion` SET ?', data, (err, result) => {
-        if (err) reject(err);
-        else resolve(result.insertId);
+        err ? reject(err) : resolve(result.insertId);
       });
     });
   },
@@ -24,7 +22,6 @@ module.exports = {
         this.add({snippetID: id, description: '', version: doc[0].version+1}).then(resolve);
       });
     })
-    //// make copy of record with incremented version number, published set to 0, and update created/modified date, update description
   },
   remove(id) {
     return new Promise((resolve, reject) => {
@@ -36,6 +33,7 @@ module.exports = {
   getCond(cond) {
     return new Promise((resolve, reject) => {
       cond = andify(cond);
+
       if (cond.query !== undefined) {
         db.query('SELECT v.* FROM `snippetversion` v \
         INNER JOIN `snippet` s ON (s.id=v.snippetID) WHERE ' + cond.query + ' ORDER BY version DESC LIMIT 1', (err, data) => {

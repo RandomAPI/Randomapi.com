@@ -2,9 +2,9 @@ const express  = require('express');
 const _        = require('lodash');
 const router   = express.Router();
 
-const API = require('../models/API');
-const List = require('../models/List');
-const Snippet = require('../models/Snippet');
+const API       = require('../models/API');
+const List      = require('../models/List');
+const Snippet   = require('../models/Snippet');
 const Generator = require('../models/Generator');
 
 // Setup defaultVars and baseURL for all routes
@@ -12,6 +12,7 @@ let defaultVars, baseURL;
 router.all('*', (req, res, next) => {
   defaultVars = req.app.get('defaultVars');
   baseURL     = req.app.get('baseURL');
+
   if (!req.session.loggedin) {
     res.redirect(baseURL + '/');
   } else {
@@ -21,7 +22,6 @@ router.all('*', (req, res, next) => {
 
 router.get('/api', (req, res, next) => {
   if (req.session.subscription.status !== 3) {
-    let obs = [];
     API.getAPIs(req.session.user.id).then(apis => {
       res.render('view/api', _.merge(defaultVars, {apis, title: 'View APIs'}));
     });

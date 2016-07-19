@@ -20,9 +20,9 @@ module.exports.init = function(cb) {
 
   connection.connect(err => {
     if (err) {
-      logger('[db]: error connecting: ' + err.stack);
-      return;
+      return logger('[db]: error connecting: ' + err.stack);
     }
+
     logger('[db]: connected as id ' + connection.threadId);
     cb();
   });

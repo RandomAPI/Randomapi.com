@@ -1,7 +1,7 @@
-const express = require('express');
-const _       = require('lodash');
-const router  = express.Router();
-const logger  = require('../utils').logger;
+const express   = require('express');
+const _         = require('lodash');
+const router    = express.Router();
+const logger    = require('../utils').logger;
 const settings  = require('../utils').settings;
 
 const Snippet = require('../models/Snippet');
@@ -26,8 +26,7 @@ router.get('/snippetLookup/:ref?/:version?', (req, res, next) => {
 
   Version.getVersion(ref, version).then(ver => {
     if (ver === null) {
-      res.redirect(baseURL + '/');
-      return;
+      return res.redirect(baseURL + '/');
     }
 
     res.send(ver);

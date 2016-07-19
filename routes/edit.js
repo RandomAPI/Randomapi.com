@@ -4,9 +4,10 @@ const fs       = require('fs');
 const router   = express.Router();
 const settings = require('../settings.json');
 const logger   = require('../utils').logger;
-const missingProps = require('../utils').missingProps;
 const multer   = require('multer');
 const crypto   = require('crypto');
+const missingProps = require('../utils').missingProps;
+
 const storage = multer.diskStorage({
   destination(req, file, cb) {
     cb(null, './uploads/')
@@ -17,6 +18,7 @@ const storage = multer.diskStorage({
     });
   }
 });
+
 const upload = multer({
   storage: storage,
   limits: {
@@ -24,9 +26,9 @@ const upload = multer({
   }
 }).single('file');
 
-const API  = require('../models/API');
-const User = require('../models/User');
-const List = require('../models/List');
+const API     = require('../models/API');
+const User    = require('../models/User');
+const List    = require('../models/List');
 const Snippet = require('../models/Snippet');
 const Version = require('../models/Version');
 
@@ -215,6 +217,7 @@ router.post('/snippet/:ref?/:version?', (req, res, next) => {
 
     let name = req.body.rename;
     let desc = req.body.description;
+
     if (name === undefined || name === "") name = doc.name;
     if (doc.published === 1 && name !== doc.name) {
       req.flash('warning', 'Names can\'t be changed for Published Snippets');

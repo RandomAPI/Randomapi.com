@@ -12,6 +12,7 @@ $(() => {
     tagsBad = rejects.length > 0;
     badCheck();
   });
+
   badCheck();
 
   function badCheck() {

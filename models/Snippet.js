@@ -42,27 +42,29 @@ module.exports = {
   },
   genRandomRef() {
     let ref, dup;
+
     do {
       dup = false;
       ref = random(5, 8);
 
       this.refExists(ref).then(exists => {
         dup = exists;
-      }, () => {});
+      });
     } while(dup);
+
     return ref;
   },
   refExists(ref) {
     return new Promise((resolve, reject) => {
       db.query('SELECT * FROM `snippet` WHERE ?', {ref}, (err, data) => {
-        if (err) reject(err);
-        else resolve(data.length !== 0);
+        err ? reject(err) : resolve(data.length !== 0);
       });
     });
   },
   getCond(cond) {
     return new Promise((resolve, reject) => {
       cond = andify(cond);
+
       if (cond.query !== undefined) {
         db.query('SELECT s.* FROM `snippet` s \
         INNER JOIN `user` u ON (u.id=s.owner) WHERE ' + cond.query, (err, data) => {

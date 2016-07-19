@@ -6,9 +6,9 @@ const settings = require('../settings.json');
 const logger   = require('../utils').logger;
 const missingProps = require('../utils').missingProps;
 
-const API  = require('../models/API');
-const User  = require('../models/User');
-const List = require('../models/List');
+const API     = require('../models/API');
+const User    = require('../models/User');
+const List    = require('../models/List');
 const Snippet = require('../models/Snippet');
 const Version = require('../models/Version');
 
@@ -43,9 +43,9 @@ router.get('/snippet/:ref?', (req, res, next) => {
 
   Snippet.getCond({ref}).then(snippet => {
     if (snippet === null || snippet.owner !== req.session.user.id) {
-      res.redirect(baseURL + '/view/snippet');
-      return;
+      return res.redirect(baseURL + '/view/snippet');
     }
+
     res.render('publish/snippet', _.merge(defaultVars, {snippet, title: `Publish Snippet ${snippet.name}`}));
   });
 });
@@ -54,14 +54,12 @@ router.get('/snippet/:ref?/confirm', (req, res, next) => {
   let ref = req.params.ref;
 
   if (ref === undefined) {
-    res.redirect(baseURL + '/view/snippet');
-    return;
+    return res.redirect(baseURL + '/view/snippet');
   }
 
   Snippet.getCond({ref}).then(snippet => {
     if (snippet === null || snippet.owner !== req.session.user.id) {
-      res.redirect(baseURL + '/view/snippet');
-      return;
+      return res.redirect(baseURL + '/view/snippet');
     }
 
     // First time publishing

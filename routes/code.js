@@ -4,10 +4,11 @@ const fs       = require('fs-extra');
 const router   = express.Router();
 const settings = require('../settings.json');
 const logger   = require('../utils').logger;
-const missingProps = require('../utils').missingProps;
 const multer   = require('multer');
 const crypto   = require('crypto');
-const storage = multer.diskStorage({
+const missingProps = require('../utils').missingProps;
+
+const storage  = multer.diskStorage({
   destination(req, file, cb) {
     cb(null, './uploads/')
   },
@@ -24,9 +25,9 @@ const upload = multer({
   }
 }).single('file');
 
-const API  = require('../models/API');
-const User = require('../models/User');
-const List = require('../models/List');
+const API     = require('../models/API');
+const User    = require('../models/User');
+const List    = require('../models/List');
 const Snippet = require('../models/Snippet');
 const Version = require('../models/Version');
 
@@ -136,6 +137,7 @@ router.get('/snippet/:ref?/:version?', (req, res, next) => {
       }
     }).catch(err => {
       res.redirect(baseURL + '/view/snippet');
+
     });
   }).catch(err => {
     res.redirect(baseURL + '/view/snippet');
