@@ -1,15 +1,16 @@
-const cookie     = require('cookie');
-const pad        = require('./utils').pad;
-const logger     = require('./utils').logger;
-const redis      = require('./utils').redis;
+const cookie = require('cookie');
+const pad    = require('./utils').pad;
+const logger = require('./utils').logger;
+const syslog = require('./utils').syslog;
+const redis  = require('./utils').redis;
 
 const server = require('./app').server;
 const app    = require('./app').app;
 
-const GUI = true;
+const GUI = true; // GUI - can be commented out if not required or too much overhead
+
 const db = require('./models/db').init(() => {
 
-  // GUI - can be commented out if not required or too much overhead
   if (GUI) require('./console.js');
   require('./sockets.js');
 
