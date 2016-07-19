@@ -261,11 +261,15 @@ GeneratorForker.prototype.fork = function() {
           // Snippet exists in the cache
           if (result === 1) {
 
-            // Update TTL
-            redis.expire(obj, settings.generators[this.name].redisSnippetTTL);
-            redis.expire(`${obj}:contents`, settings.generators[this.name].redisSnippetTTL);
-
             redis.hgetall(obj, (err, obj) => {
+              // Check if user is authorized to use this snippet
+              if (obj.published !== 1 && obj.owner !== msg.data.user.id) {
+                return this.generator.send({type: 'response', mode: 'snippet', data: false});
+              }
+
+              // Update TTL
+              redis.expire(obj, settings.generators[this.name].redisSnippetTTL);
+              redis.expire(`${obj}:contents`, settings.generators[this.name].redisSnippetTTL);
 
               // Update lastUsed time
               if (obj.ref !== undefined) {

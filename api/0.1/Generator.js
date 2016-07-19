@@ -263,6 +263,8 @@ Generator.prototype.instruct = function(options, done) {
       cb(null);
     }
   ], (err, results) => {
+    // Make sure user is populated with dummy user if no real user provided
+    this.user = this.user || {id: -1, apikey: ''};
     done(err);
   });
 };
@@ -588,6 +590,7 @@ Generator.prototype.require = function(signature) {
   // Check if snippet is in local snippet cache
   // If not, fetch from redis snippet cache and add it to the local snippet cache
   if (obj in this.snippetCache) {
+
     if (this.snippetCache[obj].published === 1 || this.snippetCache[obj].owner === this.user.id) {
 
       // Update local snippet cache lastUsed date
@@ -598,7 +601,6 @@ Generator.prototype.require = function(signature) {
           redis.hmset(`snippet:${obj}`, 'lastUsed', new Date().getTime());
         }
       });
-
       return this.snippetCache[obj].snippet;
     } else {
       throw new Error(`Snippet signature ${obj} wasn't recognized`);
@@ -703,7 +705,7 @@ Generator.prototype.updateRequires = function() {
           while (match !== null) {
             let result = (match[1] || match[2]).trim();
             if (result.indexOf('~') === 0) {
-              if (this.user !== undefined) {
+              if (this.user.id !== -1) {
                 result = this.user.username + '/' + result.slice(1);
               } else {
                 reject("Shorthand user requires can not be used in demo mode.");
