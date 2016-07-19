@@ -39,7 +39,7 @@ socket.on('codeLinted', msg => {
 });
 
 function lintCode() {
-  socket.emit('lintSnippetCode', {code: editor.getValue(), ref});
+  socket.emit('lintSnippetCode', {code: String(editor.getValue()).slice(0, 8192), ref});
 };
 
 function updateCharCount() {

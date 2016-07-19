@@ -703,7 +703,12 @@ Generator.prototype.updateRequires = function() {
           while (match !== null) {
             let result = (match[1] || match[2]).trim();
             if (result.indexOf('~') === 0) {
-              result = this.user.username + '/' + result.slice(1);
+              if (this.user !== undefined) {
+                result = this.user.username + '/' + result.slice(1);
+              } else {
+                reject("Shorthand user requires can not be used in demo mode.");
+                return;
+              }
             }
             this.src = this.src.replace(rawMatches[index++], this.require(result));
             match = reg.exec(this.src);

@@ -13,7 +13,8 @@ var connection = mysql.createConnection({
   socketPath: db.socketPath,
   database:   db.database,
   user:       db.username,
-  password:   db.password
+  password:   db.password,
+  charset: "UTF8_UNICODE_CI"
 });
 
 module.exports.init = function(cb) {

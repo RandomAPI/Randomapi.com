@@ -277,8 +277,9 @@ GeneratorForker.prototype.fork = function() {
 
           // Add snippet to cache if user has permission
           } else {
-
+            msg.data.user = msg.data.user || {username: null};
             User.getCond({username: msg.data.user.username}).then(user => {
+              if (user === null) user = {id: -1};
               let query = {username: tmp[0], name: tmp[1]};
 
               Snippet.getCond(query).then(doc => {
@@ -318,7 +319,7 @@ GeneratorForker.prototype.fork = function() {
                         added: new Date().getTime(),
                         size: file.length,
                         owner: doc.owner,
-                        published: doc.published,
+                        published: ver.published,
                         lastUsed: new Date().getTime()
                       }, (err, res) => {
                         redis.SET(`${obj}:contents`, file, (a, b) => {

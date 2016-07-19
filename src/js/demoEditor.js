@@ -28,5 +28,5 @@ socket.on('codeLinted', msg => {
 });
 
 function lintCode() {
-  socket.emit('lintDemoCode', {code: editor.getValue(), ref: null});
+  socket.emit('lintDemoCode', {code: String(editor.getValue()).slice(0, 8192), ref: null});
 };

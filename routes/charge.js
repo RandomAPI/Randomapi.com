@@ -49,6 +49,7 @@ router.post('/', (req, res, next) => {
         }).then(() => {
 
           Tier.getCond({id: plan.tier}).then(tier => {
+            logger(`${req.session.user.username} just upgraded to the ${tier.name} tier!`);
             req.flash('info', `Your account was upgraded successfully to the ${tier.name} tier!`);
             res.redirect(baseURL + '/');
           });

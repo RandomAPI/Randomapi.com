@@ -25,6 +25,7 @@ io.use((socket, next) => {
 
 io.on('connection', socket => {
   socket.on('lintCode', msg => {
+    msg.code = String(msg.code).slice(0, 8192);
     let shortest = Math.floor(Math.random() * Generators.realtime.length);
     for (let i = 0; i < Generators.realtime.length; i++) {
       if (Generators.realtime[i].queueLength() < Generators.realtime[shortest].queueLength()) {
@@ -46,6 +47,7 @@ io.on('connection', socket => {
   });
 
   socket.on('lintDemoCode', msg => {
+    msg.code = String(msg.code).slice(0, 8192);
     let shortest = Math.floor(Math.random() * Generators.demo.length);
     for (let i = 0; i < Generators.demo.length; i++) {
       if (Generators.demo[i].queueLength() < Generators.demo[shortest].queueLength()) {
@@ -67,6 +69,7 @@ io.on('connection', socket => {
   });
 
   socket.on('lintSnippetCode', msg => {
+    msg.code = String(msg.code).slice(0, 8192);
     let shortest = Math.floor(Math.random() * Generators.realtime.length);
     for (let i = 0; i < Generators.realtime.length; i++) {
       if (Generators.realtime[i].queueLength() < Generators.realtime[shortest].queueLength()) {
