@@ -3,17 +3,18 @@ const fork     = require('child_process').fork;
 const util     = require('util');
 const async    = require('async');
 const _        = require('lodash');
-const EventEmitter = require('events').EventEmitter;
 const logger   = require('../../utils').logger;
 const redis    = require('../../utils').redis;
 const settings = require('../../settings');
 const fs       = require('fs');
 
-const API  = require('../../models/API');
-const List = require('../../models/List');
-const User = require('../../models/User');
+const API     = require('../../models/API');
+const List    = require('../../models/List');
+const User    = require('../../models/User');
 const Snippet = require('../../models/Snippet');
 const Version = require('../../models/Version');
+
+const EventEmitter = require('events').EventEmitter;
 
 const GeneratorForker = function(options) {
   let self = this;
@@ -23,19 +24,19 @@ const GeneratorForker = function(options) {
     results:  options.results
   };
 
-  this.name      = options.name;
-  this.startTime = new Date().getTime();
-  this.jobCount  = 0;
-  this.memory    = 0;
-  this.listCache = 0;
+  this.name         = options.name;
+  this.startTime    = new Date().getTime();
+  this.jobCount     = 0;
+  this.memory       = 0;
+  this.listCache    = 0;
+  this.attempted    = false;
   this.snippetCache = 0;
-  this.attempted = false;
 
   // Queue to push generate requests into
   this.queue = async.queue((task, callback) => {
     this.jobCount++;
 
-    // Realtime or Speedtest
+    // Linter, Demo, or normal request?
     if (task.socket !== undefined) {
       if (task.data.type === "snippet") {
         var options = {key: null, src: task.data.src, ref: null};
@@ -105,8 +106,6 @@ const GeneratorForker = function(options) {
 
   this.fork();
 
-  generatorChecks();
-
   // See if child process is alive during 5 second check
   setInterval(generatorChecks, 5000);
 
@@ -170,21 +169,25 @@ util.inherits(GeneratorForker, EventEmitter);
 
 GeneratorForker.prototype.fork = function() {
   let self = this;
+
   // Fork new Generator with provided info
   this.generator = fork(__dirname + '/Generator', [this.name, JSON.stringify(this.info)], {silent: true});
 
   // Handle all events
   // {type, mode, data}
   this.generator.on('message', msg => {
+
     if (msg.type === 'lookup') {
       if (msg.mode === 'api') {
         API.getCond({ref: msg.data}).then(doc => {
           this.generator.send({type: 'response', mode: 'api', data: doc});
         });
+
       } else if (msg.mode === 'user') {
         User.getCond({["u.id"]: msg.data}).then(doc => {
           this.generator.send({type: 'response', mode: 'user', data: doc});
         });
+
       } else if (msg.mode === 'list') {
         // Check if list exists in the cache
         redis.exists("list:" + msg.data.ref, (err, result) => {
@@ -199,24 +202,27 @@ GeneratorForker.prototype.fork = function() {
             redis.hgetall("list:" + msg.data.ref, (err, obj) => {
 
               // Verify user has permission to access this list
-              if (Number(obj.owner) === msg.data.user.id) {
+              if (Number(obj.owner) === msg.data.user.id && obj.ref !== undefined) {
 
                 // Update lastUsed time
-                if (obj.ref !== undefined) {
-                  redis.hset("list:" + obj.ref, "lastUsed", new Date().getTime());
-                }
-
-                this.generator.send({type: 'response', mode: 'list', data: true});
-              } else {
-                this.generator.send({type: 'response', mode: 'list', data: false});
+                redis.hset("list:" + obj.ref, "lastUsed", new Date().getTime());
               }
+
+              this.generator.send({
+                type: 'response',
+                mode: 'list',
+                data: Number(obj.owner) === msg.data.user.id
+              });
             });
 
           // Add list to cache if user has permission
           } else {
+
             List.getCond({ref: msg.data.ref, owner: msg.data.user.id}).then(doc => {
+
               if (doc === null) {
                 this.generator.send({type: 'response', mode: 'list', data: false});
+
               } else {
                 fs.readFile(process.cwd() + '/data/lists/' + doc.id + '.list', 'utf8', (err, file) => {
                   redis.hmset("list:" + doc.ref, {
@@ -271,14 +277,15 @@ GeneratorForker.prototype.fork = function() {
 
           // Add snippet to cache if user has permission
           } else {
+
             User.getCond({username: msg.data.user.username}).then(user => {
               let query = {username: tmp[0], name: tmp[1]};
 
               Snippet.getCond(query).then(doc => {
+
                 // No matching snippet found
                 if (doc === null) {
-                  this.generator.send({type: 'response', mode: 'snippet', data: false});
-                  return;
+                  return this.generator.send({type: 'response', mode: 'snippet', data: false});
                 }
 
                 // If not published, use version 1
@@ -286,18 +293,17 @@ GeneratorForker.prototype.fork = function() {
 
                 // Published snippets require version number
                 if (doc.published && version === undefined) {
-                  this.generator.send({type: 'response', mode: 'snippet', data: "missing_version"});
-                  return;
+                  return this.generator.send({type: 'response', mode: 'snippet', data: "missing_version"});
                 }
 
                 Version.getVersion(doc.ref, version).then(ver => {
+
                   if (ver === null) {
                     this.generator.send({type: 'response', mode: 'snippet', data: "invalid_version"});
-                    return;
                   }
 
                   // If snippet isn't published and this is a demo user OR the user doesn't own snippet
-                  if ((!ver.published && user === null) || (!ver.published && user.id !== doc.owner)) {
+                  else if ((!ver.published && user === null) || (!ver.published && user.id !== doc.owner)) {
                     this.generator.send({type: 'response', mode: 'snippet', data: false});
 
                   } else {
@@ -331,20 +337,28 @@ GeneratorForker.prototype.fork = function() {
           }
         });
       }
+
     } else if (msg.type === 'done') {
       this.emit('taskFinished', {error: msg.data.error, results: msg.data.results, fmt: msg.data.fmt});
+
     } else if (msg.type === 'cmdComplete') {
       if (msg.mode === 'memory') {
         this.emit('memComplete', msg.content);
+
       } else if (msg.mode === 'lists') {
         this.emit('listsComplete', msg.content);
+
       } else if (msg.mode === 'listCache') {
         this.emit('listCacheComplete', msg.content);
+
       } else if (msg.mode === 'snippetCache') {
         this.emit('snippetCacheComplete', msg.content);
+
       }
+
     } else if (msg.type === 'pong') {
       this.emit('pong');
+
     } else if (msg.type === 'ping') {
       this.send({
         type: 'pong'
@@ -354,8 +368,8 @@ GeneratorForker.prototype.fork = function() {
 };
 
 // Opts contains options and mode
-// cb(err, results, fmt)
 GeneratorForker.prototype.generate = function(opts, cb) {
+
   // Send generator a new task using the given mode and options
   this.send({
     type: 'task',
