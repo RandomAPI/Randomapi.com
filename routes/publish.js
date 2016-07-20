@@ -81,12 +81,14 @@ router.get('/snippet/:ref?/confirm', (req, res, next) => {
 
     // Publishing latest version
     } else {
-      Version.getCond({snippetID: snippet.id}).then(ver => {
-        Version.update({published: 1}, ver.id).then(() => {
-          req.app.get('removeSnippet')(`${req.session.user.username}/${snippet.name}/${snippet.version}`); // broken
-          req.app.get('removeSnippet')(`${req.session.user.username}/${snippet.name}`);
-          req.flash('info', `Revision ${ver.version} for Snippet ${snippet.name} was published successfully!`);
-          res.send(baseURL + '/view/snippet/#publish');
+      Snippet.modified(snippet.id).then(() => {
+        Version.getCond({snippetID: snippet.id}).then(ver => {
+          Version.update({published: 1}, ver.id).then(() => {
+            req.app.get('removeSnippet')(`${req.session.user.username}/${snippet.name}/${snippet.version}`); // broken
+            req.app.get('removeSnippet')(`${req.session.user.username}/${snippet.name}`);
+            req.flash('info', `Revision ${ver.version} for Snippet ${snippet.name} was published successfully!`);
+            res.send(baseURL + '/view/snippet/#publish');
+          });
         });
       });
     }
