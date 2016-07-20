@@ -294,7 +294,7 @@ GeneratorForker.prototype.fork = function() {
                 }
 
                 // If not published, use version 1
-                let version = doc.published === 0 ? 1 : tmp[2];
+                let version = doc.published === 0 ? 1 : Number(tmp[2]);
 
                 // Published snippets require version number
                 if (doc.published && version === undefined) {
@@ -322,8 +322,8 @@ GeneratorForker.prototype.fork = function() {
                       redis.hmset(obj, {
                         added: new Date().getTime(),
                         size: file.length,
-                        owner: doc.owner,
-                        published: ver.published,
+                        owner: Number(doc.owner),
+                        published: Number(ver.published),
                         lastUsed: new Date().getTime()
                       }, (err, res) => {
                         redis.SET(`${obj}:contents`, file, (a, b) => {
