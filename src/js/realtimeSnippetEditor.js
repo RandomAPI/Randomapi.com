@@ -49,15 +49,3 @@ function updateCharCount() {
   }
   $("#currentCharCount").html(numeral(len).format(','));
 }
-
-function revisionPublishPrompt(ref, name, rev) {
-  notyPrompt(`Are you sure you want to publish revision ${rev} of Snippet ${name}?`, () => {
-    $.post('', {code: editor.getValue()}, () => {
-      $.get('publish/snippet/' + ref + '/confirm', function (loc) {
-        window.location.replace(loc);
-      });
-    });
-  }, () => {
-
-  });
-}

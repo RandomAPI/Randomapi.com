@@ -63,3 +63,13 @@ $(function() {
       }
     });
 });
+
+function revisionPublishPrompt(ref, name, rev) {
+  notyPrompt(`Are you sure you want to publish revision ${rev} of Snippet ${name}?`, () => {
+    $.get('publish/snippet/' + ref + '/confirm', function (loc) {
+      window.location.replace(loc);
+    });
+  }, () => {
+
+  });
+}

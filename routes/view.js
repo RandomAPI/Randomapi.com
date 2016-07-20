@@ -1,10 +1,12 @@
 const express  = require('express');
 const _        = require('lodash');
+const async    = require('async');
 const router   = express.Router();
 
 const API       = require('../models/API');
 const List      = require('../models/List');
 const Snippet   = require('../models/Snippet');
+const Version   = require('../models/Version');
 const Generator = require('../models/Generator');
 
 // Setup defaultVars and baseURL for all routes
@@ -55,7 +57,14 @@ router.get('/snippet', (req, res, next) => {
   if (req.session.subscription.status !== 3) {
     Snippet.getPrivateSnippets(req.session.user.id).then(privateSnippets => {
       Snippet.getPublicSnippets(req.session.user.id).then(publicSnippets => {
-        res.render('view/snippet', _.merge(defaultVars, {privateSnippets, publicSnippets, title: 'View Snippets'}));
+        async.eachOf(publicSnippets, (snippet, index, cb) => {
+          Version.getVersion(snippet.ref, snippet.version).then(ver => {
+            publicSnippets[index].latestPublished = ver.published;
+            cb();
+          });
+        }, () => {
+          res.render('view/snippet', _.merge(defaultVars, {privateSnippets, publicSnippets, title: 'View Snippets'}));
+        });
       });
     });
   } else {

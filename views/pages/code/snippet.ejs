@@ -23,9 +23,6 @@
           if (!version.published) {
         %>
             <input type='submit' id='submit' value='Save'> <button id='lintButton' onClick='lintCode()'>Test Snippet</button> 
-            <% if (snippet.published && !version.published) { %>
-                  <input type='button' id='publish' onClick='revisionPublishPrompt("<%=snippet.ref%>", "<%=snippet.name%>", "<%=version.version%>")' value='Publish Revision'>
-            <% } %>
         <% } %>
           <pre id="results">
 Loading...

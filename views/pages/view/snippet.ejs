@@ -82,11 +82,11 @@
                 <td>
                   <select name='revision'>
                   <% for (let i = snippet.version; i > 0 ; i--) { %>
-                    <option value='<%=i%>' <%= i === snippet.version ? "selected" : ""%>><%= i === snippet.version ? "[Latest Revision] " : "" %><%=i%>%></option>
+                    <option value='<%=i%>' <%= i === snippet.version ? "selected" : ""%>><%=i%>%></option>
                   <% } %>
                 </td>
-                <td><a href="code/snippet/<%=snippet.ref%>/<%=snippet.version%>" name='codeSnippet'>Code Snippet</a> | <a href="edit/snippet/<%=snippet.ref%>/<%=snippet.version%>" name='editSnippet'>Edit</a></td>
-                <td><a href="code/snippet/<%=snippet.ref%>/newRevision">New Revision</a></td>
+                <td><a href="code/snippet/<%=snippet.ref%>/<%=snippet.version%>" name='codeSnippet'><%= snippet.latestPublished ? "View" : "Code" %> Snippet</a> | <a href="edit/snippet/<%=snippet.ref%>/<%=snippet.version%>" name='editSnippet'>Edit</a></td>
+                <td><%- !snippet.latestPublished ? `<a href='' onClick='revisionPublishPrompt("${snippet.ref}", "${snippet.name}", "${snippet.version}"); return false;'>Publish revision ${snippet.version}</a>` : `<a href='code/snippet/${snippet.ref}/newRevision'>New Revision</a>` %> | <a href="edit/snippet/<%=snippet.ref%>/<%=snippet.version%>" name='editSnippet'>Edit</a></td>
               </tr>
             <%  });
             }
