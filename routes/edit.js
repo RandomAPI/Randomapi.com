@@ -164,45 +164,60 @@ router.get('/snippet/:ref?/:version?', (req, res, next) => {
   let ref     = req.params.ref;
   let version = req.params.version;
 
-  if (ref === undefined || version === undefined) {
-    req.flash('warning', `Missing ref and/or version number`);
+  if (ref === undefined) {
+    req.flash('warning', `Missing ref`);
     res.redirect(baseURL + '/view/snippet');
     return;
   }
 
   Snippet.getCond({ref}).then(doc => {
-    Version.getVersion(ref, version).then(ver => {
-      if (doc === null || ver === null) {
-        res.redirect(baseURL + '/view/snippet');
-        return;
-      }
+    if (doc === null) {
+      res.redirect(baseURL + '/view/snippet');
+      return;
+    }
 
-      Snippet.getTags(doc.id).then(tags => {
-        if (doc.owner !== req.session.user.id) {
-          res.redirect(baseURL + '/view/snippet');
+    Snippet.getTags(doc.id).then(tags => {
+      if (doc.owner !== req.session.user.id) {
+        res.redirect(baseURL + '/view/snippet');
+      } else {
+        if (version !== undefined) {
+          Version.getVersion(ref, version).then(ver => {
+            if (ver === null) {
+              res.redirect(baseURL + '/view/snippet');
+            }
+            doc.description = ver.description; // Replace snippet description with revision's description
+            res.render('edit/snippet', _.merge(defaultVars, {snippet: doc, version: _.merge(ver, {revision: true}), tags, socket: ':' + settings.general.socket, title: `Edit Snippet ${doc.name}`}));
+          });
         } else {
-          doc.code = fs.readFileSync(`./data/snippets/${doc.id}-${ver.version}.snippet`); // Read snippet src into this...
-          res.render('edit/snippet', _.merge(defaultVars, {snippet: doc, tags, socket: ':' + settings.general.socket, title: `Edit Snippet ${doc.name}`}));
+          res.render('edit/snippet', _.merge(defaultVars, {snippet: doc, version: {version: 1, revision: false}, tags, socket: ':' + settings.general.socket, title: `Edit Snippet ${doc.name}`}));
         }
-      });
+      }
     });
   });
 });
 
 router.post('/snippet/:ref?/:version?', (req, res, next) => {
-  let ref     = req.params.ref;
-  let version = req.params.version;
+  let ref         = req.params.ref;
+  let version     = req.params.version;
+  let versionFmt;
+  if (version !== undefined) {
+    versionFmt = "/" + version;
+    props = ['rename', 'description'];
+    req.body.tags = "";
+  } else {
+    props = ['rename', 'tags', 'description'];
+  }
   let description = req.body.description;
 
-  if (ref === undefined || version === undefined) {
-    req.flash('warning', `Missing ref and/or version number`);
-    res.redirect(`${baseURL}/edit/snippet/${ref}/${version}`);
+  if (ref === undefined) {
+    req.flash('warning', `Missing ref`);
+    res.redirect(`${baseURL}/edit/snippet/${ref}${versionFmt}${versionFmt}`);
     return;
   }
 
-  if (missingProps(req.body, ['rename', 'tags', 'description'])) {
+  if (missingProps(req.body, props)) {
     req.flash('warning', 'Missing expected form properties');
-    res.redirect(`${baseURL}/edit/snippet/${ref}/${version}`);
+    res.redirect(`${baseURL}/edit/snippet/${ref}${versionFmt}`);
     return;
   }
 
@@ -221,34 +236,46 @@ router.post('/snippet/:ref?/:version?', (req, res, next) => {
     if (name === undefined || name === "") name = doc.name;
     if (doc.published === 1 && name !== doc.name) {
       req.flash('warning', 'Names can\'t be changed for Published Snippets');
-      res.redirect(`${baseURL}/edit/snippet/${ref}/${version}`);
+      res.redirect(`${baseURL}/edit/snippet/${ref}${versionFmt}`);
 
     } else if (name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/) === null) {
       req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
-      res.redirect(`${baseURL}/edit/snippet/${ref}/${version}`);
+      res.redirect(`${baseURL}/edit/snippet/${ref}${versionFmt}`);
 
     } else if (rejects.length > 0 || req.body.tags.length > 255) {
       req.flash('warning', 'Snippet tags invalid! 32 chars per tag, accepted chars: a-Z0-9 _-.+[]{}()');
-      res.redirect(`${baseURL}/edit/snippet/${ref}/${version}`);
+      res.redirect(`${baseURL}/edit/snippet/${ref}${versionFmt}`);
 
     } else if (description.length > 65535) {
       req.flash('warning', 'Description is too large');
-      res.redirect(`${baseURL}/edit/snippet/${ref}/${version}`);
+      res.redirect(`${baseURL}/edit/snippet/${ref}${versionFmt}`);
 
     } else {
       Snippet.getCond({name: req.body.rename, owner: req.session.user.id}).then(dup => {
         if (req.body.rename !== doc.name && dup !== null) {
           req.flash('warning', `You already have another snippet named ${req.body.rename}`);
-          res.redirect(`${baseURL}/edit/snippet/${ref}/${version}`);
+          res.redirect(`${baseURL}/edit/snippet/${ref}${versionFmt}`);
           return;
         }
 
-        Snippet.update({name, description}, doc.id).then(() => {
-          Snippet.updateTags(tags, doc.id).then(() => {
-            req.flash('info', `Snippet ${name} was updated successfully!`);
-            res.redirect(baseURL + '/view/snippet' + (doc.published === 1 ? "#publish" : ""));
+        // Revision edit
+        if (version !== undefined) {
+          Version.getVersion(ref, version).then(ver => {
+            Version.update({description}, ver.id).then(() => {
+              Snippet.modified(doc.id).then(() => {
+                req.flash('info', `Snippet ${name} was updated successfully!`);
+                res.redirect(baseURL + '/view/snippet#publish');
+              });
+            });
           });
-        });
+        } else {
+          Snippet.update({name, description}, doc.id).then(() => {
+            Snippet.updateTags(tags, doc.id).then(() => {
+              req.flash('info', `Snippet ${name} was updated successfully!`);
+              res.redirect(baseURL + '/view/snippet' + (doc.published === 1 ? "#publish" : ""));
+            });
+          });
+        }
       });
     }
   });

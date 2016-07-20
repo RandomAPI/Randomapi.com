@@ -46,7 +46,7 @@
                 <td><%=snippet.name%></td>
                 <td><span class="date" data-date="<%=snippet.created%>"></span></td>
                 <td><span class="date" data-date="<%=snippet.modified%>"></span></td>
-                <td><a href="" onClick="snippetDeletePrompt('<%=snippet.ref%>', '<%=snippet.name%>', '<%=snippet.version%>');return false;">Delete</a> | <a href="code/snippet/<%=snippet.ref%>/<%=snippet.version%>">Code Snippet</a> | <a href="edit/snippet/<%=snippet.ref%>/<%=snippet.version%>">Edit</a> | <a href="publish/snippet/<%=snippet.ref%>">Publish Snippet</a></td>
+                <td><a href="" onClick="snippetDeletePrompt('<%=snippet.ref%>', '<%=snippet.name%>', '<%=snippet.version%>');return false;">Delete</a> | <a href="code/snippet/<%=snippet.ref%>/<%=snippet.version%>">Code Snippet</a> | <a href="edit/snippet/<%=snippet.ref%>">Edit</a> | <a href="publish/snippet/<%=snippet.ref%>">Publish Snippet</a></td>
               </tr>
             <%  });
             }
@@ -86,7 +86,7 @@
                   <% } %>
                 </td>
                 <td><a href="code/snippet/<%=snippet.ref%>/<%=snippet.version%>" name='codeSnippet'><%= snippet.latestPublished ? "View" : "Code" %> Snippet</a> | <a href="edit/snippet/<%=snippet.ref%>/<%=snippet.version%>" name='editSnippet'>Edit</a></td>
-                <td><%- !snippet.latestPublished ? `<a href='' onClick='revisionPublishPrompt("${snippet.ref}", "${snippet.name}", "${snippet.version}"); return false;'>Publish revision ${snippet.version}</a>` : `<a href='code/snippet/${snippet.ref}/newRevision'>New Revision</a>` %> | <a href="edit/snippet/<%=snippet.ref%>/<%=snippet.version%>" name='editSnippet'>Edit</a></td>
+                <td><%- !snippet.latestPublished ? `<a href='' onClick='revisionPublishPrompt("${snippet.ref}", "${snippet.name}", "${snippet.version}"); return false;'>Publish revision ${snippet.version}</a>` : `<a href='code/snippet/${snippet.ref}/newRevision'>New Revision</a>` %> | <a href="edit/snippet/<%=snippet.ref%>" name='editSnippet'>Edit</a></td>
               </tr>
             <%  });
             }

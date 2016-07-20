@@ -38,7 +38,8 @@ $(() => {
       $('#results tbody tr').removeClass('selected');
       selected = $(this).data('id');
       $(this).addClass('selected');
-      snippetInfo($(this).data('id'))
+      snippetInfo($(this).data('id'));
+
     });
   });
 
@@ -63,8 +64,10 @@ $(() => {
         Created: <span id="created" class="date" data-date="${snippets[msg.snippetID].created}"></span><br>
         Modified: <span id="modified" class="date" data-date="${snippets[msg.snippetID].modified}"></span><br>
         </p>
-        Description<br>
-        <textarea id='description' rows='7' readonly>${snippets[msg.snippetID].description}</textarea>
+        Snippet Description<br>
+        <textarea id='snippetDescription' rows='5' readonly>${snippets[msg.snippetID].description}</textarea>
+        Revision Description<br>
+        <textarea id='revisionDescription' rows='5' readonly></textarea>
         Usage
         <pre><code id='usage' class="javascript">const mySnippet = require('${snippets[msg.snippetID].user}/${snippets[msg.snippetID].name}/${msg.version}');</code></pre>
       </div>
@@ -76,18 +79,18 @@ $(() => {
 
     $("select[name='revision']").change(updateRevision);
 
-    updateDates();
+    updateRevision();
   });
 });
 
 function updateRevision() {
-  let self = this;
-  $.when($.ajax(`ajax/snippetLookup/${snippets[selected].ref}/${$(this).val()}`)).then(function(data) {
+  let self = $("select[name='revision']");
+  $.when($.ajax(`ajax/snippetLookup/${snippets[selected].ref}/${self.val()}`)).then(function(data) {
     console.log(data);
     $('#created').data('date', data.created);
     $('#modified').data('date', data.modified);
-    $('#description').val(data.description);
-    $('#usage').html(`const mySnippet = require('${snippets[selected].user}/${snippets[selected].name}/${$(self).val()}');`);
+    $('#revisionDescription').val(data.description);
+    $('#usage').html(`const mySnippet = require('${snippets[selected].user}/${snippets[selected].name}/${self.val()}');`);
 
     $('pre code').each(function(i, block) {
       hljs.highlightBlock(block);
