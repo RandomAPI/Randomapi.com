@@ -22,7 +22,11 @@ $(function() {
       $('div.tab-content div.tab-pane.active').removeClass('active');
       pane.addClass('active');
 
-      location.hash = tab;
+      if (history.pushState) {
+          history.pushState({}, 'RandomAPI :: View Snippets', `view/snippet${tab}`);
+      } else {
+          location.hash = tab;
+      }
 
       return false;
     }
