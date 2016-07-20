@@ -1,0 +1,24 @@
+#search {
+  width: 100%;
+}
+
+textarea {
+  height: initial;
+  width: 100%;
+}
+
+#results tbody tr {
+  cursor: pointer;
+}
+
+#results tbody tr:hover {
+  background-color: #F6F6F6;
+}
+
+#results tbody tr.selected {
+  background-color: #EFFFEF;
+}
+
+#found {
+  visibility: hidden;
+}

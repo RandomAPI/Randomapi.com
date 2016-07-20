@@ -3,12 +3,16 @@ var selected = {};
 var style = "class='selected'";
 var path;
 try {
-  path = originalUrl.match(/(?:^(\/\w+\/\w+)(?:$|.*)|(\/))/)[1];
+  let matches = originalUrl.match(/(?:^(\/\w+\/\w+)(?:$|.*)|(\/.*))/);
+  path = matches[1] || matches[2];
 } catch(e) {
   path = "/";
 }
 
 switch(path) {
+  case '/search':
+    selected['search'] = style;
+    break;
   case '/new/api':
     selected['newapi'] = style;
     break;

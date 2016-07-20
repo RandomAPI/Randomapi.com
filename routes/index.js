@@ -115,6 +115,14 @@ router.get('/register/guest', (req, res, next) => {
   res.redirect(baseURL + '/register');
 });
 
+router.get('/search', (req, res, next) => {
+  if (req.session.loggedin) {
+    res.render('search', _.merge(defaultVars, {socket: ':' + settings.general.socket, title: 'Search'}));
+  } else {
+    res.render('index', _.merge(defaultVars, {socket: ':' + settings.general.socket, title: 'Search'}));
+  }
+})
+
 router.post('/register', (req, res, next) => {
   if (missingProps(req.body, ['username', 'password', 'timezone', 'g-recaptcha-response']) && process.env.spec !== "true") {
     req.flash('warning', 'Missing expected form properties');

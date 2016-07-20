@@ -93,6 +93,43 @@ module.exports = {
       });
     });
   },
+  search(tags) {
+    return new Promise((resolve, reject) => {
+      if (tags.length === 0) return resolve([]);
+
+      // Get tag ids
+      tags = tags.map(tag => db.escape(tag));
+
+      let tagNames = {};
+      db.query(`SELECT id, name FROM tags WHERE name IN (${tags})`, (err, data) => {
+        if (data.length === 0) return resolve([]);
+
+        data.forEach(tag => {
+          tagNames[tag.id] = tag.name;
+        });
+
+        // Now we search for published snippets that match tag ids
+        db.query(`SELECT snippetID, tagID FROM snippettags WHERE tagID IN (${Object.keys(tagNames)})`, (err, data) => {
+          if (data.length === 0) return resolve([]);
+          let unique = [...new Set(data.map(item => item.snippetID))];
+
+          // Finally search snippets for matching ids
+          db.query(`SELECT s.*, u.username AS user FROM snippet s INNER JOIN user u ON (u.id=s.owner) WHERE s.id IN (${unique}) AND s.published = 1`, (err, data) => {
+            if (data.length === 0) return resolve([]);
+
+            async.each(data, (snippet, cb) => {
+              this.getTags(snippet.id).then(tags => {
+                snippet.tags = tags;
+                cb();
+              });
+            }, () => {
+              resolve(data);
+            });
+          });
+        });
+      });
+    });
+  },
   updateTags(tags, id) {
     let self = this;
     return new Promise((resolve, reject) => {
