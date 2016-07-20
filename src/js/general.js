@@ -32,12 +32,6 @@ $(() => {
   setInterval(() => {
     updateDates();
   }, 60000);
-
-  function updateDates() {
-    $('.date').each((index, date) => {
-      $(date).html(moment(new Date($(date).data('date'))/*, "MMDDYYHHmmss"*/).fromNow());
-    });
-  }
 });
 
 function notyPrompt(text, yes, no) {
@@ -96,3 +90,9 @@ function snippetDeletePrompt(ref, name) {
 
   });
 }
+
+function updateDates() {
+    $('.date').each((index, date) => {
+      $(date).html(moment(new Date($(date).data('date'))/*, "MMDDYYHHmmss"*/).fromNow());
+    });
+  }
