@@ -7,24 +7,21 @@ module.exports = {
   getByID(id) {
     return new Promise((resolve, reject) => {
       db.query('SELECT * FROM `generator` WHERE ?', {id}, (err, data) => {
-        if (err) reject(err);
-        else resolve(data);
+        err ? reject(err) : resolve(data);
       });
     });
   },
   getByVersion(version) {
     return new Promise((resolve, reject) => {
       db.query('SELECT * FROM `generator` WHERE ?', {version}, (err, data) => {
-        if (err) reject(err);
-        else resolve(data);
+        err ? reject(err) : resolve(data);
       });
     });
   },
   getLatestVersion() {
     return new Promise((resolve, reject) => {
       db.query('SELECT * FROM `generator` ORDER BY `id` DESC LIMIT 1', (err, data) => {
-        if (err) reject(err);
-        else resolve(data[0]);
+        err ? reject(err) : resolve(data[0]);
       });
     });
   },

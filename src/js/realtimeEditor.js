@@ -38,7 +38,7 @@ socket.on('codeLinted', msg => {
 });
 
 function lintCode() {
-  socket.emit('lintCode', {code: editor.getValue(), ref});
+  socket.emit('lintCode', {code: String(editor.getValue()).slice(0, 8192), ref});
 };
 
 function updateCharCount() {

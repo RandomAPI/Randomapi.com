@@ -4,9 +4,10 @@ const fs       = require('fs');
 const router   = express.Router();
 const settings = require('../settings.json');
 const logger   = require('../utils').logger;
-const missingProps = require('../utils').missingProps;
 const multer   = require('multer');
 const crypto   = require('crypto');
+const missingProps = require('../utils').missingProps;
+
 const storage = multer.diskStorage({
   destination(req, file, cb) {
     cb(null, './uploads/')
@@ -17,6 +18,7 @@ const storage = multer.diskStorage({
     });
   }
 });
+
 const upload = multer({
   storage: storage,
   limits: {
@@ -24,10 +26,11 @@ const upload = multer({
   }
 }).single('file');
 
-const API  = require('../models/API');
-const User  = require('../models/User');
-const List = require('../models/List');
+const API     = require('../models/API');
+const User    = require('../models/User');
+const List    = require('../models/List');
 const Snippet = require('../models/Snippet');
+const Version = require('../models/Version');
 
 // Setup defaultVars and baseURL for all routes
 let defaultVars, baseURL;
@@ -157,61 +160,123 @@ router.post('/list/:ref', (req, res, next) => {
 });
 
 // Snippets
-router.get('/snippet/:ref?', (req, res, next) => {
-  Snippet.getCond({ref: req.params.ref}).then(doc => {
+router.get('/snippet/:ref?/:version?', (req, res, next) => {
+  let ref     = req.params.ref;
+  let version = req.params.version;
+
+  if (ref === undefined) {
+    req.flash('warning', `Missing ref`);
+    res.redirect(baseURL + '/view/snippet');
+    return;
+  }
+
+  Snippet.getCond({ref}).then(doc => {
+    if (doc === null) {
+      res.redirect(baseURL + '/view/snippet');
+      return;
+    }
+
     Snippet.getTags(doc.id).then(tags => {
       if (doc.owner !== req.session.user.id) {
         res.redirect(baseURL + '/view/snippet');
       } else {
-        doc.code = fs.readFileSync('./data/snippets/' + doc.id + '.snippet'); // Read snippet src into this...
-        res.render('edit/snippet', _.merge(defaultVars, {snippet: doc, tags, socket: ':' + settings.general.socket, title: `Edit Snippet ${doc.name}`}));
+        if (version !== undefined) {
+          Version.getVersion(ref, version).then(ver => {
+            if (ver === null) {
+              res.redirect(baseURL + '/view/snippet');
+            }
+            doc.description = ver.description; // Replace snippet description with revision's description
+            res.render('edit/snippet', _.merge(defaultVars, {snippet: doc, version: _.merge(ver, {revision: true}), tags, socket: ':' + settings.general.socket, title: `Edit Snippet ${doc.name}`}));
+          });
+        } else {
+          res.render('edit/snippet', _.merge(defaultVars, {snippet: doc, version: {version: 1, revision: false}, tags, socket: ':' + settings.general.socket, title: `Edit Snippet ${doc.name}`}));
+        }
       }
     });
-  }, () => {
-    res.redirect(baseURL + '/view/snippet');
   });
 });
 
-router.post('/snippet/:ref', (req, res, next) => {
-  if (missingProps(req.body, ['rename', 'tags'])) {
+router.post('/snippet/:ref?/:version?', (req, res, next) => {
+  let ref         = req.params.ref;
+  let version     = req.params.version;
+  let versionFmt;
+  if (version !== undefined) {
+    versionFmt = "/" + version;
+    props = ['rename', 'description'];
+    req.body.tags = "";
+  } else {
+    props = ['rename', 'tags', 'description'];
+  }
+  let description = req.body.description;
+
+  if (ref === undefined) {
+    req.flash('warning', `Missing ref`);
+    res.redirect(`${baseURL}/edit/snippet/${ref}${versionFmt}${versionFmt}`);
+    return;
+  }
+
+  if (missingProps(req.body, props)) {
     req.flash('warning', 'Missing expected form properties');
-    res.redirect(baseURL + '/edit/snippet/' + req.params.ref);
+    res.redirect(`${baseURL}/edit/snippet/${ref}${versionFmt}`);
     return;
   }
 
   let tags = _.uniq(req.body.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== ""));
   let rejects = tags.filter(tag => tag.match(/^([a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32})$/g) === null);
 
-  Snippet.getCond({ref: req.params.ref}).then(doc => {
+  Snippet.getCond({ref}).then(doc => {
     if (doc.owner !== req.session.user.id) {
       res.redirect(baseURL + '/view/snippet');
+      return;
+    }
+
+    let name = req.body.rename;
+    let desc = req.body.description;
+
+    if (name === undefined || name === "") name = doc.name;
+    if (doc.published === 1 && name !== doc.name) {
+      req.flash('warning', 'Names can\'t be changed for Published Snippets');
+      res.redirect(`${baseURL}/edit/snippet/${ref}${versionFmt}`);
+
+    } else if (name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/) === null) {
+      req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
+      res.redirect(`${baseURL}/edit/snippet/${ref}${versionFmt}`);
+
+    } else if (rejects.length > 0 || req.body.tags.length > 255) {
+      req.flash('warning', 'Snippet tags invalid! 32 chars per tag, accepted chars: a-Z0-9 _-.+[]{}()');
+      res.redirect(`${baseURL}/edit/snippet/${ref}${versionFmt}`);
+
+    } else if (description.length > 65535) {
+      req.flash('warning', 'Description is too large');
+      res.redirect(`${baseURL}/edit/snippet/${ref}${versionFmt}`);
+
     } else {
-      let name = req.body.rename;
-      if (name === undefined || name === "") name = doc.name;
-      if (name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/) === null) {
-        req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
-        res.redirect(baseURL + '/edit/snippet/' + req.params.ref);
+      Snippet.getCond({name: req.body.rename, owner: req.session.user.id}).then(dup => {
+        if (req.body.rename !== doc.name && dup !== null) {
+          req.flash('warning', `You already have another snippet named ${req.body.rename}`);
+          res.redirect(`${baseURL}/edit/snippet/${ref}${versionFmt}`);
+          return;
+        }
 
-      } else if (rejects.length > 0 || req.body.tags.length > 255) {
-        req.flash('warning', 'Snippet tags invalid! 32 chars per tag, accepted chars: a-Z0-9 _-.+[]{}()');
-        res.redirect(baseURL + '/edit/snippet/' + req.params.ref);
-
-      } else {
-        Snippet.getCond({name: req.body.rename, owner: req.session.user.id}).then(dup => {
-          if (req.body.rename !== doc.name && dup !== null) {
-            req.flash('warning', `You already have another snippet named ${req.body.rename}`);
-            res.redirect(baseURL + '/edit/snippet/' + req.params.ref);
-            return;
-          }
-
-          Snippet.update({name}, doc.id).then(() => {
-            Snippet.updateTags(tags, doc.id).then(() => {
-              req.flash('info', `Snippet ${name} was updated successfully!`);
-              res.redirect(baseURL + '/view/snippet');
+        // Revision edit
+        if (version !== undefined) {
+          Version.getVersion(ref, version).then(ver => {
+            Version.update({description}, ver.id).then(() => {
+              Snippet.modified(doc.id).then(() => {
+                req.flash('info', `Snippet ${name} was updated successfully!`);
+                res.redirect(baseURL + '/view/snippet#publish');
+              });
             });
           });
-        });
-      }
+        } else {
+          Snippet.update({name, description}, doc.id).then(() => {
+            Snippet.updateTags(tags, doc.id).then(() => {
+              req.flash('info', `Snippet ${name} was updated successfully!`);
+              res.redirect(baseURL + '/view/snippet' + (doc.published === 1 ? "#publish" : ""));
+            });
+          });
+        }
+      });
     }
   });
 });

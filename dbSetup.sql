@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jul 11, 2016 at 01:25 AM
+-- Generation Time: Jul 19, 2016 at 04:25 AM
 -- Server version: 5.7.13
 -- PHP Version: 5.5.36
 
@@ -28,14 +28,14 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `api` (
   `id` int(11) NOT NULL,
-  `ref` varchar(8) NOT NULL,
-  `name` varchar(32) NOT NULL,
+  `ref` varchar(8) COLLATE utf8_unicode_ci NOT NULL,
+  `name` varchar(32) COLLATE utf8_unicode_ci NOT NULL,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `generator` tinyint(4) NOT NULL,
   `owner` int(11) NOT NULL,
-  `hash` varchar(32) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `hash` varchar(32) COLLATE utf8_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -45,8 +45,8 @@ CREATE TABLE `api` (
 
 CREATE TABLE `generator` (
   `id` int(11) NOT NULL,
-  `version` varchar(8) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `version` varchar(8) COLLATE utf8_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Dumping data for table `generator`
@@ -63,13 +63,13 @@ INSERT INTO `generator` (`id`, `version`) VALUES
 
 CREATE TABLE `list` (
   `id` int(11) NOT NULL,
-  `ref` varchar(8) NOT NULL,
-  `name` varchar(32) NOT NULL,
+  `ref` varchar(8) COLLATE utf8_unicode_ci NOT NULL,
+  `name` varchar(32) COLLATE utf8_unicode_ci NOT NULL,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `memory` int(11) NOT NULL,
   `owner` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -79,9 +79,9 @@ CREATE TABLE `list` (
 
 CREATE TABLE `plan` (
   `id` int(11) NOT NULL,
-  `name` varchar(32) NOT NULL,
+  `name` varchar(32) COLLATE utf8_unicode_ci NOT NULL,
   `tier` int(11) NOT NULL DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Dumping data for table `plan`
@@ -104,14 +104,42 @@ INSERT INTO `plan` (`id`, `name`, `tier`) VALUES
 
 CREATE TABLE `snippet` (
   `id` int(11) NOT NULL,
-  `ref` varchar(8) NOT NULL,
-  `name` varchar(32) NOT NULL,
+  `ref` varchar(8) COLLATE utf8_unicode_ci NOT NULL,
+  `name` varchar(32) COLLATE utf8_unicode_ci NOT NULL,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `description` text NOT NULL,
-  `version` int(11) NOT NULL DEFAULT '1',
+  `description` text COLLATE utf8_unicode_ci NOT NULL,
+  `published` tinyint(1) NOT NULL DEFAULT '0',
   `owner` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `snippettags`
+--
+
+CREATE TABLE `snippettags` (
+  `id` int(11) NOT NULL,
+  `snippetID` int(11) NOT NULL,
+  `tagID` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `snippetversion`
+--
+
+CREATE TABLE `snippetversion` (
+  `id` int(11) NOT NULL,
+  `snippetID` int(11) NOT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `description` mediumtext COLLATE utf8_unicode_ci NOT NULL,
+  `published` tinyint(1) NOT NULL DEFAULT '0',
+  `version` int(11) NOT NULL DEFAULT '1'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -121,16 +149,27 @@ CREATE TABLE `snippet` (
 
 CREATE TABLE `subscription` (
   `id` int(11) NOT NULL,
-  `cid` varchar(32) DEFAULT NULL,
-  `sid` varchar(32) DEFAULT NULL,
+  `cid` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `sid` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL,
   `uid` int(11) NOT NULL,
-  `email` varchar(255) DEFAULT NULL,
+  `email` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `created` timestamp NULL DEFAULT NULL,
   `canceled` timestamp NULL DEFAULT NULL,
   `plan` int(11) NOT NULL DEFAULT '1',
   `current_period_end` timestamp NULL DEFAULT NULL,
   `status` int(11) NOT NULL DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tags`
+--
+
+CREATE TABLE `tags` (
+  `id` int(11) NOT NULL,
+  `name` varchar(32) COLLATE utf8_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -140,14 +179,14 @@ CREATE TABLE `subscription` (
 
 CREATE TABLE `tier` (
   `id` int(11) NOT NULL,
-  `name` varchar(16) NOT NULL,
+  `name` varchar(16) COLLATE utf8_unicode_ci NOT NULL,
   `price` decimal(4,2) NOT NULL,
   `memory` int(11) NOT NULL,
   `results` int(11) NOT NULL,
   `per` int(11) NOT NULL,
   `apis` int(11) NOT NULL,
   `snippets` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Dumping data for table `tier`
@@ -166,11 +205,11 @@ INSERT INTO `tier` (`id`, `name`, `price`, `memory`, `results`, `per`, `apis`, `
 
 CREATE TABLE `user` (
   `id` int(11) NOT NULL,
-  `username` varchar(20) NOT NULL,
-  `password` varchar(64) NOT NULL,
+  `username` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
+  `password` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `joined` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `lastlogin` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `apikey` varchar(19) NOT NULL,
+  `apikey` varchar(19) COLLATE utf8_unicode_ci NOT NULL,
   `role` tinyint(4) NOT NULL DEFAULT '4',
   `memory` int(11) NOT NULL DEFAULT '0',
   `apis` int(11) NOT NULL DEFAULT '0',
@@ -178,8 +217,8 @@ CREATE TABLE `user` (
   `timezone` double(3,1) NOT NULL,
   `results` int(11) NOT NULL DEFAULT '0',
   `lifetime` int(11) NOT NULL DEFAULT '0',
-  `referrer` text
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `referrer` mediumtext COLLATE utf8_unicode_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Indexes for dumped tables
@@ -216,14 +255,33 @@ ALTER TABLE `plan`
 -- Indexes for table `snippet`
 --
 ALTER TABLE `snippet`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `snippettags`
+--
+ALTER TABLE `snippettags`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `ref` (`ref`);
+  ADD UNIQUE KEY `combo` (`snippetID`,`tagID`);
+
+--
+-- Indexes for table `snippetversion`
+--
+ALTER TABLE `snippetversion`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `subscription`
 --
 ALTER TABLE `subscription`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `tags`
+--
+ALTER TABLE `tags`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `name` (`name`);
 
 --
 -- Indexes for table `tier`
@@ -269,9 +327,24 @@ ALTER TABLE `plan`
 ALTER TABLE `snippet`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
+-- AUTO_INCREMENT for table `snippettags`
+--
+ALTER TABLE `snippettags`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `snippetversion`
+--
+ALTER TABLE `snippetversion`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
 -- AUTO_INCREMENT for table `subscription`
 --
 ALTER TABLE `subscription`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `tags`
+--
+ALTER TABLE `tags`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `tier`

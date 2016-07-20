@@ -20,34 +20,35 @@ module.exports = {
   remove(cond) {
     return new Promise((resolve, reject) => {
       db.query('DELETE FROM `list` WHERE ?', cond, (err, data) => {
-        if (err) reject(err);
-        else resolve();
+        err ? reject(err) : resolve();
       });
     });
   },
   genRandomRef() {
     let ref, dup;
+
     do {
       dup = false;
       ref = random(5, 8);
 
       this.refExists(ref).then(exists => {
         dup = exists;
-      }, () => {});
+      });
     } while(dup);
+
     return ref;
   },
   refExists(ref) {
     return new Promise((resolve, reject) => {
       db.query('SELECT * FROM `list` WHERE ?', {ref}, (err, data) => {
-        if (err) reject(err);
-        else resolve(data.length !== 0);
+        err ? reject(err) : resolve(data.length !== 0);
       });
     });
   },
   getCond(cond) {
     return new Promise((resolve, reject) => {
       cond = andify(cond);
+
       if (cond.query !== undefined) {
         db.query('SELECT * FROM `list` WHERE ' + cond.query, (err, data) => {
           if (err) reject(err);

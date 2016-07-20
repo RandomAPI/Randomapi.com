@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <% include ../../snippets/header %>
+  <link rel="stylesheet" href="css/editor.css">
+</head>
+<body>
+  <server hidden><%=socket%></server>
+  <ref hidden><%=snippet.ref%></ref>
+  <readonly hidden><%= version.published ? "true" : ""%></readonly>
+  <% include ../../snippets/navbar %>
+  <div class="main editor">
+    <div class="two columns">
+      <% include ../../snippets/subnav %>
+    </div>
+    <div class="ten columns">
+      <h3><%= version.published ? "View" : "Code" %> Snippet <%=snippet.name%><%= snippet.published ? " | revision " + version.version : "" %></h3>
+      <div class='info'>
+        <span id='charCount'><span id='currentCharCount'>0</span> / 8,192 chars</span>
+      </div>
+      <pre id="aceEditor" name="code"><%=snippet.code%></pre>
+      <div id="preview">
+        <%
+          if (!version.published) {
+        %>
+            <input type='submit' id='submit' value='Save'> <button id='lintButton' onClick='lintCode()'>Test Snippet</button> 
+        <% } %>
+          <pre id="results">
+Loading...
+          </pre>
+      </div>
+    </div>
+  </div>
+  <div class="ads">
+    <% include ../../snippets/ads %>
+  </div>
+  <% include ../../snippets/footer %>
+  <script src="js/socket.io.min.js"></script>
+  <script src="js/ace/ace.js"></script>
+  <script src="js/realtimeSnippetEditor.js"></script>
+  <script src="js/nameLimits.js"></script>
+</body>
+</html>

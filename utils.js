@@ -6,7 +6,7 @@ const settings = require('./settings.json');
 const stripe   = require("stripe")(settings.stripe.secretKey);
 
 redis.config('SET', 'maxmemory', settings.general.redisMaxMemory);
-redis.on('error', err => module.exports.logger(err));
+redis.on('error',   err => module.exports.logger(err));
 
 module.exports = {
   pad(n, width, z) {

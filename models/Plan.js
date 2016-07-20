@@ -9,6 +9,7 @@ module.exports = {
   getCond(cond) {
     return new Promise((resolve, reject) => {
       cond = andify(cond);
+
       if (cond.query !== undefined) {
         db.query('SELECT * FROM `plan` WHERE ' + cond.query, (err, data) => {
           if (err) reject(err);

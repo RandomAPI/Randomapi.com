@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <% include ../snippets/header %>
+  <link rel="stylesheet" href="css/search.css">
+  <link rel="stylesheet" href="css/highlight/monokai-sublime.css">
+</head>
+<body>
+  <server hidden><%=socket%></server>
+  <% include ../snippets/navbar %>
+  <div class="main">
+    <div class="two columns">
+      <% include ../snippets/subnav %>
+    </div>
+    <div class="five columns">
+      <h3>Search</h3>
+      <input type='text' id='search' name='search' placeholder='Search for a snippet' maxlength='255' autofocus autocomplete='off'>
+      <span id='found'><span class='green' id='foundNum'>0</span> snippet<span id='s'>s</span> found</span>
+      <table id="results" class="table table-striped" style="width: 100%">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Created</th>
+            <th>Modified</th>
+            <th>Owner</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+    <div class="five columns">
+      <div id='snippetInfo'>
+      </div>
+    </div>
+  </div>
+  <div class="ads">
+    <% include ../snippets/ads %>
+  </div>
+  <% include ../snippets/footer %>
+  <script src="js/highlight.pack.js"></script>
+  <script src="js/socket.io.min.js"></script>
+  <script src="js/moment.min.js"></script>
+  <script src="js/lodash.min.js"></script>
+  <script src="js/search.js"></script>
+</body>
+</html>

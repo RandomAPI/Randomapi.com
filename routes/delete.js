@@ -2,9 +2,9 @@ const express  = require('express');
 const fs       = require('fs');
 const router   = express.Router();
 
-const API = require('../models/API');
-const List = require('../models/List');
-const User = require('../models/User');
+const API     = require('../models/API');
+const List    = require('../models/List');
+const User    = require('../models/User');
 const Snippet = require('../models/Snippet');
 const Subscription = require('../models/Subscription');
 
@@ -13,6 +13,7 @@ let defaultVars, baseURL;
 router.all('*', (req, res, next) => {
   defaultVars = req.app.get('defaultVars');
   baseURL     = req.app.get('baseURL');
+
   if (!req.session.loggedin) {
     res.redirect(baseURL + '/');
   } else {
@@ -76,7 +77,7 @@ router.get('/list/:ref', (req, res, next) => {
 // Snippet //
 router.get('/snippet/:ref', (req, res, next) => {
   Snippet.getCond({ref: req.params.ref}).then(doc => {
-    if (doc === null || doc.owner !== req.session.user.id) {
+    if (doc === null || doc.owner !== req.session.user.id || doc.published === 1) {
       res.redirect(baseURL + '/view/snippet');
     } else {
       Snippet.remove({id: doc.id}).then(() => {
@@ -84,7 +85,7 @@ router.get('/snippet/:ref', (req, res, next) => {
           User.decVal('snippets', 1, req.session.user.username).then(() => {
 
             // If user's account is soft-locked, check to see if they are within their quota's limits now
-            if (req.session.subscription.status === 4 && req.session.user.apis-1 <= req.session.tier.apis && req.session.user.memory <= req.session.tier.memory && req.session.user.snippets-1 <= req.session.tier.snippets) {
+            if (req.session.subscription.status === 4 && req.session.user.apis <= req.session.tier.apis && req.session.user.memory <= req.session.tier.memory && req.session.user.snippets-1 <= req.session.tier.snippets) {
               Subscription.update(req.session.user.id, {status: 1}).then(() => {
                 req.flash('info', `Snippet ${doc.name} was deleted successfully and your account status is back to normal!`);
                 res.redirect(baseURL + '/view/snippet');

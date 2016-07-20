@@ -16,20 +16,21 @@ const Promise      = require('bluebird').Promise;
 const EventEmitter = require('events').EventEmitter;
 
 const Generator = function(name, options) {
+  this.version  = '0.1';
   this.name     = name || 'generator';
   process.title = 'RandomAPI_Generator ' + this.name;
-  this.parentReplied = true;
 
   options      = JSON.parse(options);
-  this.version = '0.1';
   this.info    = {
     execTime: options.execTime,
     results:  options.results
   };
-  this.cache = {};
+
+  this.cache        = {};
   this.snippetCache = {};
   this.timeoutCache = {};
-  this.context = vm.createContext(this.availableFuncs());
+
+  this.context         = vm.createContext(this.availableFuncs());
   this.originalContext = [
     'random', 'list', 'hash', 'timestamp',
     'require', '_APIgetVars', '_APIresults',
@@ -47,9 +48,14 @@ const Generator = function(name, options) {
     Uint32Array, Uint8Array, Uint8ClampedArray
   };
 
+  this.parentReplied = true;
+
   process.on('message', msg => {
+
     if (msg.type === 'task') {
+
       if (msg.mode === 'generate') {
+
         this.instruct(msg.data, error => {
           if (error) {
             process.send({type: 'done', data: {error, results: null, fmt: null}});
@@ -59,6 +65,7 @@ const Generator = function(name, options) {
             });
           }
         });
+
       } else if (msg.mode === 'lint') {
         // Inject linter settings
         this.seed   = String('linter' + ~~(Math.random() * 100));
@@ -68,11 +75,13 @@ const Generator = function(name, options) {
         this.mode   = 'lint';
         this.src    = msg.data.src;
         delete msg.data.src;
+
         this.instruct(msg.data, err => {
           this.generate((error, results, fmt) => {
             process.send({type: 'done', data: {error, results, fmt}});
           });
         });
+
       } else if (msg.mode === 'snippet') {
         // Inject snippet settings
         this.seed   = String('snippet' + ~~(Math.random() * 100));
@@ -82,43 +91,56 @@ const Generator = function(name, options) {
         this.mode   = 'snippet';
         this.src    = msg.data.src;
         delete msg.data.src;
+
         this.instruct(msg.data, err => {
           this.generate((error, results, fmt) => {
             process.send({type: 'done', data: {error, results, fmt}});
           });
         });
       }
+
     } else if (msg.type === 'response') {
       if (msg.mode === 'api') {
         this.emit('apiResponse', msg.data);
+
       } else if (msg.mode === 'user') {
         this.emit('userResponse', msg.data);
+
       } else if (msg.mode === 'list') {
         this.emit('listResponse', msg.data);
+
       } else if (msg.mode === 'snippet') {
         this.emit('snippetResponse', msg.data);
       }
+
     } else if (msg.type === 'cmd') {
+
       if (msg.mode === 'getMemory') {
         process.send({type: 'cmdComplete', mode: 'memory', content: process.memoryUsage().heapUsed});
+
       } else if (msg.mode === 'gc') {
         global.gc();
+
       } else if (msg.mode === 'emptyListCache') {
         this.emptyListCache();
+
       } else if (msg.mode === 'getListCache') {
         this.cacheSize = 0;
         _.each(this.cache, item => {
           this.cacheSize += Number(item.size);
         });
         process.send({type: 'cmdComplete', mode: 'listCache', content: this.cacheSize});
+
       } else if (msg.mode === 'emptySnippetCache') {
         this.emptySnippetCache();
+
       } else if (msg.mode === 'getSnippetCache') {
         this.snippetCacheSize = 0;
         _.each(this.snippetCache, item => {
           this.snippetCacheSize += Number(item.size);
         });
         process.send({type: 'cmdComplete', mode: 'snippetCache', content: this.snippetCacheSize});
+
       } else if (msg.mode === 'removeList') {
         let ref = msg.data;
 
@@ -131,10 +153,12 @@ const Generator = function(name, options) {
         // Delete keys from Redis
         redis.del(`list:${ref}`)
         redis.del(`list:${ref}:contents`);
+
       } else if (msg.mode === 'removeSnippet') {
         let ref = msg.data;
 
         if (ref in this.snippetCache) {
+
           // Update cache size and delete list from cache
           this.snippetCacheSize -= this.snippetCache[ref].size;
           delete this.snippetCache[ref];
@@ -146,6 +170,7 @@ const Generator = function(name, options) {
       }
     } else if (msg.type === 'pong') {
       this.emit('pong');
+
     } else if (msg.type === 'ping') {
       process.send({
         type: 'pong'
@@ -180,6 +205,7 @@ util.inherits(Generator, EventEmitter);
 
 // Receives the query which contains API, owner, and reqest data
 Generator.prototype.instruct = function(options, done) {
+
   this.options = options || {};
   this.results = Number(this.options.results);
   this.seed    = this.options.seed || '';
@@ -193,10 +219,7 @@ Generator.prototype.instruct = function(options, done) {
 
   // Sanitize values
   if (isNaN(this.results) || this.results < 0 || this.results > this.info.results || this.results === '') this.results = 1;
-  if (this.seed === '') {
-    this.defaultSeed();
-  }
-
+  if (this.seed === '') this.defaultSeed();
   if (this.page < 0 || this.page > 10000) this.page = 1;
   ///////////////////
 
@@ -205,6 +228,7 @@ Generator.prototype.instruct = function(options, done) {
   async.series([
     cb => {
       process.send({type: 'lookup', mode: 'api', data: options.ref});
+
       this.once('apiResponse', data => {
         this.doc = data;
 
@@ -217,6 +241,7 @@ Generator.prototype.instruct = function(options, done) {
     },
     cb => {
       process.send({type: 'lookup', mode: 'user', data: this.doc.owner});
+
       this.once('userResponse', data => {
         this.user = data;
         this.options.userID  = data.id;
@@ -231,19 +256,24 @@ Generator.prototype.instruct = function(options, done) {
     },
     cb => {
       if (this.mode !== "lint" && this.mode !== "snippet") {
+
         // Get API src
         this.src = fs.readFileSync('./data/apis/' + this.doc.id + '.api', 'utf8');
       }
       cb(null);
     }
   ], (err, results) => {
+    // Make sure user is populated with dummy user if no real user provided
+    this.user = this.user || {id: -1, apikey: ''};
     done(err);
   });
 };
 
 Generator.prototype.generate = function(cb) {
   this.results = this.results || 1;
-  let output = [];
+  let output   = [];
+
+  // Get md5sum of source code contents for timeout causing scripts
   let hash = crypto.createHash('md5').update(this.src).digest('hex');
 
   // Check if src code causes timeout
@@ -351,9 +381,11 @@ if (_APISnippetKeys.length === 0) {
       this.returnResults({error: e.toString(), stack: e.stack}, [{}], cb);
     }
 
-    // Remove accidental user defined globals. Pretty hacky, should probably look into improving this...
+    // Remove user defined globals
     let diff = Object.keys(this.context);
     diff.filter(each => this.originalContext.indexOf(each) === -1).forEach(each => delete this.context[each]);
+
+    // Restore reservedObjects if tampered with
     _.each(this.reservedObjects, (object, val) => {
       this.context[val] = object;
     });
@@ -364,8 +396,7 @@ if (_APISnippetKeys.length === 0) {
 };
 
 Generator.prototype.seedRNG = function() {
-  let seed = this.seed;
-  seed = this.page !== 1 ? seed + String(this.page) : seed;
+  let seed = this.page !== 1 ? this.seed + String(this.page) : this.seed;
 
   this.numericSeed = parseInt(crypto.createHash('md5').update(seed).digest('hex').substring(0, 8), 16);
   mersenne.seed(this.numericSeed);
@@ -431,11 +462,15 @@ Generator.prototype.availableFuncs = function() {
             item = randomItem(this.cache[obj].contents);
           }
           return item;
+
         } else {
           process.send({type: 'lookup', mode: 'list', data: {ref: obj, user: {id: this.options.userID, tier: this.options.userTier}}});
+
           let done = false;
           let item = null;
+
           this.once('listResponse', result => {
+
             if (result === false) {
               throw new Error(`You aren't authorized to access list ${obj}`);
               done = true;
@@ -498,20 +533,27 @@ Generator.prototype.availableFuncs = function() {
         return 'Error calling stack trace';
       }
     },
+
     // Hardcoded native requires
     require: function(lib) {
+      if (lib === undefined || lib.toString().length === 0) {
+        throw new Error(`No snippet signature provided`);
+        return;
+      }
+
+      lib = lib.toString().trim();
       if (lib === undefined || lib.length === 0) throw new Error(`No snippet signature provided`);
       let globRequires = ['faker', 'deity', 'moment'];
 
       if (globRequires.indexOf(lib) !== -1) {
         return require(lib);
       } else {
-        throw new Error(`Global require ${lib} was not found`);
+        throw new Error(`Global snippet ${lib} was not found`);
       }
     }
   };
 
-  // Proxy
+  // Proxy to hide logic
   return {
     random: {
       numeric: (min, max)       => funcs.random.numeric(min, max),
@@ -532,47 +574,42 @@ Generator.prototype.availableFuncs = function() {
 
 Generator.prototype.require = function(signature) {
   if (signature === undefined || signature.length === 0) {
-    throw new Error(`"${signature}"No snippet signature provided`);
+    throw new Error(`No snippet signature provided`);
     return;
   }
 
-  //signature = signature !== undefined && signature.indexOf('/') !== -1 ? signature.split('/') : [];
+  let tmp = signature.split('/');
 
-  // username/snippetName/versionNumber - in the future
-  // for now, no version nums
-  // if (signature.length !== 2) {
-  //   throw new Error(`Invalid signature format`);
-  //   return;
-  // }
-
-  // global
-  let obj;
-  if (signature.indexOf('/') === -1) {
-    obj = signature;
-  } else {
-    let tmp = signature.split('/');
+  // No version supplied
+  if (tmp.length === 2) {
     obj = `${tmp[0]}/${tmp[1]}`;
+  } else {
+    obj = `${tmp[0]}/${tmp[1]}/${tmp[2]}`;
   }
 
   // Check if snippet is in local snippet cache
   // If not, fetch from redis snippet cache and add it to the local snippet cache
   if (obj in this.snippetCache) {
 
-    // Update local snippet cache lastUsed date
-    // Also update redis snippet cache lastUsed date
-    this.snippetCache[obj].lastUsed = new Date().getTime();
-    redis.exists(`snippet:${obj}:contents`, (err, result) => {
-      if (result === 1) {
-        redis.hmset(`snippet:${obj}`, 'lastUsed', new Date().getTime());
-      }
-    });
+    if (this.snippetCache[obj].published === 1 || this.snippetCache[obj].owner === this.user.id) {
 
-    return this.snippetCache[obj].snippet;
+      // Update local snippet cache lastUsed date
+      // Also update redis snippet cache lastUsed date
+      this.snippetCache[obj].lastUsed = new Date().getTime();
+      redis.exists(`snippet:${obj}:contents`, (err, result) => {
+        if (result === 1) {
+          redis.hmset(`snippet:${obj}`, 'lastUsed', new Date().getTime());
+        }
+      });
+      return this.snippetCache[obj].snippet;
+    } else {
+      throw new Error(`Snippet signature ${obj} wasn't recognized`);
+    }
   } else {
     process.send({
       type: 'lookup',
       mode: 'snippet',
-      data: signature
+      data: {signature, user: this.user}
     });
 
     let done = false;
@@ -581,6 +618,13 @@ Generator.prototype.require = function(signature) {
     this.once('snippetResponse', result => {
       if (result === false) {
         throw new Error(`Snippet signature ${obj} wasn't recognized`);
+        done = true;
+
+      } else if (result === "missing_version") {
+        throw new Error(`Version number is missing`);
+        done = true;
+      } else if (result === "invalid_version") {
+        throw new Error(`Invalid version number`);
         done = true;
       } else {
         redis.GET(`snippet:${obj}:contents`, (err, snippet) => {
@@ -591,7 +635,8 @@ Generator.prototype.require = function(signature) {
               added: new Date().getTime(),
               snippet,
               size: info.size,
-              owner: info.owner,
+              owner: Number(info.owner),
+              published: Number(info.published),
               lastUsed: new Date().getTime()
             };
             contents = snippet;
@@ -616,6 +661,7 @@ Generator.prototype.checkCache = function() {
 
   sizes = _.toPairs(sizes);
   sizes.sort((a, b) => ~~b[1] - ~~a[1]);
+
   while (this.cacheSize > settings.generators[this.name].localCache * 1024 * 1024) {
     let toRemove = sizes.shift();
     delete this.cache[toRemove[0]];
@@ -625,6 +671,7 @@ Generator.prototype.checkCache = function() {
 
 Generator.prototype.checkSnippetCache = function() {
   let sizes = {};
+
   _.each(this.snippetCache, (obj, ref) => {
     if (new Date().getTime() - obj.lastUsed > settings.generators[this.name].localSnippetTTL * 1000) {
       delete this.cache[ref];
@@ -642,6 +689,7 @@ Generator.prototype.emptySnippetCache = function() {
 
 // Only global snippets can be required in other snippets
 Generator.prototype.updateRequires = function() {
+
   return new Promise((resolve, reject) => {
     // Don't let snippets include other snippets
     if (this.mode === 'snippet') resolve();
@@ -655,9 +703,14 @@ Generator.prototype.updateRequires = function() {
           let reg = new RegExp(/require\(['"](?:((?:.*)\/(?:.*))|(~.*))['"]\)/g);
           let match = reg.exec(this.src);
           while (match !== null) {
-            let result = match[1] || match[2];
+            let result = (match[1] || match[2]).trim();
             if (result.indexOf('~') === 0) {
-              result = this.user.username + '/' + result.slice(1);
+              if (this.user.id !== -1) {
+                result = this.user.username + '/' + result.slice(1);
+              } else {
+                reject("Shorthand user requires can not be used in demo mode.");
+                return;
+              }
             }
             this.src = this.src.replace(rawMatches[index++], this.require(result));
             match = reg.exec(this.src);
@@ -709,6 +762,9 @@ Generator.prototype.returnResults = function(err, output, cb) {
       cb(null, JSON.stringify(json), 'json');
     }
   } else {
+    // Errors caused by code wrapped around broken api code
+    // which is basically unexpected end of input and more clear
+    // to the user
     if ([
       "SyntaxError: Unexpected token }",
       "SyntaxError: Unexpected token catch",
@@ -717,6 +773,8 @@ Generator.prototype.returnResults = function(err, output, cb) {
     ].indexOf(err.error) !== -1) {
       err.error = "SyntaxError: Unexpected end of input";
     }
+
+    // Attempt to extract line/col number of error
     try {
       parseStack = err.stack.split('\n').slice(0, 2).join('').match(/evalmachine.*?:(\d+)(?::(\d+))?/);
       let line = parseStack[1]-14;
@@ -730,7 +788,7 @@ Generator.prototype.returnResults = function(err, output, cb) {
       parseStack = err.error;
     }
     err.formatted = parseStack;
-    //delete err.stack;
+    delete err.stack;
     cb(err, JSON.stringify({results: [{}]}), null);
   }
 };

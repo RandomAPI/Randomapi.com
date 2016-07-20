@@ -8,18 +8,21 @@ const async   = require('async');
 const _       = require('lodash');
 const Promise = require('bluebird');
 
+const Version = require('./Version');
+
 module.exports = {
   add(data) {
     return new Promise((resolve, reject) => {
       let tags = data.tags;
       delete data.tags;
       data.ref = this.genRandomRef();
-      data.description = "";
 
       db.query('INSERT INTO `snippet` SET ?', data, (err, result) => {
         if (err) reject(err);
         else {
-          this.addTags(tags, result.insertId).then(() => {
+          this.addTags(tags, result.insertId)
+          .then(Version.add({snippetID: result.insertId, description: ''}))
+          .then(() => {
             resolve({['s.id']: result.insertId});
           });
         }
@@ -29,35 +32,39 @@ module.exports = {
   remove(cond) {
     return new Promise((resolve, reject) => {
       db.query('DELETE FROM `snippettags` WHERE ?', {snippetID: cond.id}, () => {
-        db.query('DELETE FROM `snippet` WHERE ?', cond, (err, data) => {
-          err ? reject(err) : resolve();
+        db.query('DELETE FROM `snippet` WHERE ?', {id: cond.id}, (err, data) => {
+          Version.remove(cond.id).then((err, data) => {
+            err ? reject(err) : resolve();
+          });
         });
       });
     });
   },
   genRandomRef() {
     let ref, dup;
+
     do {
       dup = false;
       ref = random(5, 8);
 
       this.refExists(ref).then(exists => {
         dup = exists;
-      }, () => {});
+      });
     } while(dup);
+
     return ref;
   },
   refExists(ref) {
     return new Promise((resolve, reject) => {
       db.query('SELECT * FROM `snippet` WHERE ?', {ref}, (err, data) => {
-        if (err) reject(err);
-        else resolve(data.length !== 0);
+        err ? reject(err) : resolve(data.length !== 0);
       });
     });
   },
   getCond(cond) {
     return new Promise((resolve, reject) => {
       cond = andify(cond);
+
       if (cond.query !== undefined) {
         db.query('SELECT s.* FROM `snippet` s \
         INNER JOIN `user` u ON (u.id=s.owner) WHERE ' + cond.query, (err, data) => {
@@ -83,6 +90,43 @@ module.exports = {
       db.query(`SELECT s.*, t.name FROM snippettags s INNER JOIN tags t ON (s.tagID=t.id) WHERE s.snippetID = ${db.escape(id)}`, (err, data) => {
         data.forEach(tag => tags.push(tag.name));
         resolve(tags);
+      });
+    });
+  },
+  search(tags) {
+    return new Promise((resolve, reject) => {
+      if (tags.length === 0) return resolve([]);
+
+      // Get tag ids
+      tags = tags.map(tag => db.escape(tag));
+
+      let tagNames = {};
+      db.query(`SELECT id, name FROM tags WHERE name IN (${tags})`, (err, data) => {
+        if (data.length === 0) return resolve([]);
+
+        data.forEach(tag => {
+          tagNames[tag.id] = tag.name;
+        });
+
+        // Now we search for published snippets that match tag ids
+        db.query(`SELECT snippetID, tagID FROM snippettags WHERE tagID IN (${Object.keys(tagNames)})`, (err, data) => {
+          if (data.length === 0) return resolve([]);
+          let unique = [...new Set(data.map(item => item.snippetID))];
+
+          // Finally search snippets for matching ids
+          db.query(`SELECT s.*, u.username AS user FROM snippet s INNER JOIN user u ON (u.id=s.owner) WHERE s.id IN (${unique}) AND s.published = 1`, (err, data) => {
+            if (data.length === 0) return resolve([]);
+
+            async.each(data, (snippet, cb) => {
+              this.getTags(snippet.id).then(tags => {
+                snippet.tags = tags;
+                cb();
+              });
+            }, () => {
+              resolve(data);
+            });
+          });
+        });
       });
     });
   },
@@ -128,27 +172,44 @@ module.exports = {
       }, resolve);
     });
   },
-  getSnippets(owner) {
+  getPrivateSnippets(owner) {
     return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM `snippet` WHERE ? ORDER BY `modified` DESC', {owner}, (err, data) => {
+      db.query(`SELECT a.*, b.version FROM snippet a INNER JOIN \
+      snippetversion b ON a.id = b.snippetID WHERE \
+      b.version = (SELECT max(version) FROM snippetversion c \
+      WHERE c.snippetID = a.id) AND owner = ${db.escape(owner)} \
+      AND a.published = 0 ORDER BY modified DESC`, (err, data) => {
         if (err) reject(err);
         else if (data.length === 0) resolve(null);
         else resolve(data);
       });
     });
   },
-  update(vals, ref) {
+  getPublicSnippets(owner) {
     return new Promise((resolve, reject) => {
-      db.query('UPDATE `snippet` SET ? WHERE ?', [vals, {ref}], (err, result) => {
-        this.modified(ref).then(() => {
+      db.query(`SELECT a.*, b.version FROM snippet a INNER JOIN \
+      snippetversion b ON a.id = b.snippetID WHERE \
+      b.version = (SELECT max(version) FROM snippetversion c \
+      WHERE c.snippetID = a.id) AND owner = ${db.escape(owner)} \
+      AND a.published = 1 ORDER BY modified DESC`, (err, data) => {
+        if (err) reject(err);
+        else if (data.length === 0) resolve(null);
+        else resolve(data);
+      });
+    });
+  },
+  update(vals, id) {
+    return new Promise((resolve, reject) => {
+      db.query('UPDATE `snippet` SET ? WHERE ?', [vals, {id}], (err, result) => {
+        this.modified(id).then(() => {
           resolve({err: err, result: result});
         });
       });
     });
   },
-  modified(ref) {
+  modified(id) {
     return new Promise((resolve, reject) => {
-      db.query('UPDATE `snippet` SET ? WHERE ?', [{modified: moment(new Date().getTime()).format("YYYY-MM-DD HH:mm:ss")}, {ref}], (err, result) => {
+      db.query('UPDATE `snippet` SET ? WHERE ?', [{modified: moment(new Date().getTime()).format("YYYY-MM-DD HH:mm:ss")}, {id}], (err, result) => {
         resolve({err: err, result: result});
       });
     });

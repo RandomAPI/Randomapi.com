@@ -37,8 +37,10 @@ router.get('/:ref?', (req, res, next) => {
     cb => {
       if (req.query.key === undefined) {
         cb({code: 404, error: "MISSING_API_KEY"});
+
       } else if (req.query.ref === undefined && req.params.ref === undefined) {
         cb({code: 404, error: "MISSING_API_REF"});
+
       } else {
         cb(null);
       }

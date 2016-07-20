@@ -6,6 +6,9 @@ const io         = require('socket.io')(settings.general.socket);
 const app        = require('./app').app;
 const Generators = app.get('Generators');
 
+const Snippet = require('./models/Snippet');
+const Version = require('./models/Version');
+
 // Attach the user's session to the socket object
 // If user isn't logged in, set session to null for front page demo
 io.use((socket, next) => {
@@ -24,7 +27,26 @@ io.use((socket, next) => {
 });
 
 io.on('connection', socket => {
+  // Search
+  socket.on('search', msg => {
+    let tags = _.uniq(msg.query.slice(0, 255).split(',').map(tag => tag.trim()).filter(tag => tag !== "")).filter(tag => tag.match(/^([a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32})$/g) !== null);
+    Snippet.search(tags).then(data => {
+      let obj = data.reduce(function(o, v, i) {
+        o[v.id] = v;
+        return o;
+      }, {});
+      socket.emit('searchResults', obj);
+    });
+  });
+
+  // Snippet info
+  socket.on('snippet', msg => {
+    Version.getCond({snippetID: msg.id}).then(snippet => socket.emit('snippetResults', snippet));
+  });
+
+  // Generators
   socket.on('lintCode', msg => {
+    msg.code = String(msg.code).slice(0, 8192);
     let shortest = Math.floor(Math.random() * Generators.realtime.length);
     for (let i = 0; i < Generators.realtime.length; i++) {
       if (Generators.realtime[i].queueLength() < Generators.realtime[shortest].queueLength()) {
@@ -46,6 +68,7 @@ io.on('connection', socket => {
   });
 
   socket.on('lintDemoCode', msg => {
+    msg.code = String(msg.code).slice(0, 8192);
     let shortest = Math.floor(Math.random() * Generators.demo.length);
     for (let i = 0; i < Generators.demo.length; i++) {
       if (Generators.demo[i].queueLength() < Generators.demo[shortest].queueLength()) {
@@ -67,6 +90,7 @@ io.on('connection', socket => {
   });
 
   socket.on('lintSnippetCode', msg => {
+    msg.code = String(msg.code).slice(0, 8192);
     let shortest = Math.floor(Math.random() * Generators.realtime.length);
     for (let i = 0; i < Generators.realtime.length; i++) {
       if (Generators.realtime[i].queueLength() < Generators.realtime[shortest].queueLength()) {

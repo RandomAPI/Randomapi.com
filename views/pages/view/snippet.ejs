@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <% include ../../snippets/header %>
+  <link rel="stylesheet" href="css/skeleton-tabs.css">
 </head>
 <body>
   <% include ../../snippets/navbar %>
@@ -12,37 +13,95 @@
     <div class="ten columns">
       <h3>View Snippets</h3>
       <p><span id='quotaResults' class='<%= session.tier.snippets !== 0 && session.user.snippets > session.tier.snippets ? "red" : "green" %>'><%= session.user.snippets %></span> of <span id='tierResults' class="green"><%= session.tier.snippets === 0 ? 'unlimited' : session.tier.snippets %></span> snippets used.</p>
-      <table class="table table-striped" style="width: 75%">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Name</th>
-            <th>Created</th>
-            <th>Modified</th>
-            <!--<th>Ref ID</th>-->
-            <!--<th>Version</th>-->
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-        <%
-        if (snippets !== null) {
-          snippets.forEach(function(snippet, index) {
-        %>
-          <tr>
-            <td><%=index+1%></td>
-            <td><%=snippet.name%></td>
-            <td><span class="date" data-date="<%=snippet.created%>"></span></td>
-            <td><span class="date" data-date="<%=snippet.modified%>"></span></td>
-            <!--<td><%=snippet.ref%></td>-->
-            <!--<td><%=snippet.version%></td>-->
-            <td><a href="" onClick="snippetDeletePrompt('<%=snippet.ref%>', '<%=snippet.name%>');return false;">Delete</a> | <a href="code/snippet/<%=snippet.ref%>">Code Snippet</a> | <a href="edit/snippet/<%=snippet.ref%>">Edit</a></td>
-          </tr>
-        <%  });
-        }
-        %>
-        </tbody>
-      </table>
+      <ul class="tab-nav">
+        <li>
+          <a class="button active" href="#private">Private Snippets</a>
+        </li>
+        <li>
+          <a class="button" href="#publish">Published Snippets</a>
+        </li>
+        <li>
+          <a class="button" href="#global">Global Snippets</a>
+        </li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane active" id="private">
+          <table class="table table-striped" style="width: 90%">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Created</th>
+                <th>Modified</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+            <%
+            if (privateSnippets !== null) {
+              privateSnippets.forEach(function(snippet, index) {
+            %>
+              <tr>
+                <td><%=index+1%></td>
+                <td><%=snippet.name%></td>
+                <td><span class="date" data-date="<%=snippet.created%>"></span></td>
+                <td><span class="date" data-date="<%=snippet.modified%>"></span></td>
+                <td><a href="" onClick="snippetDeletePrompt('<%=snippet.ref%>', '<%=snippet.name%>', '<%=snippet.version%>');return false;">Delete</a> | <a href="code/snippet/<%=snippet.ref%>/<%=snippet.version%>">Code Snippet</a> | <a href="edit/snippet/<%=snippet.ref%>">Edit</a> | <a href="publish/snippet/<%=snippet.ref%>">Publish Snippet</a></td>
+              </tr>
+            <%  });
+            }
+            %>
+            </tbody>
+          </table>
+        </div>
+        <div class="tab-pane" id="publish">
+          <table class="table table-striped" style="width: 90%">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Created</th>
+                <th>Modified</th>
+                <!--<th>Ref ID</th>-->
+                <th>Selected revision</th>
+                <th>Revision Actions</th>
+                <th>Snippet Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+            <%
+            if (publicSnippets !== null) {
+              publicSnippets.forEach(function(snippet, index) {
+            %>
+              <tr data-ref="<%=snippet.ref%>">
+                <td><%=index+1%></td>
+                <td><%=snippet.name%></td>
+                <td><span class="date" name="created" data-date="<%=snippet.created%>"></span></td>
+                <td><span class="date" name="modified" data-date="<%=snippet.modified%>"></span></td>
+                <!--<td><%=snippet.ref%></td>-->
+                <td>
+                  <select name='revision'>
+                  <% for (let i = snippet.version; i > 0 ; i--) { %>
+                    <option value='<%=i%>' <%= i === snippet.version ? "selected" : ""%>><%=i%>%></option>
+                  <% } %>
+                </td>
+                <td><a href="code/snippet/<%=snippet.ref%>/<%=snippet.version%>" name='codeSnippet'><%= snippet.latestPublished ? "View" : "Code" %> Snippet</a> | <a href="edit/snippet/<%=snippet.ref%>/<%=snippet.version%>" name='editSnippet'>Edit</a></td>
+                <td><%- !snippet.latestPublished ? `<a href='' onClick='revisionPublishPrompt("${snippet.ref}", "${snippet.name}", "${snippet.version}"); return false;'>Publish revision ${snippet.version}</a>` : `<a href='code/snippet/${snippet.ref}/newRevision'>New Revision</a>` %> | <a href="edit/snippet/<%=snippet.ref%>" name='editSnippet'>Edit</a></td>
+              </tr>
+            <%  });
+            }
+            %>
+            </tbody>
+          </table>
+        </div>
+        <div class="tab-pane" id="global">
+          <ul>
+            <li><a href="https://www.npmjs.com/package/faker" class='green' target="_blank">Faker</a></li>
+            <li><a href="https://www.npmjs.com/package/deity" class='green' target="_blank">Deity</a></li>
+            <li><a href="http://momentjs.com/" class='green' target="_blank">Moment</a></li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
   <div class="ads">
@@ -50,5 +109,6 @@
   </div>
   <% include ../../snippets/footer %>
   <script src="js/moment.min.js"></script>
+  <script src="js/skeleton-tabs.js"></script>
 </body>
 </html>

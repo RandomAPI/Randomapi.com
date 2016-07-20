@@ -4,8 +4,9 @@ const fs       = require('fs');
 const router   = express.Router();
 const multer   = require('multer');
 const settings = require('../utils').settings;
-const missingProps = require('../utils').missingProps;
 const crypto   = require('crypto');
+const missingProps = require('../utils').missingProps;
+
 const storage = multer.diskStorage({
   destination(req, file, cb) {
     cb(null, './uploads/')
@@ -16,6 +17,7 @@ const storage = multer.diskStorage({
     });
   }
 });
+
 const upload = multer({
   storage: storage,
   limits: {
@@ -23,9 +25,9 @@ const upload = multer({
   }
 }).single('file');
 
-const API  = require('../models/API');
-const List = require('../models/List');
-const User = require('../models/User');
+const API       = require('../models/API');
+const List      = require('../models/List');
+const User      = require('../models/User');
 const Snippet   = require('../models/Snippet');
 const Generator = require('../models/Generator');
 
@@ -101,12 +103,13 @@ router.get('/list', (req, res, next) => {
 router.post('/list', (req, res, next) => {
   upload(req, res, err => {
     if (missingProps(req.body, ['name']) || req.file === undefined) {
-      req.flash('warning', 'Missing expected form properties');
-      res.redirect(baseURL + '/new/list');
       if (req.file !== undefined) {
         fs.unlink('./'+ req.file.path);
       }
+      req.flash('warning', 'Missing expected form properties');
+      res.redirect(baseURL + '/new/list');
       return;
+
     } else if (err) {
       req.flash('warning', 'This list is too big. Please keep your file size under 5MB.');
       res.redirect(baseURL + '/new/list');
@@ -148,7 +151,7 @@ router.get('/snippet', (req, res, next) => {
 });
 
 router.post('/snippet', (req, res, next) => {
-  if (missingProps(req.body, ['name', 'tags'])) {
+  if (missingProps(req.body, ['name', 'tags', 'description'])) {
     req.flash('warning', 'Missing expected form properties');
     res.redirect(baseURL + '/new/snippet');
     return;
@@ -171,6 +174,10 @@ router.post('/snippet', (req, res, next) => {
     req.flash('warning', 'Snippet tags invalid! 32 chars per tag, accepted chars: a-Z0-9 _-.+[]{}()');
     res.redirect(baseURL + '/new/snippet');
 
+  } else if (req.body.description.length > 65535) {
+    req.flash('warning', 'Description is too large');
+    res.redirect(baseURL + '/new/snippet');
+
   // Is user within their snippet limits?
   } else if (req.session.user.snippets + 1 > req.session.tier.snippets && req.session.tier.snippets !== 0) {
     req.flash('warning', 'You have used up your Snippet quota for the ' + req.session.tier.name + ' tier.');
@@ -187,14 +194,14 @@ router.post('/snippet', (req, res, next) => {
         return;
       }
       Snippet.add({name: req.body.name, description: req.body.description, owner: req.session.user.id, tags}).then(Snippet.getCond).then(model => {
-        fs.writeFile('./data/snippets/' + model.id + '.snippet', `
+        fs.writeFile('./data/snippets/' + model.id + '-1.snippet', `
 // Documentation: ${settings.general.basehref}documentation
 // Your awesome Snippet code here...`, 'utf8', err => {
 
           // Increment total Snippets for user
           User.incVal('snippets', 1, req.session.user.username).then(() => {
             req.flash('info', `Snippet ${model.name} was added successfully!`);
-            res.redirect(baseURL + '/code/snippet/' + model.ref);
+            res.redirect(`${baseURL}/code/snippet/${model.ref}/1`);
           });
         });
       });

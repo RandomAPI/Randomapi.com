@@ -13,16 +13,17 @@ var connection = mysql.createConnection({
   socketPath: db.socketPath,
   database:   db.database,
   user:       db.username,
-  password:   db.password
+  password:   db.password,
+  charset: "UTF8_UNICODE_CI"
 });
 
 module.exports.init = function(cb) {
 
   connection.connect(err => {
     if (err) {
-      logger('[db]: error connecting: ' + err.stack);
-      return;
+      return logger('[db]: error connecting: ' + err.stack);
     }
+
     logger('[db]: connected as id ' + connection.threadId);
     cb();
   });

@@ -4,8 +4,8 @@ const router  = express.Router();
 const logger  = require('../utils').logger;
 const syslog  = require('../utils').syslog;
 const stripe  = require('../utils').stripe;
-const missingProps = require('../utils').missingProps;
 const moment  = require('moment');
+const missingProps = require('../utils').missingProps;
 
 const User = require('../models/User');
 const Tier = require('../models/Tier');
@@ -17,6 +17,7 @@ let defaultVars, baseURL;
 router.all('*', (req, res, next) => {
   defaultVars = req.app.get('defaultVars');
   baseURL     = req.app.get('baseURL');
+
   if (!req.session.loggedin) {
     res.redirect(baseURL + '/');
   } else {
@@ -120,9 +121,12 @@ router.get('/subscription/upgrade', (req, res, next) => {
 });
 
 router.get('/subscription/attemptPayment', (req, res, next) => {
+
   let results = [];
   let error = false;
+
   Subscription.getUnpaidInvoices(req.session.subscription.cid).then(data => {
+
     // This should never happen
     if (data === null) {
       req.flash('warning', 'No unpaid invoices were found.');

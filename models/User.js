@@ -10,7 +10,7 @@ const Subscription = require('./Subscription');
 
 module.exports = {
   register(data, cb) {
-    var timezones = [
+    let timezones = [
       '-12.0', '-11.0', '-10.0', '-9.0', '-8.0', '-7.0', '-6.0',
       '-5.0', '-4.0', '-3.5', '-3.0', '-2.0', '-1.0', '0.0', '1.0',
       '2.0', '3.0', '3.5', '4.0', '4.5', '5.0', '5.5', '5.75', '6.0',
@@ -19,12 +19,15 @@ module.exports = {
       if (data.username.match(/^[a-zA-Z0-9]{1,20}$/)) {
         if (data.password === '') {
           reject({flash: 'Please provide a password!', redirect: '/register'});
+
         } else if (timezones.indexOf(data.timezone) === -1) {
           reject({flash: 'Invalid timezone selected!', redirect: '/register'});
+
         } else {
           this.getCond({username: data.username}).then(user => {
             if (user !== null) {
               reject({flash: 'This username is already in use!', redirect: '/register'});
+
             } else {
               this.addUser(data).then(Subscription.add).then(this.getCond).then(user => {
                 resolve({user, redirect: '/'});
@@ -43,8 +46,7 @@ module.exports = {
   keyExists(apikey) {
     return new Promise((resolve, reject) => {
       db.query('SELECT * FROM `user` WHERE ?', {apikey}, (err, data) => {
-        if (err) reject(err);
-        else resolve(data.length !== 0);
+        err ? reject(err) : resolve(data.length !== 0);
       });
     });
   },
@@ -65,6 +67,7 @@ module.exports = {
   getCond(cond) {
     return new Promise((resolve, reject) => {
       cond = andify(cond);
+
       if (cond.query !== undefined) {
         db.query('SELECT u.*, t.id AS tierID, \
         t.results AS tierResults, t.name AS tierName FROM `user` u \
@@ -92,12 +95,13 @@ module.exports = {
   },
   genRandomKey() {
     let key, dup;
+
     do {
       key = random(6, 16).match(/.{4}/g).join('-');
 
       this.keyExists(key).then(exists => {
         dup = exists;
-      }, () => {});
+      });
     } while(dup);
 
     return key;
@@ -148,7 +152,6 @@ module.exports = {
     });
   },
   decVal(key, value, username) {
-    value = Number(value);
-    return this.incVal(key, -value, username);
+    return this.incVal(key, -Number(value), username);
   }
 };

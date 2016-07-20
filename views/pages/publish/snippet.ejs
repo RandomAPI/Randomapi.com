@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <% include ../../snippets/header %>
+  <link rel="stylesheet" href="css/highlight/monokai-sublime.css">
+</head>
+<body>
+  <snippet hidden><%=snippet.ref%></snippet>
+  <% include ../../snippets/navbar %>
+  <div class="main">
+    <div class="two columns">
+      <% include ../../snippets/subnav %>
+    </div>
+    <div class="ten columns">
+      <h3>Publish Snippet <%=snippet.name%></h3>
+      <h5>Are you sure you want to publish Snippet <%=snippet.name%>?</h5>
+      <div class="snippetDisclaimer">
+        <input type='button' class='redButton' id='noPublish' value='Cancel'>&nbsp;
+        <input type='button' class='greenButton' id='confirmPublish' value='Publish Snippet'>
+
+        <p><b>tl;dr</b><br>
+        Published snippets:
+        <ul>
+          <li>Can be viewed by anyone</li>
+          <li>Can not be deleted (Doesn't count towards your used snippets)</li>
+          <li>Names are permanent</li>
+          <li>Source code can not be modified unless you create a new revision</li>
+        </ul>
+        </p>
+        <p>Publishing a snippet will make the snippet available for anyone to use in their APIs. This means that the source code, description, etc. will all be available publicly for anyone to see.<br><br>
+
+        Once a snippet is published, it CAN NOT be unpublished. This is to prevent other users' APIs from breaking if they were using your snippet. This also means that the source code and name for published snippets CAN NOT be modified once they are published. If you wish to modify the snippet after it is published, you can create a new revision of it from your published snippets tab. If you want to change the description or tags of previous revisions, you are free to do so.<br><br>
+
+        Published snippets are assigned a revision number and are accessed using the same require syntax. The only difference is the addition of a revision number like so: <pre><code class='javascript'>const mySnippet = require('<%=session.user.username%>/<%=snippet.name%>/<span class='green'>1</span>');
+const blah      = require('~<%=snippet.name%>/1');</code></pre>
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="ads">
+    <% include ../../snippets/ads %>
+  </div>
+  <% include ../../snippets/footer %>
+  <script src="js/highlight.pack.js"></script>
+  <script src="js/snippetPublish.js"></script>
+</body>
+</html>

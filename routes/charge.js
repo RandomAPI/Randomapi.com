@@ -6,15 +6,16 @@ const stripe  = require('../utils').stripe;
 const moment  = require('moment');
 
 const User = require('../models/User');
-const Subscription = require('../models/Subscription');
 const Plan = require('../models/Plan');
 const Tier = require('../models/Tier');
+const Subscription = require('../models/Subscription');
 
 // Setup defaultVars and baseURL for all routes
 let defaultVars, baseURL;
 router.all('*', (req, res, next) => {
   defaultVars = req.app.get('defaultVars');
   baseURL     = req.app.get('baseURL');
+
   if (!req.session.loggedin) {
     res.redirect(baseURL + '/');
   } else {
@@ -23,8 +24,6 @@ router.all('*', (req, res, next) => {
 });
 
 router.post('/', (req, res, next) => {
-  // (Assuming you're using express - expressjs.com)
-  // Get the credit card details submitted by the form
   var stripeToken = req.body.stripeToken;
 
   stripe.customers.create({
@@ -50,12 +49,14 @@ router.post('/', (req, res, next) => {
         }).then(() => {
 
           Tier.getCond({id: plan.tier}).then(tier => {
+            logger(`${req.session.user.username} just upgraded to the ${tier.name} tier!`);
             req.flash('info', `Your account was upgraded successfully to the ${tier.name} tier!`);
             res.redirect(baseURL + '/');
           });
         });
 
       }, () => {
+
         req.flash('warning', 'There was a problem upgrading your account');
         res.redirect(baseURL + '/upgrade');
       });
@@ -66,6 +67,7 @@ router.post('/', (req, res, next) => {
 // Update customer's credit card details
 router.post('/updateCard', (req, res, next) => {
   stripe.customers.createSource(req.session.subscription.cid, {source: req.body.stripeToken}, (err, card) => {
+
     if (err) {
       req.flash('warning', err.toString());
       res.redirect(baseURL + '/settings/subscription');
