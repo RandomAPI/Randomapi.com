@@ -1,11 +1,15 @@
-socket = io($('server').html());
-ref = $('ref').html();
+let socket = io($('server').html());
+let ref    = $('ref').html();
+let readonly = $('readonly').html();
 
 let editor = ace.edit("aceEditor");
 editor.setTheme("ace/theme/twilight");
 editor.session.setMode("ace/mode/javascript");
 editor.setValue(editor.getValue(), 1);
 editor.focus();
+if (readonly == "true") {
+  editor.setReadOnly(true);
+}
 
 $("#submit").click(() => {
   $.post('', {code: editor.getValue()}, url => {

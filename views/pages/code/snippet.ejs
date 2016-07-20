@@ -7,6 +7,7 @@
 <body>
   <server hidden><%=socket%></server>
   <ref hidden><%=snippet.ref%></ref>
+  <readonly hidden><%= version.published ? "true" : ""%></readonly>
   <% include ../../snippets/navbar %>
   <div class="main editor">
     <div class="two columns">
