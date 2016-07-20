@@ -482,8 +482,8 @@ Generator.prototype.availableFuncs = function() {
                   this.cache[obj] = {
                     added: new Date().getTime(),
                     contents: file,
-                    size: info.size,
-                    owner: info.owner,
+                    size: Number(info.size),
+                    owner: Number(info.owner),
                     lastUsed: new Date().getTime(),
                   };
 

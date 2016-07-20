@@ -263,7 +263,7 @@ GeneratorForker.prototype.fork = function() {
 
             redis.hgetall(obj, (err, obj) => {
               // Check if user is authorized to use this snippet
-              if (obj.published !== 1 && obj.owner !== msg.data.user.id) {
+              if (Number(obj.published) !== 1 && Number(obj.owner) !== msg.data.user.id) {
                 return this.generator.send({type: 'response', mode: 'snippet', data: false});
               }
 
