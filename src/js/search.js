@@ -67,7 +67,7 @@ $(() => {
       </p>
       <div id="revisionInfo">
         <p>
-        Created: <span id="created" class="date" data-date="${snippets[msg.snippetID].created}"></span><br>
+        Published: <span id="created" class="date" data-date="${snippets[msg.snippetID].created}"></span><br>
         Modified: <span id="modified" class="date" data-date="${snippets[msg.snippetID].modified}"></span><br>
         </p>
         Usage
