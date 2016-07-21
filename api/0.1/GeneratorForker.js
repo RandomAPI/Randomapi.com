@@ -3,10 +3,10 @@ const fork     = require('child_process').fork;
 const util     = require('util');
 const async    = require('async');
 const _        = require('lodash');
+const fs       = require('fs');
 const logger   = require('../../utils').logger;
 const redis    = require('../../utils').redis;
 const settings = require('../../settings');
-const fs       = require('fs');
 
 const API     = require('../../models/API');
 const List    = require('../../models/List');
@@ -32,16 +32,72 @@ const GeneratorForker = function(options) {
   this.attempted    = false;
   this.snippetCache = 0;
 
+  this.lastJobTime  = new Date().getTime();
+
+  const abuseLimit = 3; // 3 timeouts within 15 seconds = timeout for 30 seconds
+  let abuseCache   = {};
+  let timeout      = {};
+
+  function checkAbuse(error, id) {
+    // abuse is considered <abuseLimit> requests per second
+    // Block further requests until until 30 seconds have passed without another barrage
+    if (id in timeout) return true;
+    else if (error === null || error.error !== "Error: Script execution timed out.") return false;
+
+    if (!(id in abuseCache)) {
+      abuseCache[id] = {
+        firstAccess: new Date().getTime(),
+        lastAccess:  new Date().getTime(),
+        total: 1
+      };
+
+    // Update current stats
+    } else {
+      abuseCache[id].lastAccess = new Date().getTime();
+      abuseCache[id].total++;
+    }
+
+    // Check for abuse
+    if (abuseCache[id] && abuseCache[id].total > abuseLimit && abuseCache[id].lastAccess - abuseCache[id].firstAccess < 15000) {
+      timeout[id] = new Date().getTime(); // time they were placed into time out
+      return true;
+    }
+    return false;
+  }
+
+  function checkTimeout() {
+    _.each(timeout, (a, b) => {
+      if (new Date().getTime() - a > 30000) {
+        delete timeout[b];
+      }
+    });
+  }
+
+  // Reset abuse cache every 15 seconds
+  setInterval(() => {
+    abuseCache = {};
+  }, 15000);
+
+  setInterval(checkTimeout, 30000);
+
   // Queue to push generate requests into
   this.queue = async.queue((task, callback) => {
     this.jobCount++;
+    this.lastJobTime  = new Date().getTime();
 
     // Linter, Demo, or normal request?
     if (task.socket !== undefined) {
       if (task.data.type === "snippet") {
         var options = {key: null, src: task.data.src, ref: null};
 
+        if (checkAbuse(null, task.socket.id)) {
+          task.socket.emit('abuse');
+          return callback();
+        }
+
         this.generate({mode: 'snippet', options}, (error, results, fmt) => {
+          checkAbuse(error, task.socket.id);
+
           results = JSON.stringify(JSON.parse(results).results[0], null, 2);
           if (results.length > 65535) {
             results = "Warning: Output has been truncated\n----------\n" + results.slice(0, 65535) + "\n----------";
@@ -58,7 +114,15 @@ const GeneratorForker = function(options) {
         } else {
           options = {key: task.data.owner.apikey, src: task.data.src, ref: task.data.ref};
         }
+
+        if (checkAbuse(null, task.socket.id)) {
+          task.socket.emit('abuse');
+          return callback();
+        }
+
         this.generate({mode: 'lint', options}, (error, results, fmt) => {
+          checkAbuse(error, task.socket.id);
+
           results = JSON.stringify(JSON.parse(results).results[0], null, 2);
           if (results.length > 65535) {
             results = "Warning: Output has been truncated\n----------\n" + results.slice(0, 65535) + "\n----------";
@@ -99,6 +163,7 @@ const GeneratorForker = function(options) {
         } else {
           task.res.status(200).send(results);
         }
+
         callback();
       });
     }
@@ -114,7 +179,7 @@ const GeneratorForker = function(options) {
     setTimeout(() => {
       if (new Date().getTime()/1000 - self.lastReplied > 10 && !self.attempted) {
         self.generator = null;
-        logger(`[generator ${self.name}]: Generator crashed...attempting to restart`)
+        logger(`[generator ${self.name}]: Generator crashed...attempting to restart`);
         self.fork();
         self.attempted = true;
       }
@@ -162,6 +227,14 @@ const GeneratorForker = function(options) {
       self.snippetCache = Math.floor(data/1024/1024);
       clearTimeout(statTimeouts);
     });
+
+    if (
+      new Date().getTime() - self.lastJobTime > self.info.execTime*1000 + 5000 &&
+      self.queueLength() !== 0
+    ) {
+      logger(`[generator ${self.name}]: Generator appears hung on task...attempting to purge queue`);
+      self.killQueue();
+    }
   }
 };
 
@@ -201,17 +274,13 @@ GeneratorForker.prototype.fork = function() {
 
             redis.hgetall("list:" + msg.data.ref, (err, obj) => {
 
-              // Verify user has permission to access this list
-              if (Number(obj.owner) === msg.data.user.id && obj.ref !== undefined) {
-
-                // Update lastUsed time
-                redis.hset("list:" + obj.ref, "lastUsed", new Date().getTime());
-              }
+              // Update lastUsed time
+              redis.hset("list:" + obj.ref, "lastUsed", new Date().getTime());
 
               this.generator.send({
                 type: 'response',
                 mode: 'list',
-                data: Number(obj.owner) === msg.data.user.id
+                data: Number(obj.owner) === msg.data.user.id // Verify user has permission to access this list
               });
             });
 
@@ -261,22 +330,35 @@ GeneratorForker.prototype.fork = function() {
           // Snippet exists in the cache
           if (result === 1) {
 
-            redis.hgetall(obj, (err, obj) => {
+            redis.hgetall(obj, (err, ret) => {
               // Check if user is authorized to use this snippet
-              if (Number(obj.published) !== 1 && Number(obj.owner) !== msg.data.user.id) {
-                return this.generator.send({type: 'response', mode: 'snippet', data: false});
-              }
+              if (Number(ret.published) !== 1 && Number(ret.owner) !== msg.data.user.id) {
+                return this.generator.send({
+                  type: 'response',
+                  mode: 'snippet',
+                  data: {
+                    signature: msg.data.signature,
+                    status: false
+                  },
+                });
+              } else {
 
-              // Update TTL
-              redis.expire(obj, settings.generators[this.name].redisSnippetTTL);
-              redis.expire(`${obj}:contents`, settings.generators[this.name].redisSnippetTTL);
+                // Update TTL
+                redis.expire(obj, settings.generators[this.name].redisSnippetTTL);
+                redis.expire(`${obj}:contents`, settings.generators[this.name].redisSnippetTTL);
 
-              // Update lastUsed time
-              if (obj.ref !== undefined) {
+                // Update lastUsed time
                 redis.hset(obj, "lastUsed", new Date().getTime());
-              }
 
-              this.generator.send({type: 'response', mode: 'snippet', data: true});
+                this.generator.send({
+                  type: 'response',
+                  mode: 'snippet',
+                  data: {
+                    signature: msg.data.signature,
+                    status: true
+                  },
+                });
+              }
             });
 
           // Add snippet to cache if user has permission
@@ -285,31 +367,60 @@ GeneratorForker.prototype.fork = function() {
             User.getCond({username: msg.data.user.username}).then(user => {
               if (user === null) user = {id: -1};
               let query = {username: tmp[0], name: tmp[1]};
-
               Snippet.getCond(query).then(doc => {
 
                 // No matching snippet found
                 if (doc === null) {
-                  return this.generator.send({type: 'response', mode: 'snippet', data: false});
+                  return this.generator.send({
+                    type: 'response',
+                    mode: 'snippet',
+                    data: {
+                      signature: msg.data.signature,
+                      status: false
+                    },
+                  });
                 }
 
-                // If not published, use version 1
-                let version = doc.published === 0 ? 1 : Number(tmp[2]);
+                // If not published and no version number specified, use version 1
+                let version = doc.published === 0 && tmp[2] === undefined ? 1 : Number(tmp[2]);
 
                 // Published snippets require version number
-                if (doc.published && version === undefined) {
-                  return this.generator.send({type: 'response', mode: 'snippet', data: "missing_version"});
+                if (doc.published && version === undefined || isNaN(version)) {
+                  this.generator.send({
+                    type: 'response',
+                    mode: 'snippet',
+                    data: {
+                      signature: msg.data.signature,
+                      status: false,
+                      msg: "missing_version"
+                    },
+                  });
+                  return;
                 }
-
                 Version.getVersion(doc.ref, version).then(ver => {
 
                   if (ver === null) {
-                    this.generator.send({type: 'response', mode: 'snippet', data: "invalid_version"});
+                    this.generator.send({
+                      type: 'response',
+                      mode: 'snippet',
+                      data: {
+                        signature: msg.data.signature,
+                        status: false,
+                        msg: "invalid_version"
+                      },
+                    });
                   }
 
                   // If snippet isn't published and this is a demo user OR the user doesn't own snippet
                   else if ((!ver.published && user === null) || (!ver.published && user.id !== doc.owner)) {
-                    this.generator.send({type: 'response', mode: 'snippet', data: false});
+                    this.generator.send({
+                      type: 'response',
+                      mode: 'snippet',
+                      data: {
+                        signature: msg.data.signature,
+                        status: false
+                      },
+                    });
 
                   } else {
                     fs.readFile(process.cwd() + '/data/snippets/' + doc.id + '-' + ver.version + '.snippet', 'utf8', (err, file) => {
@@ -331,7 +442,14 @@ GeneratorForker.prototype.fork = function() {
                           // Add TTL
                           redis.expire(obj, settings.generators[this.name].redisSnippetTTL);
                           redis.expire(`${obj}:contents`, settings.generators[this.name].redisSnippetTTL);
-                          this.generator.send({type: 'response', mode: 'snippet', data: true});
+                          this.generator.send({
+                            type: 'response',
+                            mode: 'snippet',
+                            data: {
+                              signature: msg.data.signature,
+                              status: true
+                            },
+                          });
                         });
                       });
                     });
@@ -391,6 +509,10 @@ GeneratorForker.prototype.generate = function(opts, cb) {
 // Get current task queue length
 GeneratorForker.prototype.queueLength = function() {
   return this.queue.length();
+};
+
+GeneratorForker.prototype.killQueue = function() {
+  this.queue.kill();
 };
 
 GeneratorForker.prototype.totalJobs = function() {

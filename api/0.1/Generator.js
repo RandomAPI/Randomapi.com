@@ -1,4 +1,4 @@
-const mersenne     = require('mersenne');
+const mersenne     = new (require('mersenne-twister'));
 const crypto       = require('crypto');
 const YAML         = require('yamljs');
 const js2xmlparser = require('js2xmlparser');
@@ -34,7 +34,7 @@ const Generator = function(name, options) {
   this.originalContext = [
     'random', 'list', 'hash', 'timestamp',
     'require', '_APIgetVars', '_APIresults',
-    '_APIstack', '_APIerror', 'getVar', 'stacktrace'
+    '_APIstack', '_APIerror', 'getVar', 'stacktrace', 'prng'
   ];
 
   this.reservedObjects = {
@@ -110,7 +110,7 @@ const Generator = function(name, options) {
         this.emit('listResponse', msg.data);
 
       } else if (msg.mode === 'snippet') {
-        this.emit('snippetResponse', msg.data);
+        this.emit(`snippetResponse:${msg.data.signature}`, msg.data);
       }
 
     } else if (msg.type === 'cmd') {
@@ -320,7 +320,7 @@ ${this.src}
       } else {
         this.sandBox = new vm.Script(`
           'use strict'
-          var _APIgetVars = ${JSON.stringify(this.options)};
+          var _APIgetVars = ${JSON.stringify(_.defaults(this.options, {seed: this.seed, numericSeed: this.numericSeed}))};
           var _APIresults = [];
           var _APIlogs = [];
           var _APIerror = null;
@@ -399,7 +399,7 @@ Generator.prototype.seedRNG = function() {
   let seed = this.page !== 1 ? this.seed + String(this.page) : this.seed;
 
   this.numericSeed = parseInt(crypto.createHash('md5').update(seed).digest('hex').substring(0, 8), 16);
-  mersenne.seed(this.numericSeed);
+  mersenne.init_seed(this.numericSeed);
 };
 
 Generator.prototype.defaultSeed = function() {
@@ -446,11 +446,6 @@ Generator.prototype.availableFuncs = function() {
           // Update local cache lastUsed date
           // Also update redis cache lastUsed date
           this.cache[obj].lastUsed = new Date().getTime();
-          redis.exists("list:" + obj + ":contents", (err, result) => {
-            if (result === 1) {
-              redis.hmset("list:" + obj, 'lastUsed', new Date().getTime());
-            }
-          });
 
           if (num !== undefined) {
             if (num < 1 || num > this.cache[obj].contents.length) {
@@ -568,7 +563,8 @@ Generator.prototype.availableFuncs = function() {
     },
     timestamp: () => funcs.timestamp(),
     stacktrace: () => funcs.stacktrace(),
-    require: lib => funcs.require(lib)
+    require: lib => funcs.require(lib),
+    prng
   };
 };
 
@@ -594,13 +590,7 @@ Generator.prototype.require = function(signature) {
     if (this.snippetCache[obj].published === 1 || this.snippetCache[obj].owner === this.user.id) {
 
       // Update local snippet cache lastUsed date
-      // Also update redis snippet cache lastUsed date
       this.snippetCache[obj].lastUsed = new Date().getTime();
-      redis.exists(`snippet:${obj}:contents`, (err, result) => {
-        if (result === 1) {
-          redis.hmset(`snippet:${obj}`, 'lastUsed', new Date().getTime());
-        }
-      });
       return this.snippetCache[obj].snippet;
     } else {
       throw new Error(`Snippet signature ${obj} wasn't recognized`);
@@ -615,18 +605,21 @@ Generator.prototype.require = function(signature) {
     let done = false;
     let contents = null;
 
-    this.once('snippetResponse', result => {
-      if (result === false) {
+    this.once(`snippetResponse:${signature}`, result => {
+      // Generic unrecognized snippet
+      if (result.status === false && result.msg === undefined) {
+        done = true;
         throw new Error(`Snippet signature ${obj} wasn't recognized`);
-        done = true;
 
-      } else if (result === "missing_version") {
+      } else if (result.msg === "missing_version") {
+        done = true;
         throw new Error(`Version number is missing`);
+
+      } else if (result.msg === "invalid_version") {
         done = true;
-      } else if (result === "invalid_version") {
         throw new Error(`Invalid version number`);
-        done = true;
-      } else {
+
+      } else if (!done) {
         redis.GET(`snippet:${obj}:contents`, (err, snippet) => {
 
           // Fetch metadata for snippet and store in local generator snippet cache
@@ -694,13 +687,13 @@ Generator.prototype.updateRequires = function() {
     // Don't let snippets include other snippets
     if (this.mode === 'snippet') resolve();
     else {
-      let rawMatches = this.src.match(/require\(['"](?:((?:.*)\/(?:.*))|(~.*))['"]\)/g);
+      let rawMatches = this.src.match(/require\((?:["'`]([A-z0-9]*\/[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]*(?:\/[0-9]*?)?|~.[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]*(?:\/[0-9]*?)?)["'`]\))/g);
       let index = 0;
 
       try {
         // There are matches
         if (rawMatches !== null) {
-          let reg = new RegExp(/require\(['"](?:((?:.*)\/(?:.*))|(~.*))['"]\)/g);
+          let reg = new RegExp(/require\((?:["'`]([A-z0-9]*\/[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]*(?:\/[0-9]*?)?|~.[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]*(?:\/[0-9]*?)?)["'`]\))/g);
           let match = reg.exec(this.src);
           while (match !== null) {
             let result = (match[1] || match[2]).trim();
@@ -834,8 +827,12 @@ const randomItem = arr => {
 const range = (min, max) => {
   if (!Number.isInteger(min) || !Number.isInteger(max)) throw new TypeError('Non numeric arguments provided');
   if (max < min) throw new RangeError('min is greater than max');
-  return min + mersenne.rand(max-min+1);
+  return Math.floor(mersenne.random() * (max - min + 1)) + min;
 };
+
+function prng() {
+  return mersenne.random();
+}
 
 const log = msg => {
   process.send({type: 'logger', content: String(msg)});
