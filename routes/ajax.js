@@ -25,7 +25,7 @@ router.get('/snippetLookup/:ref?/:version?', (req, res, next) => {
   let version = req.params.version;
 
   Version.getVersion(ref, version).then(ver => {
-    if (ver === null) {
+    if (ver === null || ver.published === 0) {
       return res.redirect(baseURL + '/');
     }
 

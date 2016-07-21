@@ -79,7 +79,7 @@ router.post('/api/:ref', (req, res, next) => {
     } else {
       let name = req.body.rename;
       if (name === undefined || name === "") name = doc.name;
-      if (name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/) === null) {
+      if (name.match(/^[A-z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/) === null) {
         req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
         res.redirect(baseURL + '/edit/api/' + req.params.ref);
       } else {
@@ -132,7 +132,7 @@ router.post('/list/:ref', (req, res, next) => {
       } else {
         let name = req.body.rename;
         if (name === undefined || name === "") name = doc.name;
-        if (name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/) === null) {
+        if (name.match(/^[A-z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/) === null) {
           req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
           res.redirect(baseURL + '/view/api/' + req.params.ref);
         } else if (req.file === undefined) {
@@ -222,7 +222,7 @@ router.post('/snippet/:ref?/:version?', (req, res, next) => {
   }
 
   let tags = _.uniq(req.body.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== ""));
-  let rejects = tags.filter(tag => tag.match(/^([a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32})$/g) === null);
+  let rejects = tags.filter(tag => tag.match(/^([A-z0-9 _\-\.+\[\]\{\}\(\)]{1,32})$/g) === null);
 
   Snippet.getCond({ref}).then(doc => {
     if (doc.owner !== req.session.user.id) {
@@ -238,7 +238,7 @@ router.post('/snippet/:ref?/:version?', (req, res, next) => {
       req.flash('warning', 'Names can\'t be changed for Published Snippets');
       res.redirect(`${baseURL}/edit/snippet/${ref}${versionFmt}`);
 
-    } else if (name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/) === null) {
+    } else if (name.match(/^[A-z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/) === null) {
       req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
       res.redirect(`${baseURL}/edit/snippet/${ref}${versionFmt}`);
 

@@ -69,7 +69,7 @@ router.post('/api', (req, res, next) => {
     req.flash('warning', 'Please provide a name for your API');
     res.redirect(baseURL + '/new/api');
 
-  } else if (!req.body.name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/)) {
+  } else if (!req.body.name.match(/^[A-z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/)) {
     req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
     res.redirect(baseURL + '/new/api');
 
@@ -121,7 +121,7 @@ router.post('/list', (req, res, next) => {
       }
       res.redirect(baseURL + '/new/list');
 
-    } else if (!req.body.name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/)) {
+    } else if (!req.body.name.match(/^[A-z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/)) {
       req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
       res.redirect(baseURL + '/new/list');
 
@@ -158,14 +158,14 @@ router.post('/snippet', (req, res, next) => {
   }
 
   let tags = _.uniq(req.body.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== ""));
-  let rejects = tags.filter(tag => tag.match(/^([a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32})$/g) === null);
+  let rejects = tags.filter(tag => tag.match(/^([A-z0-9 _\-\.+\[\]\{\}\(\)]{1,32})$/g) === null);
 
   if (req.body.name === '') {
     req.flash('warning', 'Please provide a name for your Snippet');
     res.redirect(baseURL + '/new/snippet');
 
   // Make sure snippet name meets requirements
-  } else if (!req.body.name.match(/^[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/)) {
+  } else if (!req.body.name.match(/^[A-z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/)) {
     req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
     res.redirect(baseURL + '/new/snippet');
 

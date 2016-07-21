@@ -92,7 +92,7 @@ function snippetDeletePrompt(ref, name) {
 }
 
 function updateDates() {
-    $('.date').each((index, date) => {
-      $(date).html(moment(new Date($(date).data('date'))/*, "MMDDYYHHmmss"*/).fromNow());
-    });
-  }
+  $('.date').each((index, date) => {
+    $(date).html(moment(new Date($(date).data('date'))/*, "MMDDYYHHmmss"*/).fromNow());
+  });
+}
