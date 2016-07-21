@@ -30,12 +30,6 @@ html {
   padding-right: 8px;
 }
 
-@media screen and (max-width: 760px) {
-  #navbar {
-    display: none;
-  }
-}
-
 .nav ul .selected {
   font-weight: bold;
   color: #0CB863;
@@ -134,7 +128,6 @@ section.login .flash {
 
 section.register {
   margin: auto;
-  width: 600px;
   text-align: center;
 }
 section.register .title {
@@ -345,8 +338,9 @@ section.triplesec {
 }
 
 .recaptcha {
-  width: 50%;
-  margin: 0 auto 15px auto;
+  margin: auto;
+  display: table;
+  margin-bottom: 10px;
 }
 
 /* https://codepen.io/rdallaire/pen/apoyx */
@@ -410,3 +404,105 @@ input:read-only {
   background-color: #d1d1d1;
   color: #414141;
 }
+
+@media screen and (max-width: 900px) {
+  #navbar {
+    display: none;
+  }
+
+  section.triplesec {
+    width: 100%;
+    height: auto;
+    background-color: #F4F4F4;
+    clear: both;
+  }
+
+  section.triplesec div {
+    margin-bottom: 50px;
+  }
+
+  section.triplesec div p {
+    text-align: center;
+  }
+
+  .tripleTitle {
+    text-align: center;
+  }
+
+  .tripleInfo {
+    font-size: 14pt;
+  }
+
+  section.hero {
+    margin: auto;
+  }
+
+  section.hero #subtitle {
+    margin: auto;
+    width: 100%;
+    font-size: 16pt;
+  }
+
+  .navLogo {
+
+  }
+
+  .freeLogo h3 {
+    margin-top: 15px;
+    margin-left: 15px;
+    font-size: 3.6rem;
+    margin-bottom: 0rem;
+  }
+
+  h3 {
+    font-size: 2.5rem;
+  }
+
+  #subtitle {
+    font-size: 12pt !important;
+  }
+
+  .main {
+    padding: 5px;
+  }
+
+  .ads {
+    display: none;
+  }
+
+  #subnav {
+    display: none;
+  }
+
+  section.tryitout {
+    width: 90% !important;
+  }
+
+  section.tryitout h4 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem !important;
+  }
+
+  #aceEditor {
+    width: 100% !important;
+  }
+
+  #lintButton {
+    display: none;
+  }
+
+  #preview {
+    margin-top: -15px !important;
+    margin-left: 0px !important;
+    margin-bottom: 15px !important;
+    float: left !important;
+    width: 100% !important;
+  }
+
+  #results {
+    padding: 0px !important;
+  }
+
+}
+
+.invisible { display: none; }

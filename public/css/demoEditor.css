@@ -1,8 +1,9 @@
 #preview {
-  margin-top: -29px;
+  margin-top: -40px;
+  margin-left: 25px;
   position: relative;
   float: right;
-  width: 35%;
+  width: 45%;
   height: 250px;
 }
 
@@ -12,12 +13,16 @@
   white-space: -pre-wrap;      /* Opera 4-6 */
   white-space: -o-pre-wrap;    /* Opera 7 */
   word-wrap: break-word;       /* Internet Explorer 5.5+ */
-  height: 175px;
+  height: 250px;
+  border: solid #CECECE 1px !important;
+  margin-top: 0px;
+  width: 100%;
+  padding: 5px;
 }
 
 #aceEditor {
   float: left;
-  width: 60%;
+  width: 50%;
   margin-top: 5px;
   height: 250px;
 }

@@ -4,6 +4,7 @@
   float: right;
   width: 35%;
   height: 500px;
+  border: solid #CECECE 1px !important;
 }
 
 #results {
