@@ -224,8 +224,12 @@ screen.key(['C-l'], (ch, key) => {
 screen.key(['C-v'], (ch, key) => {
   logger('Rebuilding views');
   let gulp = require('child_process').spawn('gulp');
-  gulp.on('close', (code) => {
-    logger('Finished rebuilding views');
+  gulp.on('close', code => {
+    if (code !== 0) {
+      logger(`An error occured while rebuilding views!`);
+    } else {
+      logger('Finished rebuilding views');
+    }
   });
 });
 
