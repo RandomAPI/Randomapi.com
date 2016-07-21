@@ -12,12 +12,7 @@ let defaultVars, baseURL;
 router.all('*', (req, res, next) => {
   defaultVars = req.app.get('defaultVars');
   baseURL     = req.app.get('baseURL');
-
-  if (!req.session.loggedin) {
-    res.redirect(baseURL + '/');
-  } else {
-    next();
-  }
+  next();
 });
 
 router.get('/snippetLookup/:ref?/:version?', (req, res, next) => {

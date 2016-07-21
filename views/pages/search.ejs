@@ -9,10 +9,19 @@
   <server hidden><%=socket%></server>
   <% include ../snippets/navbar %>
   <div class="main">
+  <%
+  let size = "five";
+  if (session.loggedin) {
+  %>
     <div class="two columns">
       <% include ../snippets/subnav %>
     </div>
-    <div class="five columns">
+  <%
+  } else {
+    size = "six"
+  }
+  %>
+    <div class="<%=size%> columns">
       <h3>Search</h3>
       <input type='text' id='search' name='search' placeholder='Search for a snippet' maxlength='255' autofocus autocomplete='off'>
       <span id='found'><span class='green' id='foundNum'>0</span> snippet<span id='s'>s</span> found</span>
@@ -29,7 +38,7 @@
         </tbody>
       </table>
     </div>
-    <div class="five columns">
+    <div class="<%=size%> columns">
       <div id='snippetInfo'>
       </div>
     </div>

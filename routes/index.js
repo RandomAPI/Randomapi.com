@@ -116,12 +116,8 @@ router.get('/register/guest', (req, res, next) => {
 });
 
 router.get('/search', (req, res, next) => {
-  if (req.session.loggedin) {
-    res.render('search', _.merge(defaultVars, {socket: ':' + settings.general.socket, title: 'Search'}));
-  } else {
-    res.render('index', _.merge(defaultVars, {socket: ':' + settings.general.socket, title: 'Search'}));
-  }
-})
+  res.render('search', _.merge(defaultVars, {socket: ':' + settings.general.socket, title: 'Search'}));
+});
 
 router.post('/register', (req, res, next) => {
   if (missingProps(req.body, ['username', 'password', 'timezone', 'g-recaptcha-response']) && process.env.spec !== "true") {
