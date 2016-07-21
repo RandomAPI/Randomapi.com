@@ -1,5 +1,6 @@
 const express  = require('express');
 const _        = require('lodash');
+const moment   = require('moment');
 const fs       = require('fs');
 const router   = express.Router();
 const settings = require('../settings.json');
@@ -68,7 +69,7 @@ router.get('/snippet/:ref?/confirm', (req, res, next) => {
       Snippet.update({published: 1}, snippet.id)
       .then(Version.getVersion(ref, 1)
         .then(ver => {
-          Version.update({published: 1}, ver.id);
+          Version.update({published: 1, created: moment(new Date()).format("YYYY-MM-DD HH:mm:ss")}, ver.id);
         })
       )
       .then(User.decVal('snippets', 1, req.session.user.username))
@@ -83,7 +84,7 @@ router.get('/snippet/:ref?/confirm', (req, res, next) => {
     } else {
       Snippet.modified(snippet.id).then(() => {
         Version.getCond({snippetID: snippet.id}).then(ver => {
-          Version.update({published: 1}, ver.id).then(() => {
+          Version.update({published: 1, created: moment(new Date()).format("YYYY-MM-DD HH:mm:ss")}, ver.id).then(() => {
             req.app.get('removeSnippet')(`${req.session.user.username}/${snippet.name}/${snippet.version}`); // broken
             req.app.get('removeSnippet')(`${req.session.user.username}/${snippet.name}`);
             req.flash('info', `Revision ${ver.version} for Snippet ${snippet.name} was published successfully!`);
