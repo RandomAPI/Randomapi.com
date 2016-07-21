@@ -160,7 +160,7 @@ let loads = {
 };
 
 let instructions = grid.set(11, 0, 1, 12, contrib.markdown, {
-  markdown: '**^G** Manual GC\t**^V** Rebuild views\t**^R** Empty Redis List Cache\n**^Q** Quit\t\t **^C** Clear log\t\t**^L** Empty Generator List Cache'
+  markdown: '**^G** Manual GC\t**^V** Rebuild views\t**^R** Empty Redis Cache\n**^Q** Quit\t\t **^C** Clear log\t\t**^L** Empty Generator Cache'
 });
 
 const updateDonut = () => {
@@ -204,7 +204,7 @@ screen.key(['C-g'], (ch, key) => {
 });
 
 screen.key(['C-r'], (ch, key) => {
-  logger('Emptying Redis List Cache');
+  logger('Emptying Redis Cache');
   redis.keys("*", (err, lists) => {
     lists
       .filter(item => item.match(/(list\:|snippet\:)/) !== null)
@@ -213,12 +213,12 @@ screen.key(['C-r'], (ch, key) => {
 });
 
 screen.key(['C-l'], (ch, key) => {
-  logger('Emptying Generator List Cache');
-  Generators.basic.forEach(gen => gen.emptyListCache());
-  Generators.standard.forEach(gen => gen.emptyListCache());
-  Generators.premium.forEach(gen => gen.emptyListCache());
-  Generators.realtime.forEach(gen => gen.emptyListCache());
-  Generators.demo.forEach(gen => gen.emptyListCache());
+  logger('Emptying Generator Cache');
+  Generators.basic.forEach(gen => gen.emptyListCache() && gen.emptySnippetCache());
+  Generators.standard.forEach(gen => gen.emptyListCache() && gen.emptySnippetCache());
+  Generators.premium.forEach(gen => gen.emptyListCache() && gen.emptySnippetCache());
+  Generators.realtime.forEach(gen => gen.emptyListCache() && gen.emptySnippetCache());
+  Generators.demo.forEach(gen => gen.emptyListCache() && gen.emptySnippetCache());
 });
 
 screen.key(['C-v'], (ch, key) => {
