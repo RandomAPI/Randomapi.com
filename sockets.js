@@ -9,6 +9,54 @@ const Generators = app.get('Generators');
 const Snippet = require('./models/Snippet');
 const Version = require('./models/Version');
 
+const abuseLimit = 20;
+let abuseCache   = {};
+let timeout      = {};
+
+function checkAbuse(id) {
+  // abuse is considered <abuseLimit> requests per second from same socket
+  // Block further requests until until 5 seconds have passed without another barrage
+
+  if (!(id in abuseCache)) {
+    abuseCache[id] = {
+      firstAccess: new Date().getTime(),
+      lastAccess:  new Date().getTime(),
+      total: 1
+    };
+
+  // Update current stats
+  } else {
+    abuseCache[id].lastAccess = new Date().getTime();
+    abuseCache[id].total++;
+  }
+
+  // Check for abuse
+  if (abuseCache[id] && abuseCache[id].total > abuseLimit && abuseCache[id].lastAccess - abuseCache[id].firstAccess < 1000) {
+    timeout[id] = new Date().getTime(); // time they were placed into time out
+    return true;
+  }
+
+  if (id in timeout) {
+    return true;
+  }
+  return false;
+}
+
+function checkTimeout() {
+  _.each(timeout, (a, b) => {
+    if (new Date().getTime() - a > 1000) {
+      delete timeout[b];
+    }
+  });
+}
+
+// Reset abuse cache every second
+setInterval(() => {
+  abuseCache = {};
+}, 1000);
+
+setInterval(checkTimeout, 2500);
+
 // Attach the user's session to the socket object
 // If user isn't logged in, set session to null for front page demo
 io.use((socket, next) => {
@@ -27,8 +75,11 @@ io.use((socket, next) => {
 });
 
 io.on('connection', socket => {
+
   // Search
   socket.on('search', msg => {
+    if (checkAbuse(socket.id)) return socket.emit('abuse');
+
     let tags = _.uniq(msg.query.slice(0, 255).split(',').map(tag => tag.trim()).filter(tag => tag !== "")).filter(tag => tag.match(/^([a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]{1,32})$/g) !== null);
     Snippet.search(tags).then(data => {
       let obj = data.reduce(function(o, v, i) {
@@ -41,11 +92,27 @@ io.on('connection', socket => {
 
   // Snippet info
   socket.on('snippet', msg => {
-    Version.getCond({snippetID: msg.id}).then(snippet => socket.emit('snippetResults', snippet));
+    if (checkAbuse(socket.id)) return socket.emit('abuse');
+
+    Version.getCond({snippetID: msg.id}).then(snippet => {
+      Snippet.getCond({['s.id']: snippet.snippetID}).then(orig => {
+        if (snippet === null) {
+          socket.emit('snippetResults', null);
+        } else if (snippet.published === 0) {
+          Version.getVersion(orig.ref, snippet.version-1).then(ver => {
+            socket.emit('snippetResults', ver)
+          });
+        } else {
+          socket.emit('snippetResults', snippet)
+        }
+      });
+    });
   });
 
   // Generators
   socket.on('lintCode', msg => {
+    if (checkAbuse(socket.id)) return socket.emit('abuse');
+
     msg.code = String(msg.code).slice(0, 8192);
     let shortest = Math.floor(Math.random() * Generators.realtime.length);
     for (let i = 0; i < Generators.realtime.length; i++) {
@@ -68,6 +135,8 @@ io.on('connection', socket => {
   });
 
   socket.on('lintDemoCode', msg => {
+    if (checkAbuse(socket.id)) return socket.emit('abuse');
+
     msg.code = String(msg.code).slice(0, 8192);
     let shortest = Math.floor(Math.random() * Generators.demo.length);
     for (let i = 0; i < Generators.demo.length; i++) {
@@ -90,6 +159,8 @@ io.on('connection', socket => {
   });
 
   socket.on('lintSnippetCode', msg => {
+    if (checkAbuse(socket.id)) return socket.emit('abuse');
+
     msg.code = String(msg.code).slice(0, 8192);
     let shortest = Math.floor(Math.random() * Generators.realtime.length);
     for (let i = 0; i < Generators.realtime.length; i++) {

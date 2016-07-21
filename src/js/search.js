@@ -46,8 +46,14 @@ $(() => {
   socket.on('snippetResults', msg => {
     $('#snippetInfo').empty();
 
-    let revisions = "<select name='revision'>";
-    for (let i = msg.version; i >= 1; i--) {
+    let revisions = "<select name='revision'>",
+        sub = 0;
+
+    if (msg.published === 0) {
+      sub = 1;
+    }
+
+    for (let i = msg.version-sub; i >= 1; i--) {
       revisions += `<option value='${i}'>${i}</option>`;
     }
     revisions += "</select>";
@@ -56,7 +62,7 @@ $(() => {
       Choose a revision:
       ${revisions}
       <p>Owner: ${snippets[msg.snippetID].user}<br>
-      Total revisions: ${msg.version}<br>
+      Total revisions: ${msg.version-sub}<br>
       Tags: ${snippets[msg.snippetID].tags.join(", ")}
       </p>
       <div id="revisionInfo">
@@ -64,12 +70,12 @@ $(() => {
         Created: <span id="created" class="date" data-date="${snippets[msg.snippetID].created}"></span><br>
         Modified: <span id="modified" class="date" data-date="${snippets[msg.snippetID].modified}"></span><br>
         </p>
+        Usage
+        <pre><code id='usage' class="javascript">const mySnippet = require('${snippets[msg.snippetID].user}/${snippets[msg.snippetID].name}/${msg.version}');</code></pre>
         Snippet Description<br>
         <textarea id='snippetDescription' rows='5' readonly>${snippets[msg.snippetID].description}</textarea>
         Revision Description<br>
         <textarea id='revisionDescription' rows='5' readonly></textarea>
-        Usage
-        <pre><code id='usage' class="javascript">const mySnippet = require('${snippets[msg.snippetID].user}/${snippets[msg.snippetID].name}/${msg.version}');</code></pre>
       </div>
     `);
 
@@ -86,7 +92,6 @@ $(() => {
 function updateRevision() {
   let self = $("select[name='revision']");
   $.when($.ajax(`ajax/snippetLookup/${snippets[selected].ref}/${self.val()}`)).then(function(data) {
-    console.log(data);
     $('#created').data('date', data.created);
     $('#modified').data('date', data.modified);
     $('#revisionDescription').val(data.description);

@@ -1,15 +1,15 @@
 socket = io($('server').html());
 
-let editor = ace.edit("aceEditor");
+let typingTimer, lastAbuse;
+let editor   = ace.edit("aceEditor");
+let codeArea = $(editor.textInput.getElement());
+
 editor.setTheme("ace/theme/twilight");
 editor.session.setMode("ace/mode/javascript");
 editor.setValue(editor.getValue(), 1);
 editor.focus();
-
 lintCode();
 
-let typingTimer;
-let codeArea = $(editor.textInput.getElement());
 codeArea.keyup(() => {
   clearTimeout(typingTimer);
   typingTimer = setTimeout(lintCode, 250);
@@ -25,6 +25,23 @@ socket.on('codeLinted', msg => {
   } else {
     $('#results').html(msg.error.formatted);
   }
+});
+
+socket.on('abuse', msg => {
+  if (new Date().getTime() - lastAbuse < 1000) return;
+  lastAbuse = new Date().getTime();
+  noty({
+    text: "An error has occurred, please try again later.",
+    layout: 'top',
+    type: 'error',
+    theme: 'relax',
+    timeout: 2500,
+    closeWith: ['click'],
+    animation: {
+      open: 'animated flipInX',
+      close: 'animated flipOutX'
+    }
+  });
 });
 
 function lintCode() {
