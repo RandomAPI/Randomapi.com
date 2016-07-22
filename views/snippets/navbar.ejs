@@ -67,8 +67,9 @@ if (session.user !== undefined && session.user.tierName === 'Free') {
   </div>
 </div>
 <div class="mobileNav">
-    <button class="toggleButton">Toggle</button>
+    <button class="toggleButton"></button>
     <div class="mobileMenu">
+        <a href=""><h3>RandomAPI</h3></a>
       <% if (session.loggedin === true) { %>
         <a href="">Home</a>
         <a href="<%= upgrade %>">Upgrade</a>

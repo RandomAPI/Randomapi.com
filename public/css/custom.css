@@ -490,7 +490,7 @@ input:read-only {
     width: 100% !important;
   }
 
-  #lintButton {
+  #lintButtonHome {
     display: none;
   }
 
@@ -558,7 +558,7 @@ input:read-only {
   font-weight: bold;
 }
 .mobileNav a:hover,
-a:active,
-a:focus {
+.mobileNav a:active,
+.mobileNav a:focus {
   background: #e7e7e7;
 }
