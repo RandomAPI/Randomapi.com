@@ -4,7 +4,7 @@ html {
 }
 
 .navbarContainer {
-  background-color:rgba(255,255,255,0.8);
+  background-color:rgba(255,255,255,0.95);
   position: fixed;
   margin: -65px auto 0px auto;
   padding-top: 10px;

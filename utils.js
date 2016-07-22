@@ -6,7 +6,7 @@ const settings = require('./settings.json');
 const stripe   = require("stripe")(settings.stripe.secretKey);
 
 redis.config('SET', 'maxmemory', settings.general.redisMaxMemory);
-redis.on('error',   err => module.exports.logger(err));
+redis.on('error', err => module.exports.logger(err) && module.exports.syslog(err));
 
 module.exports = {
   pad(n, width, z) {
@@ -34,7 +34,7 @@ module.exports = {
     try {
         throw new Error();
     } catch (e) {
-      fs.appendFileSync('./RandomAPI.log', "[" + moment().format('LTS') + "] " + msg + "\n" + e.stack.toString() + "\n" + JSON.stringify(req.session) + "\n");
+      fs.appendFileSync('./RandomAPI.log', "[" + moment().format() + "] " + msg + "\n" + e.stack.toString() + "\n" + JSON.stringify(req.session) + "\n");
     }
   },
   random(mode, length) {
