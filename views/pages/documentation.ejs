@@ -245,7 +245,7 @@ api.ref     = getVar('ref');</code></pre>
       <ul>
         <li>The generator uses internal variables that start with _API, so avoid using variables in that namespace if you can or else unexpected behavior can happen.</li>
       </ul>
-      <p>If you have made an API/Snippet that requires a PRNG, you can access the generators internal PRNG with the prng function. This will return, direct from the Mersenne Twister module the generator is using, a number on [0,1) real interval.
+      <p>If you have made an API/Snippet that requires a PRNG, you can access the generator's internal PRNG with the prng function. This will return, direct from the Mersenne Twister module the generator is using, a number on the [0,1) real interval.
       <div class="row">
         <div class="six columns">
           <span class='caption'>API Code</span>
@@ -371,13 +371,24 @@ api.a = randomNum();</code></pre>
 
       <h5 class='subtitle'><a name="publishingSnippets">Publishing</a></h5>
       <p>If you've made an awesome snippet that you think would be useful for others, you can publish it!<br>
-      Here are some basic rules and tips on publishing snippets</p>
+      Here are some basic rules and tips on publishing snippets:</p>
       <ul>
         <li>Once published, snippets can not be removed.</li>
           <ol>This is to prevent other users' APIs from breaking unexpectedly. Make sure that you really want to publish a snippet before you click confim.</ol>
         <li>Published snippets will be given a revision number that starts at 1.</li>
-          <ol>Once a snippet is published, you must provide a version number in the snippet signature when you use the require function.</ol>
-        <li>Source code of revisions that are published can not be modified. You can still modify the revision's description though.</li>
+          <ol>Once a snippet is published, you must provide a revision number in the snippet signature when you use the require function.</ol>
+          <div class="row">
+            <div class="eight columns">
+              <pre><code class="javascript">const r1 = require('keith/randomNum/1').randomNum; // Revision 1
+const r2 = require('keith/randomNum/4').randomNum; // Revision 4
+const r3 = require('keith/randomNum').randomNum;   // Won't work if snippet is published
+
+api.a = r1();
+api.b = r2();</code></pre>
+            </div>
+          </div>
+
+        <li style="clear: both">Source code of revisions that are published can not be modified. You can still modify the revision's description though as well as the snippet's tags, but the snippet name cannot be modified once it is published to avoid confusion between revisions.</li>
         <li>If you have made a mistake or want to make an improvement to a snippet, you can create a new revision.</li>
         <li>Users can search for snippets by clicking the search menu item.</li>
           <ol>Search depends on the tags/keywords that you give a snippet. Make sure that you provide good tags that users will most likely search for in order to have the best chance of your snippet being found.</ol>

@@ -253,7 +253,7 @@ section.triplesec {
   overflow: hidden;
   overflow-y: auto;
   border: #CECECE solid 1px;
-  padding: 5px;
+  padding: 10px;
 }
 
 @media screen and (max-width: 1000px) {
