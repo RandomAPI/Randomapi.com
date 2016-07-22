@@ -8,7 +8,8 @@ if (process.env.spec === "true") {
   db = settings.db.spec
 }
 
-var connection = mysql.createConnection({
+var connection = mysql.createPool({
+  connectionLimit: 10,
   host:       db.host,
   socketPath: db.socketPath,
   database:   db.database,
@@ -19,11 +20,7 @@ var connection = mysql.createConnection({
 
 module.exports.init = function(cb) {
 
-  connection.connect(err => {
-    if (err) {
-      return logger('[db]: error connecting: ' + err.stack);
-    }
-
+  connection.on('connection', connection => {
     logger('[db]: connected as id ' + connection.threadId);
     cb();
   });
