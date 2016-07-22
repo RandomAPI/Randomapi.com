@@ -45,44 +45,47 @@ if (session.user !== undefined && session.user.tierName === 'Free') {
 %>
 <a href="" class="freeLogo invisible"><h3>RandomAPI</h3></a>
 
-<div id="navbar" class="scroll">
-  <a href="" class="navLogo"><h3>RandomAPI</h3></a>
-  <div class="nav">
-    <ul>
-      <% if (session.loggedin === true) { %>
-        <a href=""><li <%- selected['home'] %>>Home</li></a>
-        <a href="<%= upgrade %>"><li <%- selected['pricing'] %>>Upgrade</li></a>
-        <a href="documentation"><li <%- selected['documentation'] %>>Documentation</li></a>
-        <a href="settings"><li <%- selected['settings'] %>>Settings</li></a>
-        <a href="logout"><li>Logout</li></a>
-      <% } else { %>
-        <a href=""><li <%- selected['home'] %>>Home</li></a>
-        <a href="search"><li <%- selected['search'] %>>Search</li></a>
-        <a href="pricing"><li <%- selected['pricing'] %>>Pricing</li></a>
-        <a href="documentation"><li <%- selected['documentation'] %>>Documentation</li></a>
-        <a href="login"><li <%- selected['login'] %>>Login</li></a>
-        <a href="register"><li class="signupBadge">Sign Up</li></a>
-      <% } %>
-    </ul>
+<div class="navbarContainer">
+  <div id="navbar">
+    <a href="" class="navLogo"><h3>RandomAPI</h3></a>
+    <div class="nav">
+      <ul>
+        <% if (session.loggedin === true) { %>
+          <a href=""><li <%- selected['home'] %>>Home</li></a>
+          <a href="<%= upgrade %>"><li <%- selected['pricing'] %>>Upgrade</li></a>
+          <a href="documentation"><li <%- selected['documentation'] %>>Documentation</li></a>
+          <a href="settings"><li <%- selected['settings'] %>>Settings</li></a>
+          <a href="logout"><li>Logout</li></a>
+        <% } else { %>
+          <a href=""><li <%- selected['home'] %>>Home</li></a>
+          <a href="search"><li <%- selected['search'] %>>Search</li></a>
+          <a href="pricing"><li <%- selected['pricing'] %>>Pricing</li></a>
+          <a href="documentation"><li <%- selected['documentation'] %>>Documentation</li></a>
+          <a href="login"><li <%- selected['login'] %>>Login</li></a>
+          <a href="register"><li class="signupBadge">Sign Up</li></a>
+        <% } %>
+      </ul>
+    </div>
   </div>
 </div>
 <div class="mobileNav">
-    <button class="toggleButton"></button>
-    <div class="mobileMenu">
-        <a href=""><h3>RandomAPI</h3></a>
-      <% if (session.loggedin === true) { %>
-        <a href="">Home</a>
-        <a href="<%= upgrade %>">Upgrade</a>
-        <a href="documentation">Documentation</a>
-        <a href="settings">Settings</a>
-        <a href="logout">Logout</a>
-      <% } else { %>
-        <a href="">Home</a>
-        <a href="search">Search</a>
-        <a href="pricing">Pricing</a>
-        <a href="documentation">Documentation</a>
-        <a href="login">Login</a>
-        <a href="register">Sign Up</a>
-      <% } %>
-    </div>
+  <button class="toggleButton"></button>
+  <div class="mobileMenu">
+      <a href=""><h3>RandomAPI</h3></a>
+    <% if (session.loggedin === true) { %>
+      <a href="">Home</a>
+      <a href="<%= upgrade %>">Upgrade</a>
+      <a href="documentation">Documentation</a>
+      <a href="settings">Settings</a>
+      <a href="logout">Logout</a>
+    <% } else { %>
+      <a href="">Home</a>
+      <a href="search">Search</a>
+      <a href="pricing">Pricing</a>
+      <a href="documentation">Documentation</a>
+      <a href="login">Login</a>
+      <a href="register">Sign Up</a>
+    <% } %>
   </div>
+</div>
+<div class="bodyContent">
