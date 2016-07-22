@@ -406,8 +406,15 @@ input:read-only {
 }
 
 @media screen and (max-width: 900px) {
-  #navbar {
-    display: none;
+  .mobileNav {
+    display: block !important;
+  }
+  .nav {
+    display: none !important;
+  }
+
+  .navLogo {
+    display: none !important;
   }
 
   section.triplesec {
@@ -470,10 +477,6 @@ input:read-only {
     display: none;
   }
 
-  #subnav {
-    display: none;
-  }
-
   section.tryitout {
     width: 90% !important;
   }
@@ -506,3 +509,56 @@ input:read-only {
 }
 
 .invisible { display: none; }
+
+
+.mobileNav {
+  display: none;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 10;
+}
+.mobileNav div {
+  display: none;
+}
+.mobileNav button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  border: 0;
+  text-indent: 200%;
+  overflow: hidden;
+  background: rgba(255,255,255,0.8) url("http://i.imgur.com/vKRaKDX.png") center no-repeat;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  background-size: 80%;
+  width: 40px;
+  height: 40px;
+  outline: none;
+  -webkit-transition: all 400ms ease;
+  transition: all 400ms ease;
+}
+.mobileNav button.expanded {
+  -webkit-transform: rotate(90deg);
+          transform: rotate(90deg);
+  background-color: transparent;
+  border: 0;
+}
+.mobileNav a {
+  display: block;
+}
+
+.mobileNav a {
+  background: #eee;
+  text-align: center;
+  padding: 20px 0;
+  border-bottom: 1px solid #ddd;
+  text-decoration: none;
+  color: #222;
+  font-weight: bold;
+}
+.mobileNav a:hover,
+a:active,
+a:focus {
+  background: #e7e7e7;
+}

@@ -32,6 +32,10 @@ $(() => {
   setInterval(() => {
     updateDates();
   }, 60000);
+
+  $('.toggleButton').click(function() {
+    $(this).toggleClass('expanded').siblings('div').slideToggle();
+  });
 });
 
 function notyPrompt(text, yes, no) {

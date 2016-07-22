@@ -13,7 +13,7 @@
   white-space: -pre-wrap;      /* Opera 4-6 */
   white-space: -o-pre-wrap;    /* Opera 7 */
   word-wrap: break-word;       /* Internet Explorer 5.5+ */
-  height: 250px;
+  height: 240px;
   border: solid #CECECE 1px !important;
   margin-top: 0px;
   width: 100%;
@@ -25,6 +25,7 @@
   width: 50%;
   margin-top: 5px;
   height: 250px;
+  border: solid #CECECE 1px !important;
 }
 
 #submit {
