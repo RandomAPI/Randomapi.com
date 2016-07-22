@@ -233,6 +233,12 @@ section.triplesec {
 
 #documentationNav {
   position: fixed;
+  height: 80%;
+  display: inline-block;
+  overflow: hidden;
+  overflow-y: auto;
+  border: #CECECE solid 1px;
+  padding: 5px;
 }
 
 @media screen and (max-width: 1000px) {
@@ -410,6 +416,9 @@ input:read-only {
     display: block !important;
   }
   .nav {
+    display: none !important;
+  }
+  #navbar {
     display: none !important;
   }
 

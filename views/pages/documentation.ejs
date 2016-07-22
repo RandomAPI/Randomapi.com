@@ -80,7 +80,7 @@ function phoneNum(format) {
       <h4 class='title'><a name="availableFunctions">Available functions</a></h4>
       <p>RandomAPI includes some basic data generation functions that your API can make use of. All of these included functions respect the <b>seed</b> value that is sent in through an API request (except for timestamp since it returns the <b>current</b> time).</p>
 
-      <h5 class='subtitle'><a name="availableFunctionsRandom">Random</a></h5>
+      <h5 class='subtitle'><a name="availableFunctionsRandom">random</a></h5>
       <p>Generates a random number within a range as well as a string of random characters from a predefined or custom charset.</p>
       <table class="u-full-width">
         <thead>
@@ -130,7 +130,7 @@ random.custom("œ∑´®†¥¨ˆøπåß∂ƒ©˙∆˚¬Ω≈ç√∫˜µ", 10)
         </tbody>
       </table>
 
-      <h5 class='subtitle'><a name="availableFunctionsList">List</a></h5>
+      <h5 class='subtitle'><a name="availableFunctionsList">list</a></h5>
       <p>Chooses a random (or specified) item from either a list or provided array. If no lineNumber or indexNumber is provided, a random item will be chosen from the list or array respectively.</p>
       <table class="u-full-width">
         <thead>
@@ -161,7 +161,7 @@ list(["male", "female"], 1); // female</code></pre>Warning: Indexes are zero bas
         </tbody>
       </table>
 
-      <h5 class='subtitle'><a name="availableFunctionsHash">Hash</a></h5>
+      <h5 class='subtitle'><a name="availableFunctionsHash">hash</a></h5>
       <p>Generate a hash from a string.</p>
       <table class="u-full-width">
         <thead>
@@ -193,11 +193,77 @@ hash.sha256('mysoupersekurepasswurd!');</code></pre></td>
         </tbody>
       </table>
 
-      <h5 class='subtitle'><a name="availableFunctionsTimestamp">Timestamp</a></h5>
+      <h5 class='subtitle'><a name="availableFunctionsTimestamp">timestamp</a></h5>
       <p>Returns the current unix timestamp.</p>
-      <pre><code class='javascript'>timestamp(); //1466196805</code></pre>
+      <pre><code class='javascript timestamp'>timestamp(); //</code></pre>
 
-      <h4 class='title'><a name="globalRequire">Global Requires</a></h4>
+      <h5 class='subtitle'><a name="availableFunctionsGetVar">getVar</a></h5>
+      <p>Fetches the value of GET variables in the API query. Defaults to null if the requested GET variable is undefined.</p>
+      <div class="row">
+        <div class="six columns">
+          <span class='caption'>API Code</span>
+          <pre><code class='javascript'>api.max = Number(getVar("max")) || 10;
+api.num = random.numeric(0, api.max);</code></pre>
+        </div>
+        <div class="six columns">
+          <span class='caption'>Result</span>
+          <pre><code>// <%=basehref%>/api/123456?max=25
+{"results":[{"max": 100,"num": 21}]}
+
+// <%=basehref%>/api/123456
+{"results":[{"max": 10,"num": 4}]}</code></pre>
+        </div>
+      </div>
+      <p>You can also access some internal variables as well with getVar. This could be useful if you wanted access to the string/numeric seed that the generator is using or maybe wanted to know the format your API was being requested with.</p>
+      <div class="row">
+        <div class="six columns">
+          <span class='caption'>API Code</span>
+          <pre><code class='javascript'>api.seed    = getVar('seed');
+api.numSeed = getVar('numericSeed');
+api.format  = getVar('fmt');
+api.key     = getVar('key');
+api.ref     = getVar('ref');</code></pre>
+        </div>
+        <div class="six columns">
+          <span class='caption'>Result</span>
+          <pre><code>{
+  "results": [
+    {
+      "seed": "7583c1fdce1943f4",
+      "numericSeed": 4200665598,
+      "format": "pretty",
+      "key": "ABCD-1234-EFGH-5678",
+      "ref": "1234abcd"
+    }
+  ]
+}</code></pre>
+        </div>
+      </div>
+
+      <h5 class='subtitle'><a name="availableFunctionsMisc">Misc</a></h5>
+      <p>Some other good to know things regarding the generator.</p>
+      <ul>
+        <li>The generator uses internal variables that start with _API, so avoid using variables in that namespace if you can or else unexpected behavior can happen.</li>
+      </ul>
+      <p>If you have made an API/Snippet that requires a PRNG, you can access the generators internal PRNG with the prng function. This will return, direct from the Mersenne Twister module the generator is using, a number on [0,1) real interval.
+      <div class="row">
+        <div class="six columns">
+          <span class='caption'>API Code</span>
+          <pre><code class='javascript'>api.a = prng();</code></pre>
+        </div>
+        <div class="six columns">
+          <span class='caption'>Result</span>
+          <pre><code>{
+  "results": [
+    {
+      "a": 0.5300652552396059
+    }
+  ]
+}</code></pre>
+        </div>
+      </div>
+
+      <h4 class='title'><a name="globalSnippets">Global Snippets</a></h4>
       <p>While native, built-in modules aren't accessible through require, some libraries that we have found helpful for generating data will be added to the RandomAPI generators for use in your APIs. Currently, the following modules are available using require:</p>
       <ul>
         <li><a href="https://www.npmjs.com/package/faker" class='green' target="_blank">Faker</a></li>
@@ -219,20 +285,25 @@ api.name    = faker.name.findName();</code></pre>
       <p>If you have a suggestion for a module that we should add, send us a tweet or DM <a href="https://twitter.com/randomapi" class='green' target="_blank">@RandomAPI</a>.</p>
 
       <h4 class='title'><a name="snippets">Snippets</a></h4>
-      <p>Snippets are user defined pieces of code that you can include in your API. If you have an idea of a helpful function that you'd like to share for others to use, you can make a snippet!</p>
+      <p>Snippets are user defined pieces of code that you can include in your API. If you've made a snippet that you'd like to share for others to use, you can publish your snippet!</p>
       <p>Snippets are coded in basically the same way as a normal API except for these key differences:</p>
       <ul>
         <li>Objects are attached to the <b>snippet</b> object instead of the <b>api</b> object.</li>
-        <li>Only Global Requires can be used in your snippet. You can't require other snippets from your snippet.</li>
+        <li>Only Global Snippets can be used in your snippet. You can't require other snippets from your snippet.</li>
         <li>Snippet names <b>must</b> be unique in regards to your account.</li>
       </ul>
+
+      <h5 class='subtitle'><a name="codingSnippets">Coding</a></h5>
       <div class="row">
         <div class="six columns">
           <span class='caption'>Coding a snippet</span>
           <pre><code class="javascript">// keiths stuff
 const faker = require('faker');
-faker.seed(getVar('numericSeed')); // Make Faker respect RandomAPI's seed
 
+// Make Faker respect RandomAPI's seed
+faker.seed(getVar('numericSeed'));
+
+// phoneNumber property attached to snippet
 snippet.phoneNumber = function(format) {
   format = format || "(xxx) xxx-xxxx";
   return String(format).split('').map(digit => {
@@ -240,6 +311,7 @@ snippet.phoneNumber = function(format) {
   }).join('');
 };
 
+// randomName property attached to snippet
 snippet.randomName = function() {
   return faker.name.findName();
 };</code></pre>
@@ -247,8 +319,11 @@ snippet.randomName = function() {
         <div class="six columns">
           <span class='caption'>Using a snippet</span>
           <pre><code>const keith = require('keith/keiths stuff');
-api.phone = keith.phoneNumber();
-api.name = keith.randomName();</code></pre>
+api.phone   = keith.phoneNumber();
+api.name    = keith.randomName();
+
+// Also works
+api.phone2  = require('keith/keiths stuff/1').phoneNumber();</code></pre>
           <span class='caption'>Result</span>
           <pre><code>{
   "phoneNumber": "(605) 401-1008",
@@ -280,7 +355,7 @@ api.invoiceID = invoice();</code></pre>
       <div class="row">
         <div class="six columns">
           <span class='caption'>Coding a snippet</span>
-          <pre><code class="javascript">// randomNum
+          <pre><code class="javascript">// randomNum...kinda redundant
 snippet.randomNum = (min, max) => random.numeric(min, max);</code></pre>
         </div>
         <div class="six columns">
@@ -294,14 +369,28 @@ api.a = randomNum();</code></pre>
         </div>
       </div>
 
+      <h5 class='subtitle'><a name="publishingSnippets">Publishing</a></h5>
+      <p>If you've made an awesome snippet that you think would be useful for others, you can publish it!<br>
+      Here are some basic rules and tips on publishing snippets</p>
+      <ul>
+        <li>Once published, snippets can not be removed.</li>
+          <ol>This is to prevent other users' APIs from breaking unexpectedly. Make sure that you really want to publish a snippet before you click confim.</ol>
+        <li>Published snippets will be given a revision number that starts at 1.</li>
+          <ol>Once a snippet is published, you must provide a version number in the snippet signature when you use the require function.</ol>
+        <li>Source code of revisions that are published can not be modified. You can still modify the revision's description though.</li>
+        <li>If you have made a mistake or want to make an improvement to a snippet, you can create a new revision.</li>
+        <li>Users can search for snippets by clicking the search menu item.</li>
+          <ol>Search depends on the tags/keywords that you give a snippet. Make sure that you provide good tags that users will most likely search for in order to have the best chance of your snippet being found.</ol>
+      </ul>
+
       <h4 class='title'><a name="callingAPIs">Calling APIs</a></h4>
-      <p>APIs can be accessed through via the <a href="https://randomapi.com/api" class='green' target="_blank">https://randomapi.com/api</a> endpoint.</p>
+      <p>APIs can be accessed via the <a href="<%=basehref%>api" class='green' target="_blank"><%=basehref%>api</a> endpoint.</p>
       <p>At a minimum, the endpoint requires a <b>key</b> and <b>ref</b> value or a public hash value. Key would be your API key and ref is the Ref ID of the API you want to access which can be found on the <a href="view/api" class='green' target="_blank">View APIs</a> page.</p>
       <p>Public hashes are another way that you can access your API without accidentally exposing your API Key and API Ref ID. The user segment of the info block from your results will also be removed by default when your API is called using this method. They can be found by clicking <b>Run API (public URL)</b> on the <a href="view/api" class='green' target="_blank">View APIs</a> page.</p>
       <p>APIs can be called in three different ways:</p>
-      <pre><code class="html">https://randomapi.com/api/<span class='green'>1234abcd</span>?key=<span class='green'>ABCD-1234-EFGH-5678</span>      // Ref value is implied
-https://randomapi.com/api/?key=<span class='green'>ABCD-1234-EFGH-5678</span>&ref=<span class='green'>1234abcd</span> // Ref value is explicitly stated
-https://randomapi.com/api/<span class='green'>1234567890abcdef1234567890abcdef</span>      // Public hash</code></pre>
+      <pre><code class="html"><%=basehref%>api/<span class='green'>1234abcd</span>?key=<span class='green'>ABCD-1234-EFGH-5678</span>      // Ref value is implied
+<%=basehref%>api/?key=<span class='green'>ABCD-1234-EFGH-5678</span>&ref=<span class='green'>1234abcd</span> // Ref value is explicitly stated
+<%=basehref%>api/<span class='green'>1234567890abcdef1234567890abcdef</span>      // Public hash</code></pre>
 
       <h5 class='subtitle'><a name="options">Options</a></h5>
       <p>You can add extra parameters to your API call to transform your data into different formats, specify how many results you'd like to generate, specify a seed, and even communicate with your api through the <b>getVar</b> function</p>
@@ -383,10 +472,10 @@ https://randomapi.com/api/<span class='green'>1234567890abcdef1234567890abcdef</
           </tr>
         </tbody>
       </table>
-      <pre><code class="html">https://randomapi.com/api/1234abcd?key=ABCD-1234-EFGH-5678&results=<span class='green'>25</span>&seed=<span class='green'>huskiesarecute</span>&page=<span class='green'>3</span>
-https://randomapi.com/api/?key=ABCD-1234-EFGH-5678&ref=1234abcd&callback=<span class='green'>fetchData</span>
-https://randomapi.com/api/?key=ABCD-1234-EFGH-5678&ref=1234abcd&fmt=<span class='green'>xml</span>&<span class='green'>dl</span>
-https://randomapi.com/api/?key=ABCD-1234-EFGH-5678&ref=1234abcd&fmt=<span class='green'>pretty</span>&<span class='green'>noinfo</span></code></pre>
+      <pre><code class="html"><%=basehref%>api/1234abcd?key=ABCD-1234-EFGH-5678&results=<span class='green'>25</span>&seed=<span class='green'>huskiesarecute</span>&page=<span class='green'>3</span>
+<%=basehref%>api/?key=ABCD-1234-EFGH-5678&ref=1234abcd&callback=<span class='green'>fetchData</span>
+<%=basehref%>api/?key=ABCD-1234-EFGH-5678&ref=1234abcd&fmt=<span class='green'>xml</span>&<span class='green'>dl</span>
+<%=basehref%>api/?key=ABCD-1234-EFGH-5678&ref=1234abcd&fmt=<span class='green'>pretty</span>&<span class='green'>noinfo</span></code></pre>
 
       <h5 class='subtitle'><a name="errors">Errors</a></h5>
       <table class="u-full-width">

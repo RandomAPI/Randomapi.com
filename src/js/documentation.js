@@ -33,6 +33,14 @@ $(() => {
         $(val).removeClass('docGreen');
       }
     });
+
+    // Yes, I actually put the effort into making the timestamp live
+    updateTimestamp();
+    setInterval(updateTimestamp, 1000);
+
+    function updateTimestamp() {
+      $('.timestamp').html(`timestamp(); <span class="hljs-comment">//${Math.floor(new Date().getTime()/1000)}</span>`);
+    }
   }
 
   // ===== Scroll to Top ====
