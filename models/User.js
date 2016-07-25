@@ -5,6 +5,7 @@ const logger  = require('../utils').logger;
 const andify  = require('../utils').andify;
 const db      = require('./db').connection;
 const Promise = require('bluebird');
+const moment  = require('moment');
 
 const Subscription = require('./Subscription');
 
@@ -57,7 +58,9 @@ module.exports = {
     return new Promise((resolve, reject) => {
       this.getCond({username: data.username}).then(user => {
         if (user !== null && this.validPass(data.password, user.password)) {
-          resolve({user, redirect: '/'});
+          this.modified(user.id).then(() => {
+            resolve({user, redirect: '/'});
+          });
         } else {
           reject({flash: 'Invalid username or password!', redirect: '/login'});
         }
@@ -153,5 +156,12 @@ module.exports = {
   },
   decVal(key, value, username) {
     return this.incVal(key, -Number(value), username);
+  },
+  modified(id) {
+    return new Promise((resolve, reject) => {
+      db.query('UPDATE `user` SET ? WHERE ?', [{lastlogin: moment(new Date().getTime()).format("YYYY-MM-DD HH:mm:ss")}, {id}], (err, result) => {
+        resolve({err: err, result: result});
+      });
+    });
   }
 };
