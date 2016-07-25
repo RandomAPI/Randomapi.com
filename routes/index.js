@@ -120,7 +120,7 @@ router.get('/search', (req, res, next) => {
 });
 
 router.post('/register', (req, res, next) => {
-  if (missingProps(req.body, ['username', 'password', 'timezone', 'g-recaptcha-response']) && process.env.spec !== "true") {
+  if (missingProps(req.body, ['username', 'password', 'timezone', 'referrer', 'g-recaptcha-response']) && process.env.spec !== "true") {
     req.flash('warning', 'Missing expected form properties');
     res.redirect(baseURL + '/register');
     return;
@@ -147,7 +147,7 @@ router.post('/register', (req, res, next) => {
           let json = JSON.parse(body);
 
           if (json.success === true || process.env.spec === "true") {
-            User.register({username: req.body.username, password: req.body.password, timezone: req.body.timezone}).then(data => {
+            User.register({username: req.body.username, password: req.body.password, referrer: req.body.referrer, timezone: req.body.timezone}).then(data => {
               req.session.loggedin = true;
               req.session.user = data.user;
 
