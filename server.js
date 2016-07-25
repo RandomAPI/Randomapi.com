@@ -22,7 +22,7 @@ const db = require('./models/db').init(() => {
   });
 
   server.listen(app.get('port'));
-  server.on('error', error => {
+  server.once('error', error => {
     let bind = app.get('port');
     switch (error.code) {
       case 'EACCES':
@@ -38,7 +38,7 @@ const db = require('./models/db').init(() => {
     }
   });
 
-  server.on('listening', () => {
+  server.once('listening', () => {
     let addr = server.address();
     let bind = typeof addr === 'string'
       ? 'pipe ' + addr

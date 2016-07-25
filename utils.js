@@ -8,6 +8,8 @@ const stripe   = require("stripe")(settings.stripe.secretKey);
 redis.config('SET', 'maxmemory', settings.general.redisMaxMemory);
 redis.on('error', err => module.exports.logger(err) && module.exports.syslog(err));
 
+let dbOnline = true;
+
 module.exports = {
   pad(n, width, z) {
     z = z || '0';
@@ -78,6 +80,13 @@ module.exports = {
   },
   missingProps(obj, expected) {
     return !expected.every(prop => prop in obj && obj[prop] !== undefined);
+  },
+  dbStatus(status) {
+    if (status === undefined) {
+      return dbOnline;
+    } else {
+      dbOnline = status;
+    }
   },
   redis,
   stripe,

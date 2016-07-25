@@ -15,6 +15,7 @@ const _            = require('lodash');
 const logger       = require('./utils').logger;
 const syslog       = require('./utils').syslog;
 const settings     = require('./utils').settings;
+const dbStatus     = require('./utils').dbStatus;
 
 const User = require('./models/User');
 const Tier = require('./models/Tier');
@@ -97,6 +98,10 @@ app.use(bodyParser.urlencoded({ limit: '5mb', extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('*', (req, res, next) => {
+  if (!dbStatus()) {
+    return res.render('epicfail', {basehref: settings.general.basehref, messages: null, title: 'Uh oh, something bad has happened'});
+  }
+
   // Skip if user is accessing api
   if (req.params[0].slice(0, 5) === '/api/') next();
   else {
