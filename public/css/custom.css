@@ -144,10 +144,12 @@ section.login .flash {
 section.register {
   margin: auto;
   text-align: center;
+  width: 400px;
 }
+
 section.register .title {
   text-align: left;
-  margin-left: 150px
+  margin-left: 50px
 }
 section.register input[type='text'],
 section.register input[type='password'] {
@@ -517,14 +519,10 @@ input:read-only {
     width: 100% !important;
   }
 
-  #lintButtonHome {
-    display: none;
-  }
-
   #preview {
     margin-top: -15px !important;
     margin-left: 0px !important;
-    margin-bottom: 15px !important;
+    margin-bottom: 45px !important;
     float: left !important;
     width: 100% !important;
   }
