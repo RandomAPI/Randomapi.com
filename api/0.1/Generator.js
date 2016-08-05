@@ -29,6 +29,7 @@ const Generator = function(name, options) {
   this.cache        = {};
   this.snippetCache = {};
   this.timeoutCache = {};
+  this.times = {};
 
   this.context         = vm.createContext(this.availableFuncs());
   this.originalContext = [
@@ -205,6 +206,9 @@ util.inherits(Generator, EventEmitter);
 
 // Receives the query which contains API, owner, and reqest data
 Generator.prototype.instruct = function(options, done) {
+  this.times.instruct = {
+    start: new Date().getTime()
+  };
 
   this.options = options || {};
   this.results = Number(this.options.results);
@@ -265,11 +269,16 @@ Generator.prototype.instruct = function(options, done) {
   ], (err, results) => {
     // Make sure user is populated with dummy user if no real user provided
     this.user = this.user || {id: -1, apikey: ''};
+    this.times.instruct = new Date().getTime() - this.times.instruct.start;
     done(err);
   });
 };
 
 Generator.prototype.generate = function(cb) {
+  this.times.generate = {
+    start: new Date().getTime()
+  };
+
   this.results = this.results || 1;
   let output   = [];
 
@@ -718,6 +727,7 @@ Generator.prototype.updateRequires = function() {
 };
 
 Generator.prototype.returnResults = function(err, output, cb) {
+  this.times.generate = new Date().getTime() - this.times.generate.start;
   if (err === null) {
     let json = {
       results: output,
@@ -725,7 +735,8 @@ Generator.prototype.returnResults = function(err, output, cb) {
         seed: String(this.seed),
         results: numeral(this.results).format('0,0'),
         page: numeral(this.page).format('0,0'),
-        version: this.version
+        version: this.version,
+        time: this.times
       }
     };
 

@@ -15,8 +15,14 @@
     <section class="tryitout">
       <h4>Try it out!</h4>
       <pre id="aceEditor" name="code">let age   = random.numeric(18, 65);
-api.age   = age; // Attached to api object
+api.age   = age;        // Attached to implicit api object
 api.phone = phoneNum(); // Calling user defined function
+
+api.favoriteColor = list([
+    'red', 'orange', 'yellow',
+    'green', 'blue', 'indigo',
+    'violet'
+]);
 
 function phoneNum(format) {
   format = format || "(xxx) xxx-xxxx";

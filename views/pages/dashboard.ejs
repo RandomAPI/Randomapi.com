@@ -22,15 +22,15 @@
       You have used <span class='<%= session.user.memory > session.tier.memory ? "red" : "green" %>'><%= filesize(session.user.memory) %></span> of your <span class="green"><%= session.tier.memory === 0 ? 'unlimited' : filesize(session.tier.memory) %></span> List memory.<br>
 
       You have used <span id='quotaResults' class='<%= session.tier.snippets !== 0 && session.user.snippets > session.tier.snippets ? "red" : "green" %>'><%= session.user.snippets %></span> of your <span id='tierResults' class="green"><%= session.tier.snippets === 0 ? 'unlimited' : session.tier.snippets %></span> Snippets.<br>
-      <div class="ads">
-        <% include ../snippets/ads %>
-      </div>
       <div class="announcements">
         <h3>Announcements</h3>
         <div class="entry">
-          <span class="title"></span></span>
-          <p></p>
+          <span class="title">Welcome to the Beta! - <span class="date" data-date="07-29-2016 12:28:03"></span></span>
+          <p>Thanks for trying out the beta!<br><br>If you have any questions, feedback, etc. send an email to <a href="mailto:keith@randomapi.com" class="green">keith@randomapi.com</a>.<br><br>Thanks!<br>- Keith</p>
         </div>
+      </div>
+      <div class="ads">
+        <% include ../snippets/ads %>
       </div>
     </div>
   </div>
