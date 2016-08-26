@@ -20,29 +20,7 @@
         %>
 
 
-        <% if (session.subscription.status === 3) { %>
-          <p>You are currently on the <span class='green'><%= tier.name %></span> tier, however, your account is currently on hold due to an unpaid subscription charge.<br>
-          You will not be able to use your account until your subscription status is resolved.<br><br>
-          What would you like to do?</p>
-          Current card on file:<br>
-          Type: <%=card.brand%><br>
-          Last 4 digits: <%=card.last4%><br>
-          Expiration Date: <span id="exp"><%=card.exp_month%>/<%=card.exp_year%></span><br><br>
-          <input type='button' class='button greenButton' id='attemptPayment' value='Attempt Payment with current card'>
-          <form action="charge/updateCard" method="POST">
-            <script 
-              src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-              data-key="<%=publishableKey%>"
-              data-name="RandomAPI"
-              data-image="https://s3.amazonaws.com/stripe-uploads/acct_102bx12y2KIUsl34merchant-icon-499777-logo.png"
-              data-locale="auto"
-              data-panel-label="Update Card Details"
-              data-label="Replace current card with new card"
-              data-email="<%= session.subscription.email %>"
-              data-zip-code="true">
-            </script>
-          </form>
-        <% } else { %>
+        <% if (session.subscription.status !== 3) { %>
           <p>You are currently on the <span class='green'><%= tier.name %></span> tier.<br>
           This plan gives you<br>
           -<span class='green' id="dailyResults"><%= tier.results %></span> daily results<br>
@@ -50,72 +28,49 @@
           -<span class='green'><%= tier.memory/1024/1024 %></span> MB of list memory<br>
           -<span class='green'><%= tier.apis %></span> APIs<br>
           -<span class='green'><%= tier.snippets %></span> Snippets<br>
-          at a rate of <span class='green' id="price">$<%= tier.price %></span> per month.
           </p>
 
-          Current card on file:<br>
-          Type: <%=card.brand%><br>
-          Last 4 digits: <%=card.last4%><br>
-          Expiration Date: <span id="exp"><%=card.exp_month%>/<%=card.exp_year%></span><br>
-          <% if (subscription.status === 2) { %>
-               <p><br>Your account will be downgraded to the <span class='green'>free</span> tier at the end of your subscription period.<br>
-               Your current subscription period is set to end on <span class='green' id="renewalDate"><%= subscription.current_period_end %></span>.
-               </p>
-               <form action="charge/updateCard" method="POST">
-                 <script 
-                   src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-                   data-key="<%=publishableKey%>"
-                   data-name="RandomAPI"
-                   data-image="https://s3.amazonaws.com/stripe-uploads/acct_102bx12y2KIUsl34merchant-icon-499777-logo.png"
-                   data-locale="auto"
-                   data-panel-label="Update Card Details"
-                   data-label="Update Card Details"
-                   data-email="<%= session.subscription.email %>"
-                   data-zip-code="true">
-                 </script>
-               </form>
-            <input type='button' class='greenButton' id='restartSubscription' value='Restart Subscription'>
-          <% } else { %>
-               <p><br>Your current subscription will be renewed on <span class='green' id="renewalDate"><%= subscription.current_period_end %></span>.
-               </p>
-               <form action="charge/updateCard" method="POST">
-                 <script 
-                   src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-                   data-key="<%=publishableKey%>"
-                   data-name="RandomAPI"
-                   data-image="https://s3.amazonaws.com/stripe-uploads/acct_102bx12y2KIUsl34merchant-icon-499777-logo.png"
-                   data-locale="auto"
-                   data-panel-label="Update Card Details"
-                   data-label="Update Card Details"
-                   data-email="<%= session.subscription.email %>"
-                   data-zip-code="true">
-                 </script>
-               </form>
-               <input type='button' class='redButton' id='cancelSubscription' value='Cancel Subscription'>
-          <% } %>
         <% } %>
         <% if (tier.name !== "Premium" && subscription.status !== 3) { %>
           <h4>Available upgrades</h4>
+          <h6><span style="color: orange">Discount applied for previous upgrade</span></h6>
           <div class="card">
             <div class="title" style="color: #0CB863">Premium</div>
-            <div class="pricing">$5.00<span class='subpricing'> / month</span></div>
+            <div class="pricing">$2.50</div>
             <div class="info">
               <ul>
                 <li><span id="main">unlimited</span> daily results</li>
                 <li><span id="main">2,500</span> results / request</li>
                 <li><span id="main">25 MB</span> list data</li>
                 <li><span id="main">unlimited</span> APIs</li>
-                <li><span id="main">unlimited</span> Snippets</li>
+                <li><span id="main">unlimited</span> snippets</li>
                 <li><span id="main" class="check">✓</span> ads disabled</li>
                 <li><span id="main" class="check">✓</span> Offline APIs <sup>Coming soon</sup></li>
                 <li><span id="main">5</span> Generators <sup>1</sup></li>
                 <li><span id="main">240/480/20</span> Cache settings <sup>2</sup></li>
                 <li id='upgradeButton'>
-                  <input type="button" id="upgradeSubscription" value="Upgrade">
+                  <form action="/charge/upgrade" method="POST">
+                    <input type="hidden" name="price" value="250">
+                    <script 
+                      src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                      data-key="<%=publishableKey%>"
+                      data-amount="250"
+                      data-name="RandomAPI"
+                      data-description="RandomAPI Premium Tier (Beta)"
+                      data-image="https://s3.amazonaws.com/stripe-uploads/acct_102bx12y2KIUsl34merchant-icon-499777-logo.png"
+                      data-locale="auto"
+                      data-label="Upgrade"
+                      data-email="<%= session.subscription.email %>"
+                      data-zip-code="true">
+                    </script>
+                    <input type="hidden" name="plan" value="premium_beta_upgrade">
+                  </form>
                 </li>
               </ul>
             </div>
           </div>
+        <% } else { %>
+          <h4>Available upgrades</h4>
         <% } %>
       <% } %>
     </div>

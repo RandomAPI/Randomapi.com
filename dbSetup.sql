@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jul 25, 2016 at 06:49 PM
+-- Generation Time: Aug 26, 2016 at 10:55 PM
 -- Server version: 5.7.13
 -- PHP Version: 5.5.36
 
@@ -80,21 +80,24 @@ CREATE TABLE `list` (
 CREATE TABLE `plan` (
   `id` int(11) NOT NULL,
   `name` varchar(32) COLLATE utf8_unicode_ci NOT NULL,
-  `tier` int(11) NOT NULL DEFAULT '1'
+  `tier` int(11) NOT NULL DEFAULT '1',
+  `price` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Dumping data for table `plan`
 --
 
-INSERT INTO `plan` (`id`, `name`, `tier`) VALUES
-(1, 'free', 1),
-(2, 'standard_beta', 2),
-(3, 'standard', 2),
-(4, 'premium_beta', 3),
-(5, 'premium', 3),
-(6, 'standard_legacy', 2),
-(7, 'premium_legacy', 3);
+INSERT INTO `plan` (`id`, `name`, `tier`, `price`) VALUES
+(1, 'free', 1, 0),
+(2, 'standard_beta', 2, 250),
+(3, 'standard', 2, 500),
+(4, 'premium_beta', 3, 500),
+(5, 'premium', 3, 1000),
+(6, 'standard_legacy', 2, 500),
+(7, 'premium_legacy', 3, 1000),
+(8, 'premium_beta_upgrade', 3, 250),
+(9, 'premium_upgrade', 3, 500);
 
 -- --------------------------------------------------------
 
@@ -150,13 +153,10 @@ CREATE TABLE `snippetversion` (
 CREATE TABLE `subscription` (
   `id` int(11) NOT NULL,
   `cid` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `sid` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL,
   `uid` int(11) NOT NULL,
   `email` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `created` timestamp NULL DEFAULT NULL,
-  `canceled` timestamp NULL DEFAULT NULL,
   `plan` int(11) NOT NULL DEFAULT '1',
-  `current_period_end` timestamp NULL DEFAULT NULL,
   `status` int(11) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -320,7 +320,7 @@ ALTER TABLE `list`
 -- AUTO_INCREMENT for table `plan`
 --
 ALTER TABLE `plan`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 --
 -- AUTO_INCREMENT for table `snippet`
 --

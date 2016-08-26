@@ -27,9 +27,8 @@ router.post('/', (req, res, next) => {
   var stripeToken = req.body.stripeToken;
 
   stripe.customers.create({
-    source: stripeToken,
-    plan: req.body.plan,
-    email: req.body.stripeEmail
+    email: req.body.stripeEmail,
+    source: stripeToken, // obtained with Stripe.js
   }, (err, customer) => {
 
     if (err) {
@@ -37,22 +36,35 @@ router.post('/', (req, res, next) => {
       res.redirect(baseURL + '/upgrade');
 
     } else {
-      Plan.getCond({name: req.body.plan,}).then(plan => {
+      Plan.getCond({name: req.body.plan, price: req.body.price}).then(plan => {
+        if (plan === null) {
+          req.flash('warning', 'There was a problem upgrading your account');
+          res.redirect(baseURL + '/upgrade');
+          return;
+        }
 
-        Subscription.update(req.session.user.id, {
-          cid: customer.id,
-          sid: customer.subscriptions.data[0].id,
-          email: customer.email,
-          created: moment(customer.created*1000).format("YYYY-MM-DD HH:mm:ss"),
-          current_period_end: moment(customer.subscriptions.data[0].current_period_end*1000).format("YYYY-MM-DD HH:mm:ss"),
-          plan: plan.id
-        }).then(() => {
+        stripe.charges.create({
+          amount: plan.price,
+          currency: "usd",
+          customer: customer.id,
+          description:  req.body.plan
+        }, (err, charge) => {
 
-          Tier.getCond({id: plan.tier}).then(tier => {
-            logger(`${req.session.user.username} just upgraded to the ${tier.name} tier!`);
-            req.flash('info', `Your account was upgraded successfully to the ${tier.name} tier!`);
-            res.redirect(baseURL + '/');
+          Subscription.update(req.session.user.id, {
+            cid: customer.id,
+            email: customer.email,
+            created: moment(customer.created*1000).format("YYYY-MM-DD HH:mm:ss"),
+            plan: plan.id
+          }).then(() => {
+
+            Tier.getCond({id: plan.tier}).then(tier => {
+              logger(`${req.session.user.username} just upgraded to the ${tier.name} tier!`);
+              req.flash('info', `Your account was upgraded successfully to the ${tier.name} tier!`);
+              res.redirect(baseURL + '/');
+            });
+
           });
+
         });
 
       }, () => {
@@ -64,30 +76,33 @@ router.post('/', (req, res, next) => {
   });
 });
 
-// Update customer's credit card details
-router.post('/updateCard', (req, res, next) => {
-  stripe.customers.createSource(req.session.subscription.cid, {source: req.body.stripeToken}, (err, card) => {
+router.post('/upgrade', (req, res, next) => {
+  Plan.getCond({name: req.body.plan, price: req.body.price}).then(plan => {
+    if (plan === null) {
+      req.flash('warning', 'There was a problem upgrading your account');
+      res.redirect(baseURL + '/upgrade');
+      return;
+    }
+    stripe.customers.update(req.session.subscription.cid, { source: req.body.stripeToken }, (err, customer) => {
+      stripe.charges.create({
+        amount: plan.price,
+        currency: "usd",
+        customer: req.session.subscription.cid,
+        description: req.body.plan,
+      }, (err, charge) => {
 
-    if (err) {
-      req.flash('warning', err.toString());
-      res.redirect(baseURL + '/settings/subscription');
-    } else {
-      stripe.customers.retrieve(req.session.subscription.cid, (err, customer) => {
-        stripe.customers.deleteCard(req.session.subscription.cid, customer.default_source, (err, confirmation) => {
-          stripe.customers.update(req.session.subscription.cid, {
-            default_source: card.id
-          }, (err, customer) => {
-            if (err) {
-              req.flash('warning', err);
-              res.redirect(baseURL + '/settings/subscription');
-            } else {
-              req.flash('info', 'New card details added successfully!');
-              res.redirect(baseURL + '/settings/subscription');
-            }
+        Subscription.update(req.session.user.id, {
+          plan: plan.id
+        }).then(() => {
+
+          Tier.getCond({id: plan.tier}).then(tier => {
+            logger(`${req.session.user.username} just upgraded to the ${tier.name} tier!`);
+            req.flash('info', `Your account was upgraded successfully to the ${tier.name} tier!`);
+            res.redirect(baseURL + '/');
           });
         });
       });
-    }
+    });
   });
 });
 
