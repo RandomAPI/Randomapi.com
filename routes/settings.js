@@ -39,7 +39,7 @@ router.post('/', (req, res, next) => {
   User.getVal('password', req.session.user.username).then(curPass => {
     if (User.validPass(req.body.current, curPass)) {
       if (req.body.new !== req.body.confirm) {
-        req.flash('info', 'New and confirm password did not match!');
+        req.flash('warning', 'New and confirm password did not match!');
         res.redirect(baseURL + '/settings');
       } else {
         User.update({password: User.genPassHash(req.body.new)}, req.session.user.username).then(() => {

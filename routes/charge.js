@@ -34,6 +34,7 @@ router.post('/', (req, res, next) => {
     if (err) {
       req.flash('warning', err.toString());
       res.redirect(baseURL + '/upgrade');
+      return;
 
     } else {
       Plan.getCond({name: req.body.plan, price: req.body.price}).then(plan => {
@@ -49,6 +50,12 @@ router.post('/', (req, res, next) => {
           customer: customer.id,
           description:  req.body.plan
         }, (err, charge) => {
+
+          if (err) {
+            req.flash('warning', err.toString());
+            res.redirect(baseURL + '/upgrade');
+            return
+          }
 
           Subscription.update(req.session.user.id, {
             cid: customer.id,
@@ -84,12 +91,24 @@ router.post('/upgrade', (req, res, next) => {
       return;
     }
     stripe.customers.update(req.session.subscription.cid, { source: req.body.stripeToken }, (err, customer) => {
+      if (err) {
+        req.flash('warning', err.toString());
+        res.redirect(baseURL + '/upgrade');
+        return
+      }
+
       stripe.charges.create({
         amount: plan.price,
         currency: "usd",
         customer: req.session.subscription.cid,
         description: req.body.plan,
       }, (err, charge) => {
+
+        if (err) {
+          req.flash('warning', err.toString());
+          res.redirect(baseURL + '/upgrade');
+          return
+        }
 
         Subscription.update(req.session.user.id, {
           plan: plan.id

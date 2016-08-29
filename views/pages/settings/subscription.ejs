@@ -49,7 +49,7 @@
                 <li><span id="main">5</span> Generators <sup>1</sup></li>
                 <li><span id="main">240/480/20</span> Cache settings <sup>2</sup></li>
                 <li id='upgradeButton'>
-                  <form action="/charge/upgrade" method="POST">
+                  <form action="/charge<% subscription.cid === null ? "" : "/upgrade" %>" method="POST">
                     <input type="hidden" name="price" value="250">
                     <script 
                       src="https://checkout.stripe.com/checkout.js" class="stripe-button"
