@@ -4,6 +4,7 @@ const util     = require('util');
 const async    = require('async');
 const _        = require('lodash');
 const fs       = require('fs');
+const random   = require('../../utils').random;
 const logger   = require('../../utils').logger;
 const syslog   = require('../../utils').syslog;
 const redis    = require('../../utils').redis;
@@ -15,6 +16,10 @@ const User    = require('../../models/User');
 const Snippet = require('../../models/Snippet');
 const Version = require('../../models/Version');
 
+const abuseLimit = 3; // 3 timeouts within 15 seconds = timeout for 30 seconds
+let abuseCache   = {};
+let timeout      = {};
+
 const EventEmitter = require('events').EventEmitter;
 
 const GeneratorForker = function(options) {
@@ -25,7 +30,9 @@ const GeneratorForker = function(options) {
     results:  options.results
   };
 
+  this.silent       = true;
   this.name         = options.name;
+  this.guid         = random(1, 8);
   this.startTime    = new Date().getTime();
   this.jobCount     = 0;
   this.memory       = 0;
@@ -35,45 +42,6 @@ const GeneratorForker = function(options) {
 
   this.lastJobTime  = new Date().getTime();
 
-  const abuseLimit = 3; // 3 timeouts within 15 seconds = timeout for 30 seconds
-  let abuseCache   = {};
-  let timeout      = {};
-
-  function checkAbuse(error, id) {
-    // abuse is considered <abuseLimit> requests per second
-    // Block further requests until until 30 seconds have passed without another barrage
-    if (id in timeout) return true;
-    else if (error === null || error.error !== "Error: Script execution timed out.") return false;
-
-    if (!(id in abuseCache)) {
-      abuseCache[id] = {
-        firstAccess: new Date().getTime(),
-        lastAccess:  new Date().getTime(),
-        total: 1
-      };
-
-    // Update current stats
-    } else {
-      abuseCache[id].lastAccess = new Date().getTime();
-      abuseCache[id].total++;
-    }
-
-    // Check for abuse
-    if (abuseCache[id] && abuseCache[id].total > abuseLimit && abuseCache[id].lastAccess - abuseCache[id].firstAccess < 15000) {
-      timeout[id] = new Date().getTime(); // time they were placed into time out
-      return true;
-    }
-    return false;
-  }
-
-  function checkTimeout() {
-    _.each(timeout, (a, b) => {
-      if (new Date().getTime() - a > 30000) {
-        delete timeout[b];
-      }
-    });
-  }
-
   // Reset abuse cache every 15 seconds
   setInterval(() => {
     abuseCache = {};
@@ -82,102 +50,7 @@ const GeneratorForker = function(options) {
   setInterval(checkTimeout, 30000);
 
   // Queue to push generate requests into
-  this.queue = async.queue((task, callback) => {
-    this.jobCount++;
-    this.lastJobTime  = new Date().getTime();
-
-    // Linter, Demo, or normal request?
-    if (task.socket !== undefined) {
-      if (task.data.type === "snippet") {
-        var options = {key: null, src: task.data.src, ref: null};
-
-        if (checkAbuse(null, task.socket.id)) {
-          task.socket.emit('abuse');
-          return callback();
-        }
-
-        this.generate({mode: 'snippet', options}, (error, results, fmt) => {
-          checkAbuse(error, task.socket.id);
-
-          results = JSON.stringify(JSON.parse(results).results[0], null, 2);
-          if (results.length > 65535) {
-            results = "Warning: Output has been truncated\n----------\n" + results.slice(0, 65535) + "\n----------";
-          }
-          task.socket.emit('codeLinted', {error, results, fmt});
-          callback();
-        });
-
-      } else {
-        // Check to see if we are linting a logged in user or guest trying out the linter
-        var options;
-        if (task.data.owner === null) {
-          options = {key: null, src: task.data.src, ref: null};
-        } else {
-          options = {key: task.data.owner.apikey, src: task.data.src, ref: task.data.ref};
-        }
-
-        if (checkAbuse(null, task.socket.id)) {
-          task.socket.emit('abuse');
-          return callback();
-        }
-
-        this.generate({mode: 'lint', options}, (error, results, fmt) => {
-          checkAbuse(error, task.socket.id);
-
-          results = JSON.stringify(JSON.parse(results).results[0], null, 2);
-
-          // Don't know what is causing this...try and catch the problem for debugging
-          try {
-            if (results.length > 65535) {
-              results = "Warning: Output has been truncated\n----------\n" + results.slice(0, 65535) + "\n----------";
-            }
-          } catch (e) {
-            syslog(e);
-            syslog(results);
-            results = "";
-          }
-
-          task.socket.emit('codeLinted', {error, results, fmt});
-          callback();
-        });
-      }
-    } else {
-      let ref;
-      if (task.req.params.ref === undefined) {
-        ref = task.req.query.ref;
-      } else {
-        ref = task.req.params.ref;
-      }
-      _.merge(task.req.query, {ref});
-
-      this.generate({mode: 'generate', options: task.req.query}, (error, results, fmt) => {
-        if (fmt === 'json') {
-          task.res.setHeader('Content-Type', 'application/json');
-        } else if (fmt === 'xml') {
-          task.res.setHeader('Content-Type', 'text/xml');
-        } else if (fmt === 'yaml') {
-          task.res.setHeader('Content-Type', 'text/x-yaml');
-        } else if (fmt === 'csv') {
-          task.res.setHeader('Content-Type', 'text/csv');
-        } else {
-          task.res.setHeader('Content-Type', 'text/plain');
-        }
-        if (error !== null) {
-          if (error === "INVALID_API") {
-            task.res.status(404).send({error});
-          } else if (error === "UNAUTHORIZED_USER") {
-            task.res.status(401).send({error});
-          } else {
-            task.res.status(403).send(error.formatted);
-          }
-        } else {
-          task.res.status(200).send(results);
-        }
-
-        callback();
-      });
-    }
-  }, 1);
+  this.initQueue();
 
   this.fork();
 
@@ -189,7 +62,9 @@ const GeneratorForker = function(options) {
     setTimeout(() => {
       if (new Date().getTime()/1000 - self.lastReplied > 10 && !self.attempted) {
         self.generator = null;
-        logger(`[generator ${self.name}]: Generator crashed...attempting to restart`);
+        logger(`[generator ${self.guid} ${self.name}]: Generator crashed...attempting to restart`);
+        self.initQueue();
+        self.guid = random(1, 8);
         self.fork();
         self.attempted = true;
       }
@@ -197,7 +72,7 @@ const GeneratorForker = function(options) {
     try {
       self.send({type: 'ping'});
     } catch(e) {}
-    self.once('pong', () => {
+    self.once(`pong${self.guid}`, () => {
       self.lastReplied = new Date().getTime()/1000;
       self.attempted = false;
     });
@@ -213,7 +88,7 @@ const GeneratorForker = function(options) {
       self.snippetCache = 0;
     }, 10000);
 
-    self.once('memComplete', data => {
+    self.once(`memComplete${self.guid}`, data => {
       self.memory = Math.floor(data/1024/1024);
       clearTimeout(statTimeouts);
     });
@@ -223,7 +98,7 @@ const GeneratorForker = function(options) {
       mode: 'getListCache'
     });
 
-    self.once('listCacheComplete', data => {
+    self.once(`listCacheComplete${self.guid}`, data => {
       self.listCache = Math.floor(data/1024/1024);
       clearTimeout(statTimeouts);
     });
@@ -233,7 +108,7 @@ const GeneratorForker = function(options) {
       mode: 'getSnippetCache'
     });
 
-    self.once('snippetCacheComplete', data => {
+    self.once(`snippetCacheComplete${self.guid}`, data => {
       self.snippetCache = Math.floor(data/1024/1024);
       clearTimeout(statTimeouts);
     });
@@ -254,11 +129,11 @@ GeneratorForker.prototype.fork = function() {
   let self = this;
 
   // Fork new Generator with provided info
-  this.generator = fork(__dirname + '/Generator', [this.name, JSON.stringify(this.info)], {silent: true});
+  this.generator = fork(__dirname + '/Generator', [this.name, this.guid, JSON.stringify(this.info)], {silent: this.silent});
 
   // Handle all events
   // {type, mode, data}
-  this.generator.on('message', msg => {
+  this.generator.on(`message`, msg => {
 
     if (msg.type === 'lookup') {
       if (msg.mode === 'api') {
@@ -472,25 +347,25 @@ GeneratorForker.prototype.fork = function() {
       }
 
     } else if (msg.type === 'done') {
-      this.emit('taskFinished', {error: msg.data.error, results: msg.data.results, fmt: msg.data.fmt});
+      this.emit(`taskFinished${this.guid}`, {error: msg.data.error, results: msg.data.results, fmt: msg.data.fmt});
 
     } else if (msg.type === 'cmdComplete') {
       if (msg.mode === 'memory') {
-        this.emit('memComplete', msg.content);
+        this.emit(`memComplete${this.guid}`, msg.content);
 
       } else if (msg.mode === 'lists') {
-        this.emit('listsComplete', msg.content);
+        this.emit(`listsComplete${this.guid}`, msg.content);
 
       } else if (msg.mode === 'listCache') {
-        this.emit('listCacheComplete', msg.content);
+        this.emit(`listCacheComplete${this.guid}`, msg.content);
 
       } else if (msg.mode === 'snippetCache') {
-        this.emit('snippetCacheComplete', msg.content);
+        this.emit(`snippetCacheComplete${this.guid}`, msg.content);
 
       }
 
     } else if (msg.type === 'pong') {
-      this.emit('pong');
+      this.emit(`pong${this.guid}`);
 
     } else if (msg.type === 'ping') {
       this.send({
@@ -498,6 +373,105 @@ GeneratorForker.prototype.fork = function() {
       });
     }
   });
+};
+
+GeneratorForker.prototype.initQueue = function() {
+  this.queue = async.queue((task, callback) => {
+    this.jobCount++;
+    this.lastJobTime  = new Date().getTime();
+
+    // Linter, Demo, or normal request?
+    if (task.socket !== undefined) {
+      if (task.data.type === "snippet") {
+        var options = {key: null, src: task.data.src, ref: null};
+
+        if (checkAbuse(null, task.socket.id)) {
+          task.socket.emit('abuse');
+          return callback();
+        }
+
+        this.generate({mode: 'snippet', options}, (error, results, fmt) => {
+          checkAbuse(error, task.socket.id);
+
+          results = JSON.stringify(JSON.parse(results).results[0], null, 2);
+          if (results.length > 65535) {
+            results = "Warning: Output has been truncated\n----------\n" + results.slice(0, 65535) + "\n----------";
+          }
+          task.socket.emit('codeLinted', {error, results, fmt});
+          callback();
+        });
+
+      } else {
+        // Check to see if we are linting a logged in user or guest trying out the linter
+        var options;
+        if (task.data.owner === null) {
+          options = {key: null, src: task.data.src, ref: null};
+        } else {
+          options = {key: task.data.owner.apikey, src: task.data.src, ref: task.data.ref};
+        }
+
+        if (checkAbuse(null, task.socket.id)) {
+          task.socket.emit('abuse');
+          return callback();
+        }
+
+        this.generate({mode: 'lint', options}, (error, results, fmt) => {
+          checkAbuse(error, task.socket.id);
+
+          results = JSON.stringify(JSON.parse(results).results[0], null, 2);
+
+          // Don't know what is causing this...try and catch the problem for debugging
+          try {
+            if (results.length > 65535) {
+              results = "Warning: Output has been truncated\n----------\n" + results.slice(0, 65535) + "\n----------";
+            }
+          } catch (e) {
+            syslog(e);
+            syslog(results);
+            results = "";
+          }
+
+          task.socket.emit('codeLinted', {error, results, fmt});
+          callback();
+        });
+      }
+    } else {
+      let ref;
+      if (task.req.params.ref === undefined) {
+        ref = task.req.query.ref;
+      } else {
+        ref = task.req.params.ref;
+      }
+      _.merge(task.req.query, {ref});
+
+      this.generate({mode: 'generate', options: task.req.query}, (error, results, fmt) => {
+        if (fmt === 'json') {
+          task.res.setHeader('Content-Type', 'application/json');
+        } else if (fmt === 'xml') {
+          task.res.setHeader('Content-Type', 'text/xml');
+        } else if (fmt === 'yaml') {
+          task.res.setHeader('Content-Type', 'text/x-yaml');
+        } else if (fmt === 'csv') {
+          task.res.setHeader('Content-Type', 'text/csv');
+        } else {
+          task.res.setHeader('Content-Type', 'text/plain');
+        }
+        if (error !== null) {
+          if (error === "INVALID_API") {
+            task.res.status(404).send({error});
+          } else if (error === "UNAUTHORIZED_USER") {
+            task.res.status(401).send({error});
+          } else {
+            task.res.status(403).send(error.formatted);
+          }
+        } else {
+          task.res.status(200).send(results);
+        }
+
+        callback();
+      });
+    }
+  }, 1);
 };
 
 // Opts contains options and mode
@@ -511,7 +485,7 @@ GeneratorForker.prototype.generate = function(opts, cb) {
   });
 
   // Wait for the task to finish and then send err, results, and fmt to cb.
-  this.once('taskFinished', data => {
+  this.once(`taskFinished${this.guid}`, data => {
     cb(data.error, data.results, data.fmt);
   });
 };
@@ -523,6 +497,7 @@ GeneratorForker.prototype.queueLength = function() {
 
 GeneratorForker.prototype.killQueue = function() {
   this.queue.kill();
+  this.initQueue();
 };
 
 GeneratorForker.prototype.totalJobs = function() {
@@ -583,6 +558,41 @@ GeneratorForker.prototype.send = function(obj) {
   try {
     this.generator.send(obj);
   } catch(e) {}
+}
+
+function checkAbuse(error, id) {
+  // abuse is considered <abuseLimit> requests per second
+  // Block further requests until until 30 seconds have passed without another barrage
+  if (id in timeout) return true;
+  else if (error === null || error.error !== "Error: Script execution timed out.") return false;
+
+  if (!(id in abuseCache)) {
+    abuseCache[id] = {
+      firstAccess: new Date().getTime(),
+      lastAccess:  new Date().getTime(),
+      total: 1
+    };
+
+  // Update current stats
+  } else {
+    abuseCache[id].lastAccess = new Date().getTime();
+    abuseCache[id].total++;
+  }
+
+  // Check for abuse
+  if (abuseCache[id] && abuseCache[id].total > abuseLimit && abuseCache[id].lastAccess - abuseCache[id].firstAccess < 15000) {
+    timeout[id] = new Date().getTime(); // time they were placed into time out
+    return true;
+  }
+  return false;
+}
+
+function checkTimeout() {
+  _.each(timeout, (a, b) => {
+    if (new Date().getTime() - a > 30000) {
+      delete timeout[b];
+    }
+  });
 }
 
 module.exports = GeneratorForker;

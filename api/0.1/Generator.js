@@ -15,10 +15,11 @@ const numeral      = require('numeral')
 const Promise      = require('bluebird').Promise;
 const EventEmitter = require('events').EventEmitter;
 
-const Generator = function(name, options) {
+const Generator = function(name, guid, options) {
   this.version  = '0.1';
   this.name     = name || 'generator';
-  process.title = 'RandomAPI_Generator ' + this.name;
+  this.guid     = guid;
+  process.title = 'RandomAPI_Generator ' + this.guid + ' ' + this.name;
 
   options      = JSON.parse(options);
   this.info    = {
@@ -51,7 +52,7 @@ const Generator = function(name, options) {
 
   this.parentReplied = true;
 
-  process.on('message', msg => {
+  process.on(`message`, msg => {
 
     if (msg.type === 'task') {
 
@@ -102,16 +103,16 @@ const Generator = function(name, options) {
 
     } else if (msg.type === 'response') {
       if (msg.mode === 'api') {
-        this.emit('apiResponse', msg.data);
+        this.emit(`apiResponse${this.guid}`, msg.data);
 
       } else if (msg.mode === 'user') {
-        this.emit('userResponse', msg.data);
+        this.emit(`userResponse${this.guid}`, msg.data);
 
       } else if (msg.mode === 'list') {
-        this.emit('listResponse', msg.data);
+        this.emit(`listResponse${this.guid}`, msg.data);
 
       } else if (msg.mode === 'snippet') {
-        this.emit(`snippetResponse:${msg.data.signature}`, msg.data);
+        this.emit(`snippetResponse:${msg.data.signature}${this.guid}`, msg.data);
       }
 
     } else if (msg.type === 'cmd') {
@@ -170,7 +171,7 @@ const Generator = function(name, options) {
         redis.del(`snippet:${ref}:contents`);
       }
     } else if (msg.type === 'pong') {
-      this.emit('pong');
+      this.emit(`pong${this.guid}`);
 
     } else if (msg.type === 'ping') {
       process.send({
@@ -190,7 +191,7 @@ const Generator = function(name, options) {
     try {
       process.send({type: 'ping'});
     } catch(e) {}
-    this.once('pong', () => {
+    this.once(`pong${this.guid}`, () => {
       this.parentReplied = true;
     });
 
@@ -233,7 +234,7 @@ Generator.prototype.instruct = function(options, done) {
     cb => {
       process.send({type: 'lookup', mode: 'api', data: options.ref});
 
-      this.once('apiResponse', data => {
+      this.once(`apiResponse${this.guid}`, data => {
         this.doc = data;
 
         if (!this.doc) {
@@ -246,7 +247,7 @@ Generator.prototype.instruct = function(options, done) {
     cb => {
       process.send({type: 'lookup', mode: 'user', data: this.doc.owner});
 
-      this.once('userResponse', data => {
+      this.once(`userResponse${this.guid}`, data => {
         this.user = data;
         this.options.userID  = data.id;
 
@@ -473,7 +474,7 @@ Generator.prototype.availableFuncs = function() {
           let done = false;
           let item = null;
 
-          this.once('listResponse', result => {
+          this.once(`listResponse${this.guid}`, result => {
 
             if (result === false) {
               throw new Error(`You aren't authorized to access list ${obj}`);
@@ -614,7 +615,7 @@ Generator.prototype.require = function(signature) {
     let done = false;
     let contents = null;
 
-    this.once(`snippetResponse:${signature}`, result => {
+    this.once(`snippetResponse:${signature}${this.guid}`, result => {
       // Generic unrecognized snippet
       if (result.status === false && result.msg === undefined) {
         done = true;
@@ -849,4 +850,4 @@ const log = msg => {
   process.send({type: 'logger', content: String(msg)});
 }
 
-new Generator(process.argv[2], process.argv[3]);
+new Generator(process.argv[2], process.argv[3], process.argv[4]);
