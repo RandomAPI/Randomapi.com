@@ -5,6 +5,7 @@ const async    = require('async');
 const _        = require('lodash');
 const fs       = require('fs');
 const logger   = require('../../utils').logger;
+const syslog   = require('../../utils').syslog;
 const redis    = require('../../utils').redis;
 const settings = require('../../settings');
 
@@ -124,9 +125,18 @@ const GeneratorForker = function(options) {
           checkAbuse(error, task.socket.id);
 
           results = JSON.stringify(JSON.parse(results).results[0], null, 2);
-          if (results.length > 65535) {
-            results = "Warning: Output has been truncated\n----------\n" + results.slice(0, 65535) + "\n----------";
+
+          // Don't know what is causing this...try and catch the problem for debugging
+          try {
+            if (results.length > 65535) {
+              results = "Warning: Output has been truncated\n----------\n" + results.slice(0, 65535) + "\n----------";
+            }
+          } catch (e) {
+            syslog(e);
+            syslog(results);
+            results = "";
           }
+
           task.socket.emit('codeLinted', {error, results, fmt});
           callback();
         });
