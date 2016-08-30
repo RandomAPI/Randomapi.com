@@ -4,6 +4,7 @@ let socket = io($('server').html());
 let selected, snippets;
 
 $(() => {
+  submitQuery();
   search.keyup(() => {
     clearTimeout(typingTimer);
     typingTimer = setTimeout(submitQuery, 250);
@@ -15,7 +16,7 @@ $(() => {
 
   socket.on('searchResults', msg => {
     $('#found').css('visibility', 'visible');
-    if (search.val() === "") $('#found').css('visibility', 'hidden');
+    //if (search.val() === "") $('#found').css('visibility', 'hidden');
 
     let total = Object.keys(msg).length;
     snippets  = msg;

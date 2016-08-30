@@ -95,7 +95,21 @@ module.exports = {
   },
   search(tags) {
     return new Promise((resolve, reject) => {
-      if (tags.length === 0) return resolve([]);
+      if (tags.length === 0) {
+        db.query(`SELECT s.*, u.username AS user FROM snippet s INNER JOIN user u ON (u.id=s.owner) WHERE s.published = 1 ORDER BY modified LIMIT 10`, (err, data) => {
+          if (data.length === 0) return resolve([]);
+
+          async.each(data, (snippet, cb) => {
+            this.getTags(snippet.id).then(tags => {
+              snippet.tags = tags;
+              cb();
+            });
+          }, () => {
+            resolve(data);
+          });
+        });
+        return;
+      }
 
       // Get tag ids
       tags = tags.map(tag => db.escape(tag));
