@@ -90,7 +90,7 @@ router.get('/:ref?', (req, res, next) => {
 
       let shortest = Math.floor(Math.random() * Generators[type].length);
       for (let i = 0; i < Generators[type].length; i++) {
-        if (Generators[type][i].queueLength() < Generators[type][shortest].queueLength()) {
+        if (Generators[type][i].queueLength() <= Generators[type][shortest].queueLength() && Generators[type][i].generator.connected) {
           shortest = i;
         }
       }
