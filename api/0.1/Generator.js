@@ -15,8 +15,6 @@ const numeral      = require('numeral')
 const Promise      = require('bluebird').Promise;
 const EventEmitter = require('events').EventEmitter;
 
-let mersenneNum;
-
 const Generator = function(name, guid, options) {
   this.version  = '0.1';
   this.name     = name || 'generator';
@@ -416,7 +414,6 @@ Generator.prototype.seedRNG = function() {
 
   this.numericSeed = parseInt(crypto.createHash('md5').update(seed).digest('hex').substring(0, 8), 16);
   mersenne.init_seed(this.numericSeed);
-  mersenneNum = mersenne.random();
 };
 
 Generator.prototype.defaultSeed = function() {
@@ -907,7 +904,7 @@ const range = (min, max) => {
 };
 
 function prng() {
-  return mersenneNum;
+  return mersenne.random();
 }
 
 const log = msg => {
