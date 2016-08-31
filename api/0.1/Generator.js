@@ -15,6 +15,8 @@ const numeral      = require('numeral')
 const Promise      = require('bluebird').Promise;
 const EventEmitter = require('events').EventEmitter;
 
+let mersenneNum;
+
 const Generator = function(name, guid, options) {
   this.version  = '0.1';
   this.name     = name || 'generator';
@@ -31,6 +33,10 @@ const Generator = function(name, guid, options) {
   this.snippetCache = {};
   this.timeoutCache = {};
   this.times = {};
+  this.globs = {};
+
+  this.globRequires = ['faker', 'deity', 'moment'];
+  this.configureGlobs();
 
   this.context         = vm.createContext(this.availableFuncs());
   this.originalContext = [
@@ -410,6 +416,7 @@ Generator.prototype.seedRNG = function() {
 
   this.numericSeed = parseInt(crypto.createHash('md5').update(seed).digest('hex').substring(0, 8), 16);
   mersenne.init_seed(this.numericSeed);
+  mersenneNum = mersenne.random();
 };
 
 Generator.prototype.defaultSeed = function() {
@@ -417,6 +424,7 @@ Generator.prototype.defaultSeed = function() {
 };
 
 Generator.prototype.availableFuncs = function() {
+  let self = this;
   // Actual logic
   let funcs = {
     random: {
@@ -548,10 +556,23 @@ Generator.prototype.availableFuncs = function() {
 
       lib = lib.toString().trim();
       if (lib === undefined || lib.length === 0) throw new Error(`No snippet signature provided`);
-      let globRequires = ['faker', 'deity', 'moment'];
 
-      if (globRequires.indexOf(lib) !== -1) {
-        return require(lib);
+      // Make sure valid glob
+      if (self.globRequires.indexOf(lib) !== -1) {
+
+        switch(lib) {
+          case 'faker':
+            // Reset faker back to en locale
+            self.globs.faker.locale = 'en';
+            self.globs.faker.seed(self.numericSeed);
+            break;
+          case 'deity':
+            break;
+          case 'moment':
+            self.globs.moment.locale('en');
+            break;
+        };
+        return self.globs[lib];
       } else {
         throw new Error(`Global snippet ${lib} was not found`);
       }
@@ -796,7 +817,50 @@ Generator.prototype.returnResults = function(err, output, cb) {
     delete err.stack;
     cb(err, JSON.stringify({results: [{}]}), null);
   }
-};
+}
+
+Generator.prototype.configureGlobs = function() {
+  // Make sure valid glob
+  this.globRequires.forEach(lib => {
+    switch(lib) {
+      case 'faker':
+        // Only allow locale to changed
+        this.globs.faker = require('faker');
+        this.globs.faker.seed(this.numericSeed);
+        immutablify(this.globs.faker, {seal: [], writable: ['locale', 'seedValue']});
+        break;
+      case 'deity':
+        this.globs.deity = require('deity');
+        immutablify(this.globs.deity, {seal: [], writable: ['locale']});
+        break;
+      case 'moment':
+        this.globs.moment = require('moment');
+        immutablify(this.globs.moment, {seal: [], writable: []});
+        break;
+    };
+  });
+
+  function immutablify(obj, exclude={seal: [], writable: []}, depth=0) {
+    if (typeof obj !== "object" && depth !== 0 || obj === null) return;
+
+    Object.getOwnPropertyNames(obj).forEach(prop => {
+
+      // Not in exclusion list
+      if (exclude.seal.indexOf(prop) === -1) {
+        Object.seal(obj[prop]);
+      }
+
+      if (exclude.writable.indexOf(prop) === -1) {
+        try {
+          Object.defineProperty(obj, prop, {writable: false});
+        } catch(e) {}
+      }
+
+      immutablify(obj[prop], exclude, ++depth); // Recursively run on props of props
+    });
+    Object.seal(obj); // seal self
+  }
+}
 
 const random = (mode = 1, length = 10, charset = "") => {
   if (!Number.isInteger(mode) || !Number.isInteger(length)) throw new TypeError('Non numeric arguments provided');
@@ -843,7 +907,7 @@ const range = (min, max) => {
 };
 
 function prng() {
-  return mersenne.random();
+  return mersenneNum;
 }
 
 const log = msg => {
