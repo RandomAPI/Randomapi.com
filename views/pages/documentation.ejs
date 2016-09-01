@@ -300,9 +300,6 @@ api.name    = faker.name.findName();</code></pre>
           <pre><code class="javascript">// keiths stuff
 const faker = require('faker');
 
-// Make Faker respect RandomAPI's seed
-faker.seed(getVar('numericSeed'));
-
 // phoneNumber property attached to snippet
 snippet.phoneNumber = function(format) {
   format = format || "(xxx) xxx-xxxx";
@@ -374,7 +371,7 @@ api.a = randomNum();</code></pre>
       Here are some basic rules and tips on publishing snippets:</p>
       <ul>
         <li>Once published, snippets can not be removed.</li>
-          <ol>This is to prevent other users' APIs from breaking unexpectedly. Make sure that you really want to publish a snippet before you click confim.</ol>
+          <ol>This is to prevent other users' APIs from breaking unexpectedly. Make sure that you really want to publish a snippet before you click confirm.</ol>
         <li>Published snippets will be given a revision number that starts at 1.</li>
           <ol>Once a snippet is published, you must provide a revision number in the snippet signature when you use the require function.</ol>
           <div class="row">
