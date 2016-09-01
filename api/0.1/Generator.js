@@ -401,7 +401,19 @@ if (_APISnippetKeys.length === 0) {
 
     // Restore reservedObjects if tampered with
     _.each(this.reservedObjects, (object, val) => {
-      this.context[val] = object;
+      const a = object;
+      this.context[val] = a;
+    });
+
+    _.each({
+      Array, Boolean, Date, decodeURI, decodeURIComponent, encodeURI,
+      encodeURIComponent, Error, EvalError, Function, isFinite, isNaN,
+      Math, Number, Object, parseInt, parseFloat, RangeError,
+      ReferenceError, RegExp, String, SyntaxError, TypeError, URIError,
+      JSON, Proxy, Reflect, Symbol, WeakMap, WeakSet,
+      escape, unescape/**/
+    }, (object, val) => {
+      immutablify(this.context[val]);
     });
 
   }, e => {
