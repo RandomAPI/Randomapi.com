@@ -562,7 +562,7 @@ Generator.prototype.availableFuncs = function() {
           case 'faker':
             // Reset faker back to en locale
             self.globs.faker.locale = 'en';
-            self.globs.faker.seed(self.numericSeed);
+            self.globs.faker.seed(Math.floor(self.numericSeed*prng())%2147483648);
             break;
           case 'deity':
             break;
