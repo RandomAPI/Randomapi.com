@@ -422,8 +422,9 @@ Generator.prototype.defaultSeed = function() {
 
 Generator.prototype.availableFuncs = function() {
   let self = this;
+
   // Actual logic
-  let funcs = {
+  const funcs = {
     random: {
       numeric: (min = 1, max = 100) => {
         return range(min, max);
@@ -578,7 +579,7 @@ Generator.prototype.availableFuncs = function() {
   };
 
   // Proxy to hide logic
-  return {
+  const proxy =  {
     random: {
       numeric: (min, max)       => funcs.random.numeric(min, max),
       special: (mode, length)   => funcs.random.special(mode, length),
@@ -595,6 +596,12 @@ Generator.prototype.availableFuncs = function() {
     require: lib => funcs.require(lib),
     prng
   };
+
+  _.each(proxy, object => {
+    immutablify(object);
+  });
+
+  return proxy;
 };
 
 Generator.prototype.require = function(signature) {
@@ -837,27 +844,6 @@ Generator.prototype.configureGlobs = function() {
         break;
     };
   });
-
-  function immutablify(obj, exclude={seal: [], writable: []}, depth=0) {
-    if (typeof obj !== "object" && depth !== 0 || obj === null) return;
-
-    Object.getOwnPropertyNames(obj).forEach(prop => {
-
-      // Not in exclusion list
-      if (exclude.seal.indexOf(prop) === -1) {
-        Object.seal(obj[prop]);
-      }
-
-      if (exclude.writable.indexOf(prop) === -1) {
-        try {
-          Object.defineProperty(obj, prop, {writable: false});
-        } catch(e) {}
-      }
-
-      immutablify(obj[prop], exclude, ++depth); // Recursively run on props of props
-    });
-    Object.seal(obj); // seal self
-  }
 }
 
 const random = (mode = 1, length = 10, charset = "") => {
@@ -906,6 +892,27 @@ const range = (min, max) => {
 
 function prng() {
   return mersenne.random();
+}
+
+function immutablify(obj, exclude={seal: [], writable: []}, depth=0) {
+  if (typeof obj !== "object" && depth !== 0 || obj === null) return;
+
+  Object.getOwnPropertyNames(obj).forEach(prop => {
+
+    // Not in exclusion list
+    if (exclude.seal.indexOf(prop) === -1) {
+      Object.seal(obj[prop]);
+    }
+
+    if (exclude.writable.indexOf(prop) === -1) {
+      try {
+        Object.defineProperty(obj, prop, {writable: false});
+      } catch(e) {}
+    }
+
+    immutablify(obj[prop], exclude, ++depth); // Recursively run on props of props
+  });
+  Object.seal(obj); // seal self
 }
 
 const log = msg => {
