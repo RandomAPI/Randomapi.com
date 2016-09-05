@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Aug 26, 2016 at 10:55 PM
+-- Generation Time: Sep 05, 2016 at 05:48 PM
 -- Server version: 5.7.13
 -- PHP Version: 5.5.36
 
@@ -200,6 +200,25 @@ INSERT INTO `tier` (`id`, `name`, `price`, `memory`, `results`, `per`, `apis`, `
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `token`
+--
+
+CREATE TABLE `token` (
+  `id` int(11) NOT NULL,
+  `ref` varchar(8) NOT NULL,
+  `name` varchar(32) NOT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `lastUsed` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `owner` int(11) NOT NULL,
+  `status` int(11) NOT NULL DEFAULT '0',
+  `authToken` varchar(16) NOT NULL,
+  `clientToken` varchar(16) DEFAULT NULL,
+  `fingerprint` varchar(64) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `user`
 --
 
@@ -291,6 +310,12 @@ ALTER TABLE `tier`
   ADD UNIQUE KEY `name` (`name`);
 
 --
+-- Indexes for table `token`
+--
+ALTER TABLE `token`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `user`
 --
 ALTER TABLE `user`
@@ -351,6 +376,11 @@ ALTER TABLE `tags`
 --
 ALTER TABLE `tier`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+--
+-- AUTO_INCREMENT for table `token`
+--
+ALTER TABLE `token`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `user`
 --

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <% include ../../snippets/header %>
+  <link rel="stylesheet" href="css/skeleton-tabs.css">
+</head>
+<body>
+  <% include ../../snippets/navbar %>
+  <div class="main">
+    <div class="two columns">
+      <% include ../../snippets/settingsSubnav %>
+    </div>
+    <div class="ten columns">
+      <h3>Offline RandomAPI</h3>
+      <% if (session.user.tierID !== 3) { %>
+        <p>Offline RandomAPI requires a Premium tier subscription. <br>Check out the available upgrade options <a href="upgrade" class='green'>here</a>.</p>
+      <% } else { %>
+        <h4>Authentication Tokens</h4>
+        <ul class="tab-nav">
+          <li>
+            <a class="button active" href="#active">Active tokens</a>
+          </li>
+          <li>
+            <a class="button" href="#new">Create new token</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="active">
+            <table class="table table-striped" style="width: 90%">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Created</th>
+                  <th>Last Used</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+              <%
+              if (tokens !== null) {
+                tokens.forEach(function(token, index) {
+              %>
+                <tr>
+                  <td><%=index+1%></td>
+                  <td><%=token.name%></td>
+                  <td><span class="date" data-date="<%=token.created%>"></span></td>
+                  <td><span class="date" data-date="<%=token.status === 0 ? 'Never' : token.lastUsed%>"></span></td>
+                  <td><a href="" onClick="tokenRevokePrompt('<%=token.ref%>', '<%=token.name%>');return false;">Revoke</a></td>
+                </tr>
+              <%  });
+              }
+              %>
+              </tbody>
+            </table>
+          </div>
+          <div class="tab-pane" id="new">
+            <form action="" method="POST">
+              <span class='red' id='limits'>Accepted chars: a-zA-Z0-9 _-.+[]{}()</span><br>
+              <input type="text" id="limitsInput" name="name" maxlength='32' placeholder="Token Name" autofocus required autocomplete="off"><br>
+              <input type="password" name="password" placeholder="Password" required><br>
+              <input type="submit" id="submit" value="Create new token">
+            </form>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </div>
+  <div class="ads">
+    <% include ../../snippets/ads %>
+  </div>
+  <% include ../../snippets/footer %>
+  <script src="js/nameLimits.js"></script>
+  <script src="js/moment.min.js"></script>
+  <script src="js/token-tabs.js"></script>
+</body>
+</html>

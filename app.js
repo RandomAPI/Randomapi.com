@@ -107,11 +107,14 @@ app.use('*', (req, res, next) => {
   else {
     let info    = req.flash('info');
     let warning = req.flash('warning');
+    let token   = req.flash('token');
 
     if (info.length) {
       messages = ["info", info];
     } else if (warning.length) {
       messages = ["warning", warning];
+    } else if (token.length) {
+      messages = ["token", token];
     } else {
       messages = "";
     }
@@ -165,6 +168,7 @@ app.use('/edit',     require('./routes/edit'));
 app.use('/delete',   require('./routes/delete'));
 app.use('/api',      require('./routes/api'));
 app.use('/settings', require('./routes/settings'));
+app.use('/offline',  require('./routes/offline'));
 
 // production error handler
 // no stacktraces leaked to user

@@ -6,6 +6,22 @@ $(() => {
     if (text.slice(0, 4) === 'info') {
       type = 'success';
       text = text.slice(5);
+    } else if (text.slice(0, 5) === 'token') {
+      type = 'success';
+      text = text.slice(6);
+      noty({
+        text: "Make sure to copy your new authToken now. You won’t be able to see it again!<br><br>" + text.slice(text.indexOf('!')+1),
+        layout: 'center',
+        type: 'confirm',
+        theme: 'relax',
+        buttons: [{
+          addClass: 'button greenButton',
+          text: 'Close',
+          onClick: function ($noty) {
+            $noty.close();
+          }
+        }]
+      });
     } else {
       type = 'error';
       text = text.slice(8);
@@ -87,9 +103,9 @@ function snippetDeletePrompt(ref, name) {
   });
 }
 
-function snippetDeletePrompt(ref, name) {
-  notyPrompt(`Are you sure you want to delete Snippet ${name}?`, () => {
-    window.location.replace(`delete/snippet/${ref}`);
+function tokenRevokePrompt(ref, name) {
+  notyPrompt(`Are you sure you want to revoke Token ${name}?`, () => {
+    window.location.replace(`settings/revokeToken/${ref}`);
   }, () => {
 
   });
@@ -97,6 +113,10 @@ function snippetDeletePrompt(ref, name) {
 
 function updateDates() {
   $('.date').each((index, date) => {
-    $(date).html(moment(new Date($(date).data('date'))/*, "MMDDYYHHmmss"*/).fromNow());
+    if ($(date).data('date') !== "Never") {
+      $(date).html(moment(new Date($(date).data('date'))/*, "MMDDYYHHmmss"*/).fromNow());
+    } else {
+      $(date).html("Never");
+    }
   });
 }

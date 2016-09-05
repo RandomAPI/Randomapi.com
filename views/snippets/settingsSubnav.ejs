@@ -12,6 +12,9 @@ switch(path) {
   case '/settings/subscription':
     selected['subscription'] = style;
     break;
+  case '/settings/offline':
+    selected['offline'] = style;
+    break;
   case '/settings':
   default:
     selected['general'] = style;
@@ -21,5 +24,6 @@ switch(path) {
   <ul>
     <li <%- selected['general'] %>><a href="/settings">General</a></li>
     <li <%- selected['subscription'] %>><a href="settings/subscription">Subscription</a></li>
+    <li <%- selected['offline'] %>><a href="settings/offline">Offline RandomAPI</a></li>
   </ul>
 </div>

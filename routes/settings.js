@@ -7,9 +7,10 @@ const stripe  = require('../utils').stripe;
 const moment  = require('moment');
 const missingProps = require('../utils').missingProps;
 
-const User = require('../models/User');
-const Tier = require('../models/Tier');
-const Plan = require('../models/Plan');
+const User  = require('../models/User');
+const Tier  = require('../models/Tier');
+const Plan  = require('../models/Plan');
+const Token = require('../models/Token');
 const Subscription = require('../models/Subscription');
 
 // Setup defaultVars and baseURL for all routes
@@ -61,6 +62,60 @@ router.get('/subscription', (req, res, next) => {
     } else {
       res.render('settings/subscription', _.merge(defaultVars, {title: 'Subscription', tier: req.session.tier, subscription: req.session.subscription}));
     }
+  });
+});
+
+router.get('/offline', (req, res, next) => {
+  Token.getTokens(req.session.user.id).then(tokens => {
+    res.render('settings/offline', _.merge(defaultVars, {title: 'Offline', tier: req.session.tier, tokens}));
+  });
+});
+
+router.get('/revokeToken/:ref', (req, res, next) => {
+  Token.getCond({ref: req.params.ref}).then(doc => {
+    if (doc === null || doc.owner !== req.session.user.id) {
+      res.redirect(baseURL + '/settings/offline#active');
+    } else {
+      Token.revoke({ref: req.params.ref}).then(() => {
+        req.flash('info', `Token ${doc.name} was revoked successfully!`);
+        res.redirect(baseURL + '/settings/offline#active');
+      });
+    }
+  });
+});
+
+router.post('/offline', (req, res, next) => {
+  if (missingProps(req.body, ['name', 'password'])) {
+    req.flash('warning', 'Missing expected form properties');
+    res.redirect(baseURL + '/settings/offline#new');
+    return;
+  }
+
+  // User is authenticated
+  User.login({username: req.session.user.username, password: req.body.password}).then(data => {
+    if (req.body.name === '') {
+      req.flash('warning', 'Please provide a name for your Token');
+      res.redirect(baseURL + '/settings/offline#new');
+
+    } else if (!req.body.name.match(/^[A-z0-9 _\-\.+\[\]\{\}\(\)]{1,32}$/)) {
+      req.flash('warning', 'Only 32 chars max please! Accepted chars: a-Z0-9 _-.+[]{}()');
+      res.redirect(baseURL + '/settings/offline#new');
+
+    // Is user premium
+    } else if (req.session.user.tierID !== 3) {
+      req.flash('warning', 'A premium tier subscription is required to access this feature.');
+      res.redirect(baseURL + '/settings/subscription');
+
+    // Else, add the token
+    } else {
+      Token.add({name: req.body.name, owner: req.session.user.id}).then(Token.getCond).then(model => {
+        req.flash('token', `Token ${model.name} was added successfully!${model.authToken}`);
+        res.redirect(baseURL + '/settings/offline#active');
+      });
+    };
+  }, err => {
+    req.flash('warning', 'Invalid password');
+    res.redirect(baseURL + '/settings/offline#new');
   });
 });
 
