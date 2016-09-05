@@ -16,7 +16,7 @@ router.post('/login', (req, res, next) => {
   User.getCond({username: req.body.username}).then(user => {
     if (user === null) return res.status(401).send({error: "Invalid username or authToken"});
 
-    Token.getCond({authToken: req.body.authToken}).then(token => {
+    Token.getCond({authToken: req.body.authToken, owner: user.id}).then(token => {
       if (token === null) return res.status(401).send({error: "Invalid username or authToken"});
       if (token.status === 1) return res.status(401).send({warning: "Token is valid but has already been used"});
       let clientToken = Token.genRandomClientToken();
@@ -54,7 +54,7 @@ router.post('/logout', (req, res, next) => {
   User.getCond({username: req.body.username}).then(user => {
     if (user === null) return res.sendStatus(401);
 
-    Token.getCond({clientToken: req.body.clientToken, fingerprint: req.body.fingerprint}).then(token => {
+    Token.getCond({clientToken: req.body.clientToken, fingerprint: req.body.fingerprint, owner: user.id}).then(token => {
       if (token === null) return res.sendStatus(401);
       Token.revoke({ref: token.ref}).then(res.sendStatus(200));
 
@@ -72,7 +72,7 @@ router.post('/sync', (req, res, next) => {
   User.getCond({username: req.body.username}).then(user => {
     if (user === null) return res.sendStatus(401);
 
-    Token.getCond({clientToken: req.body.clientToken, fingerprint: req.body.fingerprint}).then(token => {
+    Token.getCond({clientToken: req.body.clientToken, fingerprint: req.body.fingerprint, owner: user.id}).then(token => {
       if (token === null) return res.sendStatus(401);
 
       // Valid token and user at this point...can sync now
@@ -99,13 +99,17 @@ router.post('/sync', (req, res, next) => {
         // Fetch Lists
         cb => {
           List.getLists(user.id).then(lists => {
-            cb(null, {lists});
+            cb(null, lists);
           });
         }
       ], (err, data) => {
 
         // Send to user results
-        res.send(data);
+        var obj = {}
+        obj.apis = data[0].apis;
+        obj.requires = data[0].requires;
+        obj.lists = data[1];
+        Token.lastUsed(token.ref).then(res.send(obj));
       });
 
     }, err => {
@@ -206,8 +210,8 @@ function extractRequires(requires, user, api, callback) {
 }
 
 function getRequireRefs(user, raw, done) {
-  //[ 'bill/phone number/1', 'keith/randomnum' ]
   let refs = [];
+
   async.each(raw, (ref, cb) => {
     let split = ref.split('/');
 
@@ -218,9 +222,7 @@ function getRequireRefs(user, raw, done) {
 
         Version.getVersion(snip.ref, split[2]).then(ver => {
           if (ver !== null && (ver.published === 1 || snip.owner === user.id)) {
-            refs.push(`${snip.ref}-${snip.id}-${ver.version}`);
-          } else {
-            //console.log('bad');
+            refs.push(_.merge(snip, ver));
           }
           cb();
         });
@@ -229,8 +231,10 @@ function getRequireRefs(user, raw, done) {
     // private and no version num
     } else {
       Snippet.getCond({username: split[0], name: split[1]}).then(snip => {
-        refs.push(`${snip.ref}-${snip.id}-1`);
-        cb();
+        Version.getVersion(snip.ref, 1).then(ver => {
+          refs.push(_.merge(snip, ver));
+          cb();
+        });
       });
     }
   }, () => {
