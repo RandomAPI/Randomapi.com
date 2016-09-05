@@ -135,5 +135,17 @@ module.exports = {
         resolve({err: err, result: result});
       });
     });
+  },
+  valid(clientToken, fingerprint) {
+    return new Promise((resolve, reject) => {
+      this.getCond({clientToken, fingerprint}).then(token => {
+        if (token === null) resolve(null);
+        else {
+          this.lastUsed(token.ref).then(() => {
+            resolve(true);
+          });
+        }
+      });
+    });
   }
 };
