@@ -101,26 +101,11 @@ router.post('/sync', (req, res, next) => {
           List.getLists(user.id).then(lists => {
             cb(null, {lists});
           });
-        },
-
-        // Fetch Private Snippets
-        cb => {
-          Snippet.getPrivateSnippets(user.id).then(privateSnippets => {
-            cb(null, {privateSnippets});
-          });
-        },
-
-        // Fetch Public Snippets
-        cb => {
-          Snippet.getPublicSnippets(user.id).then(publicSnippets => {
-            cb(null, {publicSnippets});
-          });
         }
       ], (err, data) => {
 
         // Send to user results
         res.send(data);
-        //console.log(util.inspect(data, false, null))
       });
 
     }, err => {
@@ -141,6 +126,7 @@ router.post('/download/:type?/:ref?', (req, res, next) => {
 
       // valid
       if (req.params.type === 'api') {
+        if(req.params.ref === undefined) return res.sendStatus(400);
 
         // Check if user has permissions for this api
         API.getCond({owner: user.id, ref: req.params.ref}).then(api => {
@@ -148,8 +134,15 @@ router.post('/download/:type?/:ref?', (req, res, next) => {
           res.send(fs.readFileSync(`./data/apis/${api.id}.api`, 'utf8'));
         });
       } else if (req.params.type === 'require') {
-        let split = req.params.ref.split('-');
 
+        let split;
+        try {
+          split = req.params.ref.split('-');
+        } catch(e) {
+          return res.sendStatus(400);
+        }
+
+        if (split.length < 2) return res.sendStatus(400);
         Snippet.getCond({ref: split[0], username: user.username}).then(userSnip => {
           Version.getCond({snippetID: split[1], version: split[2]}).then(authSnip => {
             if (userSnip || (authSnip && authSnip.published === 1)) {
@@ -163,9 +156,23 @@ router.post('/download/:type?/:ref?', (req, res, next) => {
             }
           });
         });
+      } else if (req.params.type === 'list') {
+        if(req.params.ref === undefined) return res.sendStatus(400);
+
+        // Check if user has permissions for this list
+        List.getCond({owner: user.id, ref: req.params.ref}).then(list => {
+          if (list === null) return res.sendStatus(403);
+          res.send(fs.readFileSync(`./data/lists/${list.id}.list`, 'utf8'));
+        });
+      } else {
+        res.sendStatus(400);
       }
     });
   });
+});
+
+router.all('/?', (req, res, next) => {
+  res.sendStatus(404);
 });
 
 module.exports = router;
