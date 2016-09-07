@@ -222,7 +222,7 @@ function getRequireRefs(user, raw, done) {
 
         Version.getVersion(snip.ref, split[2]).then(ver => {
           if (ver !== null && (ver.published === 1 || snip.owner === user.id)) {
-            refs.push(_.merge(snip, ver));
+            refs.push(_.merge(snip, ver, {username: split[0]}));
           }
           cb();
         });
@@ -232,7 +232,7 @@ function getRequireRefs(user, raw, done) {
     } else {
       Snippet.getCond({username: split[0], name: split[1]}).then(snip => {
         Version.getVersion(snip.ref, 1).then(ver => {
-          refs.push(_.merge(snip, ver));
+          refs.push(_.merge(snip, ver, {username: split[0]}));
           cb();
         });
       });
