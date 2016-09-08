@@ -1,16 +1,17 @@
-const express = require('express');
-const async   = require('async');
-const _       = require('lodash');
-const fs      = require('fs');
-const router  = express.Router();
-const logger  = require('../utils').logger;
-const API     = require('../models/API');
-const List    = require('../models/List');
-const Snippet = require('../models/Snippet');
-const Version = require('../models/Version');
-const User    = require('../models/User');
-const Token   = require('../models/Token');
-const util    = require('util');
+const express  = require('express');
+const async    = require('async');
+const _        = require('lodash');
+const filesize = require('filesize');
+const fs       = require('fs');
+const router   = express.Router();
+const logger   = require('../utils').logger;
+const API      = require('../models/API');
+const List     = require('../models/List');
+const Snippet  = require('../models/Snippet');
+const Version  = require('../models/Version');
+const User     = require('../models/User');
+const Token    = require('../models/Token');
+const util     = require('util');
 
 router.post('/login', (req, res, next) => {
   User.getCond({username: req.body.username}).then(user => {
@@ -83,14 +84,20 @@ router.post('/sync', (req, res, next) => {
         cb => {
           API.getAPIs(user.id).then(apis => {
             let requires = [];
+            let apiSize = 0;
+            let requireSize = 0;
 
             async.each(apis, (api, callback) => {
+              apiSize += fs.statSync(`./data/apis/${api.id}.api`)["size"];
               extractRequires(requires, user, api, callback);
             }, () => {
 
               // Convert require signatures to refs
               getRequireRefs(user, _.uniq(requires), requires => {
-                cb(null, {apis, requires});
+                async.each(requires, (require, callback) => {
+                  requireSize += fs.statSync(`./data/snippets/${require.snippetID}-${require.version}.snippet`)["size"];
+                  callback();
+                }, () => cb(null, {apis, apiSize, requires, requireSize}));
               });
             });
           });
@@ -98,8 +105,12 @@ router.post('/sync', (req, res, next) => {
 
         // Fetch Lists
         cb => {
+          let listSize = 0;
           List.getLists(user.id).then(lists => {
-            cb(null, lists);
+            async.each(lists, (list, callback) => {
+              listSize += fs.statSync(`./data/lists/${list.id}.list`)["size"];
+              callback();
+            }, () => cb(null, {lists, listSize}));
           });
         }
       ], (err, data) => {
@@ -108,7 +119,10 @@ router.post('/sync', (req, res, next) => {
         var obj = {}
         obj.apis = data[0].apis;
         obj.requires = data[0].requires;
-        obj.lists = data[1];
+        obj.apiSize = filesize(data[0].apiSize);
+        obj.requireSize = filesize(data[0].requireSize);
+        obj.lists = data[1].lists;
+        obj.listSize = filesize(data[1].listSize);
         Token.lastUsed(token.ref).then(res.send(obj));
       });
 
