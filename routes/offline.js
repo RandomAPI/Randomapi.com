@@ -83,6 +83,7 @@ router.post('/sync', (req, res, next) => {
         // Fetch APIs and extract requires from APIs
         cb => {
           API.getAPIs(user.id).then(apis => {
+            apis = apis || [];
             let requires = [];
             let apiSize = 0;
             let requireSize = 0;
@@ -107,6 +108,7 @@ router.post('/sync', (req, res, next) => {
         cb => {
           let listSize = 0;
           List.getLists(user.id).then(lists => {
+            lists = lists || [];
             async.each(lists, (list, callback) => {
               listSize += fs.statSync(`./data/lists/${list.id}.list`)["size"];
               callback();
