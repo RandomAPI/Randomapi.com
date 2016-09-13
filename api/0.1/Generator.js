@@ -77,6 +77,7 @@ const Generator = function(name, guid, options) {
         this.seed   = String('linter' + ~~(Math.random() * 100));
         this.format = 'pretty';
         this.noinfo = true;
+        this.sole   = false;
         this.page   = 1;
         this.mode   = 'lint';
         this.src    = msg.data.src;
@@ -93,6 +94,7 @@ const Generator = function(name, guid, options) {
         this.seed   = String('snippet' + ~~(Math.random() * 100));
         this.format = 'pretty';
         this.noinfo = true;
+        this.sole   = false;
         this.page   = 1;
         this.mode   = 'snippet';
         this.src    = msg.data.src;
@@ -220,6 +222,7 @@ Generator.prototype.instruct = function(options, done) {
   this.seed    = this.options.seed || '';
   this.format  = (this.options.format || this.options.fmt || 'json').toLowerCase();
   this.noInfo  = typeof this.options.noinfo !== 'undefined';
+  this.sole    = typeof this.options.sole !== 'undefined' || typeof this.options.onlyone !== 'undefined';
   this.page    = Number(this.options.page) || 1;
 
   this.hideuserinfo = typeof this.options.hideuserinfo !== 'undefined';
@@ -227,7 +230,7 @@ Generator.prototype.instruct = function(options, done) {
   if (this.mode === undefined) this.mode = options.mode || "generator";
 
   // Sanitize values
-  if (isNaN(this.results) || this.results < 0 || this.results > this.info.results || this.results === '') this.results = 1;
+  if (isNaN(this.results) || this.results < 0 || this.results > this.info.results || this.results === '' || this.sole) this.results = 1;
   if (this.seed === '') this.defaultSeed();
   if (this.page < 0 || this.page > 10000) this.page = 1;
   ///////////////////
@@ -790,6 +793,7 @@ Generator.prototype.returnResults = function(err, output, cb) {
 
     if (this.noInfo) delete json.info;
     if (this.hideuserinfo && !this.noInfo) delete json.info.user;
+    if (this.sole) json.results = json.results[0];
 
     if (this.format === 'yaml') {
       cb(null, YAML.stringify(json, 4), 'yaml');
@@ -801,6 +805,10 @@ Generator.prototype.returnResults = function(err, output, cb) {
       converter.json2csv(json.results, (err, csv) => {
         cb(null, csv, 'csv');
       });
+    } else if (this.format === 'raw') {
+      cb(null, JSON.stringify(json.results), 'json');
+    } else if (this.format === 'prettyraw') {
+      cb(null, JSON.stringify(json.results, null, 2), 'json');
     } else {
       cb(null, JSON.stringify(json), 'json');
     }

@@ -99,7 +99,9 @@ router.get('/:ref?', (req, res, next) => {
       if (!Generators[type][shortest].generator.connected) {
         cb({code: 500, error: "GENERATOR_OFFLINE"});
       } else {
-        if (isNaN(req.query.results) || req.query.results < 0 || req.query.results === '') req.query.results = 1;
+        if (isNaN(req.query.results) || req.query.results < 0 || req.query.results === '' ||
+           (typeof req.query.sole !== 'undefined' || typeof req.query.onlyone !== 'undefined')) req.query.results = 1;
+
         if (req.query.results > tier.per) {
           req.query.results = tier.per;
         }
