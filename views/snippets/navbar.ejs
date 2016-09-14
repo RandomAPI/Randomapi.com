@@ -54,13 +54,15 @@ if (session.user !== undefined && session.user.tierName === 'Free') {
           <a href=""><li <%- selected['home'] %>>Home</li></a>
           <a href="<%= upgrade %>"><li <%- selected['pricing'] %>>Upgrade</li></a>
           <a href="documentation"><li <%- selected['documentation'] %>>Documentation</li></a>
+          <a href="http://blog.randomapi.com">Blog</li></a>
           <a href="settings"><li <%- selected['settings'] %>>Settings</li></a>
           <a href="logout"><li>Logout</li></a>
         <% } else { %>
           <a href=""><li <%- selected['home'] %>>Home</li></a>
-          <a href="search"><li <%- selected['search'] %>>Search</li></a>
+          <!--<a href="search"><li <%- selected['search'] %>>Search</li></a>-->
           <a href="pricing"><li <%- selected['pricing'] %>>Pricing</li></a>
           <a href="documentation"><li <%- selected['documentation'] %>>Documentation</li></a>
+          <a href="http://blog.randomapi.com">Blog</li></a>
           <a href="login"><li <%- selected['login'] %>>Login</li></a>
           <a href="register"><li class="signupBadge">Sign Up</li></a>
         <% } %>
