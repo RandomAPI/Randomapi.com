@@ -454,7 +454,6 @@ Generator.prototype.availableFuncs = function() {
       }
     },
     list: (obj, num) => {
-      if (this.mode === 'snippet') throw new Error(`Lists are not available in Snippets`);
       if (num !== '' && num !== undefined) num = Number(num); // Convert string to num if it isn't undefined
       if (num === '') num = undefined;
       if (obj === '' || obj === undefined) throw new Error(`Empty list value provided`);
@@ -470,6 +469,7 @@ Generator.prototype.availableFuncs = function() {
           }
         }
       } else {
+        if (this.mode === 'snippet') throw new Error(`Lists are not available in Snippets; only inline lists are allowed`);
         // Check if list is in local generator cache
         // If not, fetch from redis cache and add it to the local cache
         if (obj in this.cache) {
