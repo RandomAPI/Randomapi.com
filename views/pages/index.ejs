@@ -11,30 +11,66 @@
     <section class="hero">
       <h3>Simplify your testing</h3>
       <h5 id="subtitle">Easily generate mock data for testing your application</h5>
+      <input type="button" id="homepageSignupButton" value="Sign up for free!">
     </section>
     <section class="tryitout">
       <h4>Try it out!</h4>
-      <pre id="aceEditor" name="code">// Custom user snippet that generates credit card numbers
+      <pre id="aceEditor" name="code"><%
+var samples = [
+`// Example of a Random Customer Generator
+const faker = require('faker'); // Faker.js
+
+api.customer  = {
+    id:    random.special(4, 8),
+    name:  faker.name.findName(),
+    phone: faker.phone.phoneNumber("(###) ###-####"),
+    address: {
+        street: faker.address.streetAddress(),
+        city: faker.address.city(),
+        state: faker.address.state(),
+    }
+};`,
+`// Example of a random user purchase invoice
+const moment = require('moment'); // moment.js to format dates
+
+// Generate fake credit card numbers
 const cc = require('keith/Credit Card Generator/2');
 
-let age   = random.numeric(18, 65);
-api.age   = age;        // Attached to implicit api object
-api.phone = phoneNum(); // Calling user defined function
+// User defined code to generate invoice numbers
+api.invoiceID = require('keith/invoice number generator/1')();
+api.date = moment().format('LLL');
 
-api.favoriteColor = list([
-    'red', 'orange', 'yellow',
-    'green', 'blue', 'indigo',
-    'violet'
-]);
+// Inline list of products to choose from
+let products = {
+    milk: 229, eggs: 100, bread: 243, butter: 200,
+    juice: 369, cereal: 312, poptarts: 371, sprite: 1077,
+    mentos: 330, beer: 945, apple: 75, avocado: 85
+};
 
-api.visa = String(cc('VISA')).match(/.{4}/g).join('-');
+api.itemsPurchased = random.numeric(1, 10);
+api.items = [];
 
-function phoneNum(format) {
-  format = format || "(xxx) xxx-xxxx";
-  return String(format).split('').map(digit => {
-    return digit === 'x' ? random.numeric(0, 9) : digit;
-  }).join('');
-}</pre>
+let total = 0;
+for (let i = 0; i < api.itemsPurchased; i++) {
+    let item = list(products);
+    api.items.push(item);
+    total += products[item];
+}
+api.items = api.items.toString();
+api.card  = cc('VISA').toString().match(/.{4}/g).join('-');
+api.total = \`$\${total/100}\`;`,
+`// Example of a Random User Generator
+const faker = require('faker'); // Faker.js library
+
+// Custom user snippet to generate formatted phone numbers
+const phonenum = require('keith/phonenum/1');
+
+api.company  = faker.company.companyName();
+api.username = faker.internet.userName();
+api.password = faker.internet.password();
+api.role     = list(['guest', 'user', 'administrator']);
+api.phone    = phonenum();
+api.cell     = phonenum(\`(\${list(['214', '469', '972'])}) xxx-xxxx\`);`];%><%=samples[Math.floor(Math.random()*3)]%></pre>
       <div id="preview">
         <button id="lintButtonHome" onClick="lintCode()">Generate result</button>
         <pre id="results">

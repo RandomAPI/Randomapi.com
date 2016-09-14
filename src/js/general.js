@@ -44,6 +44,10 @@ $(() => {
     window.location.replace(`register`);
   });
 
+  $('#homepageSignupButton').click(() => {
+    window.location.replace(`register`);
+  });
+
   updateDates()
   setInterval(() => {
     updateDates();

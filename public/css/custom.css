@@ -190,6 +190,10 @@ section.tryitout {
   width: 75%;
 }
 
+section.tryitout h4 {
+  margin-bottom: 1rem;
+}
+
 section.triplesec {
   width: 100%;
   height: 350px;
@@ -476,7 +480,11 @@ input:read-only {
   section.hero #subtitle {
     margin: auto;
     width: 100%;
-    font-size: 16pt;
+    font-size: 14pt !important;
+  }
+
+  section.hero h3 {
+    font-size: 22pt !important;
   }
 
   .navLogo {
@@ -511,7 +519,7 @@ input:read-only {
   }
 
   section.tryitout h4 {
-    font-size: 2.5rem;
+    font-size: 3.0rem;
     margin-bottom: 1rem !important;
   }
 
@@ -586,4 +594,24 @@ input:read-only {
 .mobileNav a:active,
 .mobileNav a:focus {
   background: #e7e7e7;
+}
+
+#homepageSignupButton {
+  margin-top: 15px;
+  width: 200px;
+  padding: 0px;
+  background-color: #0CB863;
+  color: white;
+  height: 50px;
+  font-size: 11pt;
+  text-transform: none;
+}
+
+#homepageSignupButton:hover {
+  background-color: #09A459;
+  -webkit-transition: background-color 0.2s ease-in-out;
+  -moz-transition: background-color 0.2s ease-in-out;
+  -ms-transition: background-color 0.2s ease-in-out;
+  -o-transition: background-color 0.2s ease-in-out;
+  transition: background-color 0.2s ease-in-out;
 }
