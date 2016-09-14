@@ -5,7 +5,7 @@ let typingTimer, lastAbuse;
 let editor = ace.edit("aceEditor");
 let codeArea = $(editor.textInput.getElement());
 
-editor.setTheme("ace/theme/twilight");
+editor.setTheme("ace/theme/monokai");
 editor.session.setMode("ace/mode/javascript");
 editor.setValue(editor.getValue(), 1);
 editor.focus();
