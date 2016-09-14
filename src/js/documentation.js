@@ -7,7 +7,9 @@ $(() => {
       if (target.length) {
         $('html,body').animate({
           scrollTop: target.offset().top - 75
-        }, 500);
+        }, 500, () => {
+           window.location.hash = this.hash;
+        });
         return false;
       }
     }
