@@ -30,6 +30,14 @@ html {
   font-size: 24pt;
 }
 
+#navbar #beta {
+  position: absolute;
+  color: #0CB863;
+  font-size: 12pt;
+  margin-top: 15px;
+  margin-left: 3px;
+}
+
 #navbar ul {
   overflow: hidden;
   float: right;
@@ -487,15 +495,19 @@ input:read-only {
     font-size: 22pt !important;
   }
 
-  .navLogo {
-
-  }
-
   .freeLogo h3 {
     margin-top: 15px;
     margin-left: 15px;
     font-size: 3.6rem;
     margin-bottom: 0rem;
+  }
+
+  .freeLogo #beta {
+    position: absolute;
+    color: #0CB863;
+    font-size: 12pt;
+    margin-top: 20px;
+    margin-left: 3px;
   }
 
   h3 {
@@ -543,6 +555,9 @@ input:read-only {
 
 .invisible { display: none; }
 
+.mobileNav h3 {
+  margin-bottom: 0rem;
+}
 
 .mobileNav {
   display: none;
@@ -594,6 +609,14 @@ input:read-only {
 .mobileNav a:active,
 .mobileNav a:focus {
   background: #e7e7e7;
+}
+
+.mobileNav #beta {
+  position: absolute;
+  color: #0CB863;
+  font-size: 12pt;
+  margin-top: 10px;
+  margin-left: 3px;
 }
 
 #homepageSignupButton {
