@@ -19,7 +19,7 @@ if (readonly == "true") {
 
 $("#submit").click(() => {
   $.post('', {code: editor.getValue()}, url => {
-    window.location.replace(url);
+    window.location.href = url;
   });
 });
 

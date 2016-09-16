@@ -14,7 +14,7 @@ lintCode();
 
 $("#submit").click(() => {
   $.post('', {rename: $("#limitsInput").val(), code: editor.getValue()}, url => {
-    window.location.replace(url);
+    window.location.href = url;
   });
 });
 

@@ -1,5 +1,5 @@
 function selectPlan() {
   $.get('register', () => {
-    window.location.replace('register/guest');
+    window.location.href = 'register/guest';
   });
 }

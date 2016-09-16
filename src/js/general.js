@@ -41,11 +41,11 @@ $(() => {
   }
 
   $('#signupButton').click(() => {
-    window.location.replace(`register`);
+    window.location.href = 'register';
   });
 
   $('#homepageSignupButton').click(() => {
-    window.location.replace(`register`);
+    window.location.href = 'register';
   });
 
   updateDates()
@@ -85,7 +85,7 @@ function notyPrompt(text, yes, no) {
 
 function apiDeletePrompt(ref) {
   notyPrompt(`Are you sure you want to delete API ${ref}?`, () => {
-    window.location.replace(`delete/api/${ref}`);
+    window.location.href = `delete/api/${ref}`;
   }, () => {
 
   });
@@ -93,7 +93,7 @@ function apiDeletePrompt(ref) {
 
 function listDeletePrompt(ref) {
   notyPrompt(`Are you sure you want to delete List ${ref}?`, () => {
-    window.location.replace(`delete/list/${ref}`);
+    window.location.href = `delete/list/${ref}`;
   }, () => {
 
   });
@@ -101,7 +101,7 @@ function listDeletePrompt(ref) {
 
 function snippetDeletePrompt(ref, name) {
   notyPrompt(`Are you sure you want to delete Snippet ${name}?`, () => {
-    window.location.replace(`delete/snippet/${ref}`);
+    window.location.href = `delete/snippet/${ref}`;
   }, () => {
 
   });
@@ -109,7 +109,7 @@ function snippetDeletePrompt(ref, name) {
 
 function tokenRevokePrompt(ref, name) {
   notyPrompt(`Are you sure you want to revoke Token ${name}?`, () => {
-    window.location.replace(`settings/revokeToken/${ref}`);
+    window.location.href = `settings/revokeToken/${ref}`;
   }, () => {
 
   });
