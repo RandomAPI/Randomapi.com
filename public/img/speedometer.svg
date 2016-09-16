@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="39px" height="39px" viewBox="0 0 39 39" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 39.1 (31720) - http://www.bohemiancoding.com/sketch -->
+    <title>Speedometer</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Speedometer" transform="translate(1.000000, 1.000000)">
+            <circle id="Oval" stroke="#D4D4D4" fill="#FFFFFF" cx="18.5" cy="18.5" r="18.5"></circle>
+            <path d="M18.562175,2.5 L18.562175,5.5 M22.395135,2.96590006 L21.6693693,5.87678724 M26.0048683,4.33646624 L24.5964536,6.98530902 M29.1811494,6.53187691 L27.1737576,8.76131139 M31.7241691,9.40269652 L29.266713,11.1234258 M33.5202812,12.8206772 L30.7195399,13.8957811 M34.4452729,16.5694141 L31.4676344,16.9350222 M34.4452729,20.4305859 L31.4676344,20.0649778 M33.5202812,24.1793228 L30.7195399,23.1042189 M3.60406883,24.1793228 L6.40481011,23.1042189 M2.67907709,20.4305859 L5.65671555,20.0649778 M2.67907709,16.5694141 L5.65671555,16.9350222 M3.60406883,12.8206772 L6.40481011,13.8957811 M5.40018087,9.40269652 L7.857637,11.1234258 M7.94320054,6.53187691 L9.95059236,8.76131139 M11.1194817,4.33646624 L12.5278963,6.98530902 M14.729215,2.96590006 L15.4549807,5.87678724" id="Line" stroke="#7ED321" stroke-linecap="square"></path>
+            <polygon id="Triangle" fill="#F6A623" transform="translate(27.377241, 20.536883) rotate(104.000000) translate(-27.377241, -20.536883) " points="28.3282978 13.215385 28.7172413 27.8583812 26.0372412 27.8583812"></polygon>
+            <circle id="Oval-2" stroke="#979797" fill="#D8D8D8" cx="18.5" cy="18.5" r="2.5"></circle>
+        </g>
+    </g>
+</svg>

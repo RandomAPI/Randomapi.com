@@ -10,7 +10,7 @@
   <div class="main">
     <section class="hero">
       <h3>Simplify your testing</h3>
-      <h5 id="subtitle">Easily generate mock data for testing your application</h5>
+      <h5 id="subtitle">Easily generate fake data for populating your mockups and testing your applications</h5>
       <input type="button" id="homepageSignupButton" value="Sign up for free!">
     </section>
     <section class="tryitout">
@@ -79,24 +79,45 @@ api.cell     = phonenum(\`(\${list(['214', '469', '972'])}) xxx-xxxx\`);`];%><%=
       </div>
     </section>
   </div>
-  <div class="ads">
-    <% include ../snippets/ads %>
-  </div>
-  <section class="triplesec">
+  <section class="sextuplesec">
     <div class="main">
-      <div class="one-third column tripleSection">
+      <div class="tripleSection">
+        <img class="sextupleImg" src="img/js_logo.svg">
         <h4 class="tripleTitle">Simple</h4>
-        <p class="tripleInfo">If you know Javascript, you know how to code APIs. APIs are written in <a class='green' href="http://vanilla-js.com/" target="_blank">Vanilla Javascript</a>. No learning a new language and its fancy syntax required! Check out the <a class='green' href="documentation" target="_blank">documentation</a> to learn how to start making your own APIs!</p>
+        <p class="tripleInfo">APIs are coded in Javascript and are very easy to make! Check out the <a class='green' href="documentation">documentation</a> or follow our API walkthrough to learn how to start making your own APIs!<br><a class='green' href="http://blog.randomapi.com/geocaching-api-demo/"><span class="readmore">> Geocaching API walkthrough</a></p>
       </div>
-      <div class="one-third column tripleSection">
-        <h4 class="tripleTitle">Powerful</h4>
-        <p class="tripleInfo">You have complete control over the output of your API. Whether your API has complicated logic and conditions or takes advantage of a published snippet, the output can be custom tailored to your liking thanks to Javascript.</p>
+      <div class="tripleSection">
+        <img class="sextupleImg" src="img/speedometer.svg">
+        <h4 class="tripleTitle">Fast & Powerful</h4>
+        <p class="tripleInfo">With user snippets & libraries like <a class='green' href="https://www.npmjs.com/package/Faker">Faker</a> along with a complete programming language, you have full control over the output of your API.<br><a class='green' href="search"><span class="readmore">> Browse Snippet Library</a></p>
       </div>
-      <div class="one-third column tripleSection">
-        <h4 class="tripleTitle">Sharing</h4>
-        <p class="tripleInfo">Did you create an awesome piece of code that you think would be helpful for others to use in their APIs? We have <a class='green' href="documentation#snippets" target="_blank">snippets</a>! Think of it like NPM modules for APIs.<!-- Check out our Snippet browser <a class='green' href="search" target="_blank">here</a> and search for credit card for example.--></p>
+      <div class="tripleSection">
+        <img class="sextupleImg" src="img/price.svg">
+        <h4 class="tripleTitle">Pricing</h4>
+        <p class="tripleInfo">All of our pricing plans are affordable and yours for life. Pay once, own it forever!<br><a class='green' href="pricing"><span class="readmore">> View Pricing</a></p>
       </div>
     </div>
+  </section>
+  <section class="sextuplesec">
+    <div class="main">
+      <div class="tripleSection">
+        <img class="sextupleImg" src="img/offline.svg">
+        <h4 class="tripleTitle">Offline Generator</h4>
+        <p class="tripleInfo">No internet? No problem! Thanks to the <a class='green' href="https://npmjs.com/package/randomapi">RandomAPI</a> NPM module, you can use your own machine to generate your APIs locally.<br><a class='green' href="http://blog.randomapi.com/offline-randomapi/"><span class="readmore">> About Offline RandomAPI</span></a></p>
+      </div>
+      <div class="tripleSection">
+        <img class="sextupleImg" src="img/convenient.svg">
+        <h4 class="tripleTitle">Convenient</h4>
+        <p class="tripleInfo">An easy to use implementation, clean interface, and RESTful API make RandomAPI simple to use in all your applications.<br><a class='green' href="documentation#callingAPIs"><span class="readmore">> Calling your APIs</span></a></p>
+      </div>
+      <div class="tripleSection">
+        <img class="sextupleImg" src="img/sharing.svg">
+        <h4 class="tripleTitle">Sharing</h4>
+        <p class="tripleInfo">Snippets are shared pieces of code that make up a big part of RandomAPI. If you've made a function that helps generate data, publish it for others to use!<br><a class='green' href="documentation#snippets"><span class="readmore">> About Snippets</a></p>
+      </div>
+    </div>
+  </section>
+  <section class="turnthis">
   </section>
   <% include ../snippets/footer %>
   <script src="js/socket.io.min.js"></script>
