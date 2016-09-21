@@ -170,6 +170,10 @@ app.use('/api',      require('./routes/api'));
 app.use('/settings', require('./routes/settings'));
 app.use('/offline',  require('./routes/offline'));
 
+if (settings.general.stats) {
+  app.use(`/${settings.general.statsPath}`,  require('./routes/stats'));
+}
+
 // production error handler
 // no stacktraces leaked to user
 app.use((req, res, next) => res.sendStatus(404));

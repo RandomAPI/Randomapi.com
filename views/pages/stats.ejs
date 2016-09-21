@@ -1,0 +1,33 @@
+<html>
+<head>
+  <% include ../snippets/header %>
+  <title>RandomAPI Stats</title>
+</head>
+<body>
+
+  <script src="js/jquery.js"></script>
+  <script src="js/lodash.min.js"></script>
+  <script src="js/moment.min.js"></script>
+  <script>
+  setInterval(() => {
+    let body = "";
+    $.get('stats/data', (data) => {
+      _.each(data, (info, type) => {
+        if (Array.isArray(info)) {
+          body += 
+  `<h5>${type}</h5>
+  Generators: ${info[0][0]}<br>
+  Jobs: ${info[0][1]}<br>
+  Memory: ${info[0][2]}<br>
+  `;
+        } else {
+          let fmt = moment.duration(info);
+          body += `Uptime: ${fmt.days()}:${fmt.hours()}:${fmt.minutes()}:${fmt.seconds()}`;
+        }
+      });
+      document.body.innerHTML = body;
+    });
+  }, 1000);
+  </script>
+</body>
+</html>

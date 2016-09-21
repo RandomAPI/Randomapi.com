@@ -5,7 +5,9 @@
         "socket": "8080",
         "redisMaxMemory": "100mb",
         "basehref": "http://localhost:3000/",
-        "baseURL": ""
+        "baseURL": "",
+        "stats": false,
+        "statsPath": "stats"
     },
     "console": {
         "queueLength": 250,
