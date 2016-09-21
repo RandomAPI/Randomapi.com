@@ -11,7 +11,7 @@
   <script>
   setInterval(() => {
     let body = "";
-    $.get('stats/data', (data) => {
+    $.get('<%=path%>/data', (data) => {
       _.each(data, (info, type) => {
         if (Array.isArray(info)) {
           body += 

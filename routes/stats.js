@@ -6,7 +6,7 @@ let startTime = currentTime();
 let cache, cacheTime = 0;
 
 router.get('/', (req, res, next) => {
-  res.render('stats', {basehref: settings.general.basehref, messages: null, title: 'RandomAPI Stats'});
+  res.render('stats', {basehref: settings.general.basehref, messages: null, title: 'RandomAPI Stats', path: settings.general.statsPath});
 });
 
 router.get('/data', (req, res, next) => {
