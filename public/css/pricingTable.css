@@ -79,3 +79,80 @@
   margin-left: 40px;
   text-align: center;
 }
+
+#discount {
+  font-size: 16pt;
+  color: orange;
+}
+
+#discountPrice {
+  color: orange;
+}
+
+@media screen and (max-width: 900px) {
+  .pricingTable {
+    width: 100%;
+    height: auto;
+    position: relative;
+    margin: auto;
+  }
+
+  .card {
+    background-color: white;
+    width: 100%;
+    height: 325px;
+    margin-bottom: 25px;
+  }
+
+  .card:last-child {
+    position: initial;
+  }
+
+  .card .info ul {
+    list-style-type: none;
+    text-align: center;
+  }
+
+  .card .info ul li {
+    float: left;
+    display: inline;
+    width: 50%;
+  }
+
+  .card .info ul li:nth-last-child(2) {
+    width: 100%;
+  }
+
+  .clear { clear: both; }
+
+  .card .info #main {
+    font-weight: bold;
+    color: #000;
+  }
+
+  .card .info #main.x {
+    color: red !important;
+  }
+
+  .card .info #main.check {
+    color: #0CB863 !important;
+  }
+
+  #upgradeButton {
+    position: relative;
+    margin: auto;
+    text-align: center;
+    width: 100%;
+  }
+
+  .disclaimers {
+    width: 100%;
+    height: auto;
+    position: relative;
+    margin: 10px auto 50px auto;
+  }
+
+  #disclaimer {
+    font-size: 10pt;
+  }
+}
