@@ -168,6 +168,8 @@ a:hover {
 .button,
 #lintButtonHome,
 #lintButton,
+#exampleAPI,
+#callExample,
 input[type="submit"],
 input[type="reset"],
 input[type="button"] {

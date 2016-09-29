@@ -94,6 +94,21 @@ a {
   box-sizing: border-box;
 }
 
+.example .before {
+  float: left;
+  width: 50%;
+}
+
+.example .after {
+  float: right;
+  width: 50%;
+}
+
+.example img {
+  width: 80%;
+  border:1px solid #CCC;
+}
+
 section.hero {
   text-align: center;
 }
@@ -203,6 +218,27 @@ section.tryitout {
 
 section.tryitout h4 {
   margin-bottom: 0.5rem;
+}
+
+section.why {
+  clear: both;
+  margin: auto;
+}
+
+section.why .main {
+  margin: auto;
+  text-align: center;
+}
+
+section.why h4 {
+  margin-bottom: 0.5rem;
+}
+
+section.why #subtitle {
+  width: 60%;
+  text-align: center;
+  margin: auto auto 10px auto;
+  font-size: 14pt;
 }
 
 .sextuplesec .main {
@@ -533,7 +569,9 @@ input:read-only {
   }
 
   .tripleInfo {
-    font-size: 14pt;
+    font-size: 12pt;
+    width: 80%;
+    margin: auto;
     margin-bottom: 0px;
   }
 
@@ -609,6 +647,25 @@ input:read-only {
     padding: 0px !important;
   }
 
+  .example .before {
+    float: initial;
+    width: 100%;
+  }
+
+  .example .after {
+    float: initial;
+    width: 100%;
+  }
+
+  .example img {
+    width: 80%;
+    border:1px solid #CCC;
+  }
+
+  section.why #subtitle {
+    width: 80%;
+    font-size: 14pt !important;
+  }
 }
 
 .invisible { display: none; }
