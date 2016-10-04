@@ -4,6 +4,7 @@ ref = $('ref').html();
 let typingTimer, lastAbuse;
 let editor = ace.edit("aceEditor");
 let codeArea = $(editor.textInput.getElement());
+let changed = false;
 
 editor.setTheme("ace/theme/monokai");
 editor.session.setMode("ace/mode/javascript");
@@ -14,11 +15,13 @@ lintCode();
 
 $("#submit").click(() => {
   $.post('', {rename: $("#limitsInput").val(), code: editor.getValue()}, url => {
+    changed = false;
     window.location.href = url;
   });
 });
 
 codeArea.keyup(() => {
+  changed = true;
   clearTimeout(typingTimer);
   typingTimer = setTimeout(lintCode, 250);
 });
@@ -78,3 +81,9 @@ function updateCharCount() {
 function clearLog() {
   $("#log").val('');
 }
+
+window.onbeforeunload = function() {
+  if (changed) {
+    return "You haven't saved your changes.";
+  }
+};
