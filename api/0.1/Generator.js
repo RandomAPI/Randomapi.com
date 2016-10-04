@@ -1,19 +1,24 @@
-const mersenne     = new (require('mersenne-twister'));
+// Base modules
 const crypto       = require('crypto');
-const YAML         = require('yamljs');
-const js2xmlparser = require('js2xmlparser');
-const converter    = require('json-2-csv');
 const fs           = require('fs');
 const vm           = require('vm');
 const async        = require('async');
 const util         = require('util');
+const EventEmitter = require('events').EventEmitter;
+
+// Requires
+const Promise      = require('bluebird').Promise;
+const mersenne     = new (require('mersenne-twister'));
 const _            = require('lodash');
+const numeral      = require('numeral')
 const logger       = require('../../utils').logger;
 const redis        = require('../../utils').redis;
 const settings     = require('../../utils').settings;
-const numeral      = require('numeral')
-const Promise      = require('bluebird').Promise;
-const EventEmitter = require('events').EventEmitter;
+
+// Formatting tools
+const YAML         = require('yamljs');
+const js2xmlparser = require('js2xmlparser');
+const converter    = require('json-2-csv');
 
 const Generator = function(name, guid, options) {
   this.version  = '0.1';
@@ -21,28 +26,53 @@ const Generator = function(name, guid, options) {
   this.guid     = guid;
   process.title = 'RandomAPI_Generator ' + this.guid + ' ' + this.name;
 
-  options      = JSON.parse(options);
-  this.info    = {
+  options   = JSON.parse(options);
+  this.info = {
     execTime: options.execTime,
     results:  options.results
   };
 
-  this.listCache    = {};
-  this.snippetCache = {};
-  this.timeoutCache = {};
+  this.cache = {
+    api: {
+      size: 0,
+      objects: {}
+    },
+    list: {
+      size: 0,
+      objects: {}
+    },
+    snippet: {
+      size: 0,
+      objects: {}
+    },
+    timeout: {}
+  };
+
   this.times = {};
   this.globs = {};
 
-  this.globRequires = ['faker', 'deity', 'moment'];
+  this.times = {};  // Duration for different sections
+  this.globs = {};  // Holds all of the global snippets
+  this.globRequires = [
+    'faker',
+    'deity',
+    'moment'
+  ];
+
+  // immutablify globs/allow specific props to be mutable
   this.configureGlobs();
 
-  this.context         = vm.createContext(this.availableFuncs());
+  // Create context for sandbox with proxied functions
+  this.context = vm.createContext(this.availableFuncs());
+
+  // Default context to compare against for global variable removal
   this.originalContext = [
     'random', 'list', 'hash', 'timestamp',
     'require', '_APIgetVars', '_APIresults',
     '_APIstack', '_APIerror', 'getVar', 'stacktrace', 'prng'
   ];
 
+  // Built in objects
   this.reservedObjects = {
     Array, Boolean, Date, decodeURI, decodeURIComponent, encodeURI,
     encodeURIComponent, Error, EvalError, Function, isFinite, isNaN,
@@ -54,14 +84,15 @@ const Generator = function(name, guid, options) {
     Uint32Array, Uint8Array, Uint8ClampedArray
   };
 
+  // Checks to see if parent server/child process is alive
   this.parentReplied = true;
 
+  // Handle all IPC messages
   process.on(`message`, msg => {
 
     if (msg.type === 'task') {
 
       if (msg.mode === 'generate') {
-
         this.instruct(msg.data, error => {
           if (error) {
             process.send({type: 'done', data: {error, results: null, fmt: null}});
@@ -72,31 +103,14 @@ const Generator = function(name, guid, options) {
           }
         });
 
-      } else if (msg.mode === 'lint') {
+      } else {
         // Inject linter settings
-        this.seed   = String('linter' + ~~(Math.random() * 100));
+        this.seed   = String(msg.mode + ~~(Math.random() * 100));
         this.format = 'pretty';
         this.noinfo = true;
         this.sole   = false;
         this.page   = 1;
-        this.mode   = 'lint';
-        this.src    = msg.data.src;
-        delete msg.data.src;
-
-        this.instruct(msg.data, err => {
-          this.generate((error, results, fmt) => {
-            process.send({type: 'done', data: {error, results, fmt}});
-          });
-        });
-
-      } else if (msg.mode === 'snippet') {
-        // Inject snippet settings
-        this.seed   = String('snippet' + ~~(Math.random() * 100));
-        this.format = 'pretty';
-        this.noinfo = true;
-        this.sole   = false;
-        this.page   = 1;
-        this.mode   = 'snippet';
+        this.mode   = msg.mode;
         this.src    = msg.data.src;
         delete msg.data.src;
 
@@ -133,43 +147,62 @@ const Generator = function(name, guid, options) {
         this.emptyListCache();
 
       } else if (msg.mode === 'getListCache') {
-        this.listCacheSize = 0;
-        _.each(this.listCache, item => {
-          this.listCacheSize += Number(item.size);
+        this.cache.list.size = 0;
+        _.each(this.cache.list, item => {
+          this.cache.list.size += Number(item.size);
         });
-        process.send({type: 'cmdComplete', mode: 'listCache', content: this.listCacheSize});
+        process.send({type: 'cmdComplete', mode: 'listCache', content: this.cache.list.size});
+
+      } else if (msg.mode === 'emptyAPICache') {
+        this.emptyAPICache();
+
+      } else if (msg.mode === 'getAPICache') {
+        this.cache.api.size = 0;
+        _.each(this.cache.api, item => {
+          this.cache.api.size += Number(item.size);
+        });
+        process.send({type: 'cmdComplete', mode: 'apiCache', content: this.cache.api.size});
 
       } else if (msg.mode === 'emptySnippetCache') {
         this.emptySnippetCache();
 
       } else if (msg.mode === 'getSnippetCache') {
-        this.snippetCacheSize = 0;
-        _.each(this.snippetCache, item => {
-          this.snippetCacheSize += Number(item.size);
+        this.cache.snippet.size = 0;
+        _.each(this.cache.snippet.objects, item => {
+          this.cache.snippet.size += Number(item.size);
         });
-        process.send({type: 'cmdComplete', mode: 'snippetCache', content: this.snippetCacheSize});
+        process.send({type: 'cmdComplete', mode: 'snippetCache', content: this.cache.snippet.size});
 
       } else if (msg.mode === 'removeList') {
         let ref = msg.data;
 
-        if (ref in this.listCache) {
+        if (ref in this.cache.list.objects) {
           // Update cache size and delete list from cache
-          this.listCacheSize -= this.listCache[ref].size;
-          delete this.listCache[ref];
+          this.cache.list.size -= this.cache.list.objects[ref].size;
+          delete this.cache.list.objects[ref];
         }
 
         // Delete keys from Redis
         redis.del(`list:${ref}`)
         redis.del(`list:${ref}:contents`);
 
+      } else if (msg.mode === 'removeAPI') {
+        let ref = msg.data;
+
+        if (ref in this.cache.api.objects) {
+          // Update cache size and delete list from cache
+          this.cache.api.size -= this.cache.api.objects[ref].size;
+          delete this.cache.api.objects[ref];
+        }
+
       } else if (msg.mode === 'removeSnippet') {
         let ref = msg.data;
 
-        if (ref in this.snippetCache) {
+        if (ref in this.cache.snippet.objects) {
 
-          // Update cache size and delete list from cache
-          this.snippetCacheSize -= this.snippetCache[ref].size;
-          delete this.snippetCache[ref];
+          // Update cache size and delete snippet from cache
+          this.cache.snippet.size -= this.cache.snippet.objects[ref].size;
+          delete this.cache.snippet.objects[ref];
         }
 
         // Delete keys from Redis
@@ -202,7 +235,10 @@ const Generator = function(name, guid, options) {
     });
 
     // See if any lists have expired or if over the max size limit
-    this.checkCache();
+    this.checkListCache();
+
+    // See if any apis have expired or if over the max size limit
+    this.checkAPICache();
 
     // See if any snippets have expired
     this.checkSnippetCache();
@@ -270,7 +306,12 @@ Generator.prototype.instruct = function(options, done) {
       if (this.mode !== "lint" && this.mode !== "snippet") {
 
         // Get API src
-        this.src = fs.readFileSync('./data/apis/' + this.doc.id + '.api', 'utf8');
+        if (this.doc.ref in this.cache.api.objects) {
+          this.src = this.cache.api.objects[this.doc.ref];
+        } else {
+          this.cache.api.objects[this.doc.ref] = fs.readFileSync('./data/apis/' + this.doc.id + '.api', 'utf8');
+          this.src = this.cache.api.objects[this.doc.ref]
+        }
       }
       cb(null);
     }
@@ -294,7 +335,7 @@ Generator.prototype.generate = function(cb) {
   let hash = crypto.createHash('md5').update(this.src).digest('hex');
 
   // Check if src code causes timeout
-  if (hash in this.timeoutCache) {
+  if (hash in this.cache.timeout) {
     return this.returnResults({error: "Error: Script execution timed out."}, [{}], cb);
   }
 
@@ -393,7 +434,7 @@ if (_APISnippetKeys.length === 0) {
       }
     } catch(e) {
       if (e.toString().indexOf('Script execution timed out') !== -1) {
-        this.timeoutCache[hash] = true;
+        this.cache.timeout[hash] = true;
       }
       this.returnResults({error: e.toString(), stack: e.stack}, [{}], cb);
     }
@@ -484,20 +525,20 @@ Generator.prototype.availableFuncs = function() {
         if (this.mode === 'snippet') throw new Error(`Lists are not available in Snippets; only inline lists are allowed`);
         // Check if list is in local generator list cache
         // If not, fetch from redis cache and add it to the local list cache
-        if (obj in this.listCache) {
+        if (obj in this.cache.list.objects) {
 
           // Update local listCache lastUsed date
           // Also update redis listCache lastUsed date
-          this.listCache[obj].lastUsed = new Date().getTime();
+          this.cache.list.objects[obj].lastUsed = new Date().getTime();
 
           if (num !== undefined) {
-            if (num < 1 || num > this.listCache[obj].contents.length) {
+            if (num < 1 || num > this.cache.list.objects[obj].contents.length) {
               throw new Error(`Line ${num} is out of range for list ${obj}`);
             } else {
-              item = this.listCache[obj].contents[num-1];
+              item = this.cache.list.objects[obj].contents[num-1];
             }
           } else {
-            item = randomItem(this.listCache[obj].contents);
+            item = randomItem(this.cache.list.objects[obj].contents);
           }
           return item;
 
@@ -518,7 +559,7 @@ Generator.prototype.availableFuncs = function() {
 
                 // Fetch metadata for list and store in local generator listCache
                 redis.hgetall("list:" + obj, (err, info) => {
-                  this.listCache[obj] = {
+                  this.cache.list.objects[obj] = {
                     added: new Date().getTime(),
                     contents: file,
                     size: Number(info.size),
@@ -650,13 +691,13 @@ Generator.prototype.require = function(signature) {
 
   // Check if snippet is in local snippet cache
   // If not, fetch from redis snippet cache and add it to the local snippet cache
-  if (obj in this.snippetCache) {
+  if (obj in this.cache.snippet.objects) {
 
-    if (this.snippetCache[obj].published === 1 || this.snippetCache[obj].owner === this.user.id) {
+    if (this.cache.snippet.objects[obj].published === 1 || this.cache.snippet.objects[obj].owner === this.user.id) {
 
       // Update local snippet cache lastUsed date
-      this.snippetCache[obj].lastUsed = new Date().getTime();
-      return this.snippetCache[obj].snippet;
+      this.cache.snippet.objects[obj].lastUsed = new Date().getTime();
+      return this.cache.snippet.objects[obj].snippet;
     } else {
       throw new Error(`Snippet signature ${obj} wasn't recognized`);
     }
@@ -689,7 +730,7 @@ Generator.prototype.require = function(signature) {
 
           // Fetch metadata for snippet and store in local generator snippet cache
           redis.hgetall(`snippet:${obj}`, (err, info) => {
-            this.snippetCache[obj] = {
+            this.cache.snippet.objects[obj] = {
               added: new Date().getTime(),
               snippet,
               size: info.size,
@@ -708,41 +749,60 @@ Generator.prototype.require = function(signature) {
   }
 };
 
-Generator.prototype.checkCache = function() {
+Generator.prototype.checkListCache = function() {
   let sizes = {};
-  _.each(this.listCache, (obj, ref) => {
+  _.each(this.cache.list, (obj, ref) => {
     sizes[ref] = obj.size;
     if (new Date().getTime() - obj.lastUsed > settings.generators[this.name].localTTL * 1000) {
-      delete this.listCache[ref];
+      delete this.cache.list.objects[ref];
     }
   });
 
   sizes = _.toPairs(sizes);
   sizes.sort((a, b) => ~~b[1] - ~~a[1]);
 
-  while (this.listCacheSize > settings.generators[this.name].localCache * 1024 * 1024) {
+  while (this.cache.list.size > settings.generators[this.name].localCache * 1024 * 1024) {
     let toRemove = sizes.shift();
-    delete this.listCache[toRemove[0]];
-    this.listCacheSize -= toRemove[1];
+    delete this.cache.list.objects[toRemove[0]];
+    this.cache.list.size -= toRemove[1];
+  }
+};
+
+Generator.prototype.checkAPICache = function() {
+  let sizes = {};
+  _.each(this.cache.api, (obj, ref) => {
+    sizes[ref] = obj.size;
+    if (new Date().getTime() - obj.lastUsed > settings.generators[this.name].localTTL * 1000) {
+      delete this.cache.api.objects[ref];
+    }
+  });
+
+  sizes = _.toPairs(sizes);
+  sizes.sort((a, b) => ~~b[1] - ~~a[1]);
+
+  while (this.cache.api.size > settings.generators[this.name].localCache * 1024 * 1024) {
+    let toRemove = sizes.shift();
+    delete this.cache.api.objects[toRemove[0]];
+    this.cache.api.size -= toRemove[1];
   }
 };
 
 Generator.prototype.checkSnippetCache = function() {
   let sizes = {};
 
-  _.each(this.snippetCache, (obj, ref) => {
+  _.each(this.cache.snippet.objects, (obj, ref) => {
     if (new Date().getTime() - obj.lastUsed > settings.generators[this.name].localSnippetTTL * 1000) {
-      delete this.snippetCache[ref];
+      delete this.cache.snippet.objects[ref];
     }
   });
 };
 
 Generator.prototype.emptyListCache = function() {
-  this.listCache = {};
+  this.cache.list.objects = {};
 };
 
 Generator.prototype.emptySnippetCache = function() {
-  this.snippetCache = {};
+  this.cache.snippet.objects = {};
 };
 
 // Only global snippets can be required in other snippets

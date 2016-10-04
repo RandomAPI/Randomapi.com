@@ -545,6 +545,14 @@ GeneratorForker.prototype.removeList = function(ref) {
   });
 };
 
+GeneratorForker.prototype.removeAPI = function(ref) {
+  this.send({
+    type: 'cmd',
+    mode: 'removeAPI',
+    data: ref
+  });
+};
+
 GeneratorForker.prototype.removeSnippet = function(ref) {
   this.send({
     type: 'cmd',

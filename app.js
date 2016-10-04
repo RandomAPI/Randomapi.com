@@ -51,6 +51,14 @@ app.set("removeList", list => {
   });
 });
 
+app.set("removeAPI", api => {
+  Object.keys(settings.generators).forEach(generator => {
+    Generators[generator].forEach(generator => {
+      generator.removeAPI(api);
+    });
+  });
+});
+
 app.set("removeSnippet", snippet => {
   Object.keys(settings.generators).forEach(generator => {
     Generators[generator].forEach(generator => {

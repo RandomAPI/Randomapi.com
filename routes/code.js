@@ -78,6 +78,7 @@ router.post('/api/:ref', (req, res, next) => {
     } else {
       API.modified(doc.ref).then(() => {
         fs.writeFile('./data/apis/' + doc.id + '.api', req.body.code.replace(/\r\n/g, '\n').slice(0, 8192), 'utf8', err => {
+          req.app.get('removeAPI')(`${doc.ref}`);
           req.flash('info', `API ${doc.name} [${doc.ref}] was updated successfully!`);
           res.send(baseURL + '/view/api');
         });
