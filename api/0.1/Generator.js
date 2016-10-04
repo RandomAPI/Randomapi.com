@@ -27,7 +27,7 @@ const Generator = function(name, guid, options) {
     results:  options.results
   };
 
-  this.cache        = {};
+  this.listCache    = {};
   this.snippetCache = {};
   this.timeoutCache = {};
   this.times = {};
@@ -133,11 +133,11 @@ const Generator = function(name, guid, options) {
         this.emptyListCache();
 
       } else if (msg.mode === 'getListCache') {
-        this.cacheSize = 0;
-        _.each(this.cache, item => {
-          this.cacheSize += Number(item.size);
+        this.listCacheSize = 0;
+        _.each(this.listCache, item => {
+          this.listCacheSize += Number(item.size);
         });
-        process.send({type: 'cmdComplete', mode: 'listCache', content: this.cacheSize});
+        process.send({type: 'cmdComplete', mode: 'listCache', content: this.listCacheSize});
 
       } else if (msg.mode === 'emptySnippetCache') {
         this.emptySnippetCache();
@@ -152,10 +152,10 @@ const Generator = function(name, guid, options) {
       } else if (msg.mode === 'removeList') {
         let ref = msg.data;
 
-        if (ref in this.cache) {
+        if (ref in this.listCache) {
           // Update cache size and delete list from cache
-          this.cacheSize -= this.cache[ref].size;
-          delete this.cache[ref];
+          this.listCacheSize -= this.listCache[ref].size;
+          delete this.listCache[ref];
         }
 
         // Delete keys from Redis
@@ -482,22 +482,22 @@ Generator.prototype.availableFuncs = function() {
         }
       } else if (typeof obj === "string") {
         if (this.mode === 'snippet') throw new Error(`Lists are not available in Snippets; only inline lists are allowed`);
-        // Check if list is in local generator cache
-        // If not, fetch from redis cache and add it to the local cache
-        if (obj in this.cache) {
+        // Check if list is in local generator list cache
+        // If not, fetch from redis cache and add it to the local list cache
+        if (obj in this.listCache) {
 
-          // Update local cache lastUsed date
-          // Also update redis cache lastUsed date
-          this.cache[obj].lastUsed = new Date().getTime();
+          // Update local listCache lastUsed date
+          // Also update redis listCache lastUsed date
+          this.listCache[obj].lastUsed = new Date().getTime();
 
           if (num !== undefined) {
-            if (num < 1 || num > this.cache[obj].contents.length) {
+            if (num < 1 || num > this.listCache[obj].contents.length) {
               throw new Error(`Line ${num} is out of range for list ${obj}`);
             } else {
-              item = this.cache[obj].contents[num-1];
+              item = this.listCache[obj].contents[num-1];
             }
           } else {
-            item = randomItem(this.cache[obj].contents);
+            item = randomItem(this.listCache[obj].contents);
           }
           return item;
 
@@ -516,9 +516,9 @@ Generator.prototype.availableFuncs = function() {
               redis.get("list:" + obj + ":contents", (err, file) => {
                 file = file.split('\n').slice(0, -1);
 
-                // Fetch metadata for list and store in local generator cache
+                // Fetch metadata for list and store in local generator listCache
                 redis.hgetall("list:" + obj, (err, info) => {
-                  this.cache[obj] = {
+                  this.listCache[obj] = {
                     added: new Date().getTime(),
                     contents: file,
                     size: Number(info.size),
@@ -710,20 +710,20 @@ Generator.prototype.require = function(signature) {
 
 Generator.prototype.checkCache = function() {
   let sizes = {};
-  _.each(this.cache, (obj, ref) => {
+  _.each(this.listCache, (obj, ref) => {
     sizes[ref] = obj.size;
     if (new Date().getTime() - obj.lastUsed > settings.generators[this.name].localTTL * 1000) {
-      delete this.cache[ref];
+      delete this.listCache[ref];
     }
   });
 
   sizes = _.toPairs(sizes);
   sizes.sort((a, b) => ~~b[1] - ~~a[1]);
 
-  while (this.cacheSize > settings.generators[this.name].localCache * 1024 * 1024) {
+  while (this.listCacheSize > settings.generators[this.name].localCache * 1024 * 1024) {
     let toRemove = sizes.shift();
-    delete this.cache[toRemove[0]];
-    this.cacheSize -= toRemove[1];
+    delete this.listCache[toRemove[0]];
+    this.listCacheSize -= toRemove[1];
   }
 };
 
@@ -732,13 +732,13 @@ Generator.prototype.checkSnippetCache = function() {
 
   _.each(this.snippetCache, (obj, ref) => {
     if (new Date().getTime() - obj.lastUsed > settings.generators[this.name].localSnippetTTL * 1000) {
-      delete this.cache[ref];
+      delete this.snippetCache[ref];
     }
   });
 };
 
 Generator.prototype.emptyListCache = function() {
-  this.cache = {};
+  this.listCache = {};
 };
 
 Generator.prototype.emptySnippetCache = function() {
