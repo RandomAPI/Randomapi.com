@@ -1,8 +1,8 @@
 #preview {
-  margin-top: 15px;
+  margin-top: 5px;
   position: relative;
   float: right;
-  width: 35%;
+  width: 49%;
   height: 500px;
   border: solid #CECECE 1px !important;
 }
@@ -17,9 +17,10 @@
 }
 
 #aceEditor {
+  margin-bottom: 1.5rem;
   float: left;
-  width: 60%;
-  margin-top: 15px;
+  width: 50%;
+  margin-top: 5px;
   height: 500px;
 }
 
@@ -30,6 +31,29 @@
 
 #submit:hover {
   background-color: #09A459;
+  -webkit-transition: background-color 0.2s ease-in-out;
+  -moz-transition: background-color 0.2s ease-in-out;
+  -ms-transition: background-color 0.2s ease-in-out;
+  -o-transition: background-color 0.2s ease-in-out;
+  transition: background-color 0.2s ease-in-out;
+}
+
+#lintButton:hover {
+  background-color: #EFEFEF;
+  -webkit-transition: background-color 0.2s ease-in-out;
+  -moz-transition: background-color 0.2s ease-in-out;
+  -ms-transition: background-color 0.2s ease-in-out;
+  -o-transition: background-color 0.2s ease-in-out;
+  transition: background-color 0.2s ease-in-out;
+}
+
+#clearLog {
+  position: absolute;
+  margin: 5px 0 0 10px;
+}
+
+#clearLog:hover {
+  background-color: #EFEFEF;
   -webkit-transition: background-color 0.2s ease-in-out;
   -moz-transition: background-color 0.2s ease-in-out;
   -ms-transition: background-color 0.2s ease-in-out;
@@ -53,7 +77,6 @@
 
 .info {
   margin-top: -15px;
-  margin-bottom: 10px;
   width: 60%;
   height: 20px;
 }

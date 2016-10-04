@@ -35,6 +35,15 @@ socket.on('codeLinted', msg => {
   } else {
     $('#results').html(msg.error.formatted);
   }
+
+  if (msg.logs) {
+    let logs = "";
+    msg.logs.forEach(log => {
+      logs += log + "\n";
+    });
+
+    $("#log").val(logs + $("#log").val());
+  }
 });
 
 socket.on('abuse', msg => {
@@ -64,4 +73,8 @@ function updateCharCount() {
     editor.setValue(editor.getValue().slice(0, 8192), 1);
   }
   $("#currentCharCount").html(numeral(len).format(','));
+}
+
+function clearLog() {
+  $("#log").val('');
 }

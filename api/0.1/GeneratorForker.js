@@ -347,7 +347,7 @@ GeneratorForker.prototype.fork = function() {
       }
 
     } else if (msg.type === 'done') {
-      this.emit(`taskFinished${this.guid}`, {error: msg.data.error, results: msg.data.results, fmt: msg.data.fmt});
+      this.emit(`taskFinished${this.guid}`, {error: msg.data.error, results: msg.data.results, fmt: msg.data.fmt, logs: msg.data.logs});
 
     } else if (msg.type === 'cmdComplete') {
       if (msg.mode === 'memory') {
@@ -390,14 +390,14 @@ GeneratorForker.prototype.initQueue = function() {
           return callback();
         }
 
-        this.generate({mode: 'snippet', options}, (error, results, fmt) => {
+        this.generate({mode: 'snippet', options}, (error, results, fmt, logs) => {
           checkAbuse(error, task.socket.id);
 
           results = JSON.stringify(JSON.parse(results).results[0], null, 2);
           if (results.length > 65535) {
             results = "Warning: Output has been truncated\n----------\n" + results.slice(0, 65535) + "\n----------";
           }
-          task.socket.emit('codeLinted', {error, results, fmt});
+          task.socket.emit('codeLinted', {error, results, fmt, logs});
           callback();
         });
 
@@ -415,7 +415,7 @@ GeneratorForker.prototype.initQueue = function() {
           return callback();
         }
 
-        this.generate({mode: 'lint', options}, (error, results, fmt) => {
+        this.generate({mode: 'lint', options}, (error, results, fmt, logs) => {
           checkAbuse(error, task.socket.id);
 
           results = JSON.stringify(JSON.parse(results).results[0], null, 2);
@@ -431,7 +431,7 @@ GeneratorForker.prototype.initQueue = function() {
             results = "";
           }
 
-          task.socket.emit('codeLinted', {error, results, fmt});
+          task.socket.emit('codeLinted', {error, results, fmt, logs});
           callback();
         });
       }
@@ -486,7 +486,7 @@ GeneratorForker.prototype.generate = function(opts, cb) {
 
   // Wait for the task to finish and then send err, results, and fmt to cb.
   this.once(`taskFinished${this.guid}`, data => {
-    cb(data.error, data.results, data.fmt);
+    cb(data.error, data.results, data.fmt, data.logs);
   });
 };
 

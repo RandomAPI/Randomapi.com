@@ -78,10 +78,8 @@ const Generator = function(name, guid, options) {
     encodeURIComponent, Error, EvalError, Function, isFinite, isNaN,
     Math, Number, Object, parseInt, parseFloat, RangeError,
     ReferenceError, RegExp, String, SyntaxError, TypeError, URIError,
-    JSON, Map, Promise, Proxy, Reflect, Set, Symbol, WeakMap, WeakSet,
-    escape, unescape, ArrayBuffer, DataView, Float32Array,
-    Float64Array, Int16Array, Int32Array, Int8Array, Uint16Array,
-    Uint32Array, Uint8Array, Uint8ClampedArray
+    JSON, Proxy, Reflect, Symbol, WeakMap, WeakSet,
+    escape, unescape
   };
 
   // Checks to see if parent server/child process is alive
@@ -97,14 +95,13 @@ const Generator = function(name, guid, options) {
           if (error) {
             process.send({type: 'done', data: {error, results: null, fmt: null}});
           } else {
-            this.generate((error, results, fmt) => {
-              process.send({type: 'done', data: {error, results, fmt}});
+            this.generate((error, results, fmt, logs) => {
+              process.send({type: 'done', data: {error, results, fmt, logs}});
             });
           }
         });
 
       } else {
-        // Inject linter settings
         this.seed   = String(msg.mode + ~~(Math.random() * 100));
         this.format = 'pretty';
         this.noinfo = true;
@@ -115,8 +112,8 @@ const Generator = function(name, guid, options) {
         delete msg.data.src;
 
         this.instruct(msg.data, err => {
-          this.generate((error, results, fmt) => {
-            process.send({type: 'done', data: {error, results, fmt}});
+          this.generate((error, results, fmt, logs) => {
+            process.send({type: 'done', data: {error, results, fmt, logs}});
           });
         });
       }
@@ -364,11 +361,7 @@ ${this.src}
                 _APIerror = e.toString();
                 _APIstack = e.stack;
               }
-              if (_APIlogs.length !== 0) {
-                _APIresults.push({api, _APIlogs});
-              } else {
-                _APIresults.push(api);
-              }
+              _APIresults.push(api);
             }
           })();
           function getVar(key) {
@@ -410,11 +403,7 @@ if (_APISnippetKeys.length === 0) {
               _APIerror = e.toString();
               _APIstack = e.stack;
             }
-            if (_APIlogs.length !== 0) {
-              _APIresults.push({snippet, _APIlogs});
-            } else {
-              _APIresults.push({snippet});
-            }
+            _APIresults.push({snippet});
           })();
           function getVar(key) {
             return key in _APIgetVars ? _APIgetVars[key] : null;
@@ -428,15 +417,15 @@ if (_APISnippetKeys.length === 0) {
       });
 
       if (this.context._APIerror === null && this.context._APIstack === null) {
-        this.returnResults(null, this.context._APIresults, cb);
+        this.returnResults(null, this.context._APIresults, this.context._APIlogs, cb);
       } else {
-        this.returnResults({error: this.context._APIerror, stack: this.context._APIstack}, [{}], cb);
+        this.returnResults({error: this.context._APIerror, stack: this.context._APIstack}, [{}], this.context._APIlogs, cb);
       }
     } catch(e) {
       if (e.toString().indexOf('Script execution timed out') !== -1) {
         this.cache.timeout[hash] = true;
       }
-      this.returnResults({error: e.toString(), stack: e.stack}, [{}], cb);
+      this.returnResults({error: e.toString(), stack: e.stack}, [{}], this.context._APIlogs, cb);
     }
 
     // Remove user defined globals
@@ -449,19 +438,12 @@ if (_APISnippetKeys.length === 0) {
       this.context[val] = a;
     });
 
-    _.each({
-      Array, Boolean, Date, decodeURI, decodeURIComponent, encodeURI,
-      encodeURIComponent, Error, EvalError, Function, isFinite, isNaN,
-      Math, Number, Object, parseInt, parseFloat, RangeError,
-      ReferenceError, RegExp, String, SyntaxError, TypeError, URIError,
-      JSON, Proxy, Reflect, Symbol, WeakMap, WeakSet,
-      escape, unescape/**/
-    }, (object, val) => {
+    _.each(this.reservedObjects, (object, val) => {
       immutablify(this.context[val]);
     });
 
   }, e => {
-    this.returnResults({error: e.toString(), stack: e.stack}, [{}], cb);
+    this.returnResults({error: e.toString(), stack: e.stack}, [{}], this.context._APIlogs, cb);
   });
 };
 
@@ -842,7 +824,7 @@ Generator.prototype.updateRequires = function() {
   });
 };
 
-Generator.prototype.returnResults = function(err, output, cb) {
+Generator.prototype.returnResults = function(err, output, logs, cb) {
   this.times.generate = new Date().getTime() - this.times.generate.start;
   if (err === null) {
     let json = {
@@ -870,21 +852,21 @@ Generator.prototype.returnResults = function(err, output, cb) {
     if (this.sole) json.results = json.results[0];
 
     if (this.format === 'yaml') {
-      cb(null, YAML.stringify(json, 4), 'yaml');
+      cb(null, YAML.stringify(json, 4), 'yaml', logs);
     } else if (this.format === 'xml') {
-      cb(null, js2xmlparser('user', json), 'xml');
+      cb(null, js2xmlparser('user', json), 'xml', logs);
     } else if (this.format === 'prettyjson' || this.format === 'pretty') {
-      cb(null, JSON.stringify(json, null, 2), 'json');
+      cb(null, JSON.stringify(json, null, 2), 'json', logs);
     } else if (this.format === 'csv') {
       converter.json2csv(json.results, (err, csv) => {
-        cb(null, csv, 'csv');
+        cb(null, csv, 'csv', logs);
       });
     } else if (this.format === 'raw') {
-      cb(null, JSON.stringify(json.results), 'json');
+      cb(null, JSON.stringify(json.results), 'json', logs);
     } else if (this.format === 'prettyraw') {
-      cb(null, JSON.stringify(json.results, null, 2), 'json');
+      cb(null, JSON.stringify(json.results, null, 2), 'json', logs);
     } else {
-      cb(null, JSON.stringify(json), 'json');
+      cb(null, JSON.stringify(json), 'json', logs);
     }
   } else {
     // Errors caused by code wrapped around broken api code
@@ -914,7 +896,7 @@ Generator.prototype.returnResults = function(err, output, cb) {
     }
     err.formatted = parseStack;
     delete err.stack;
-    cb(err, JSON.stringify({results: [{}]}), null);
+    cb(err, JSON.stringify({results: [{}]}), null, logs);
   }
 }
 

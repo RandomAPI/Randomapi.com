@@ -632,13 +632,19 @@ input:read-only {
   }
 
   #aceEditor {
+    margin-bottom: 2.5rem !important;
     width: 100% !important;
+  }
+
+  #clearLog {
+    position: absolute;
+    margin: -5px 0 0 10px !important;
   }
 
   #preview {
     margin-top: -15px !important;
     margin-left: 0px !important;
-    margin-bottom: 45px !important;
+    margin-bottom: 15px !important;
     float: left !important;
     width: 100% !important;
   }
@@ -751,4 +757,25 @@ input:read-only {
   -ms-transition: background-color 0.2s ease-in-out;
   -o-transition: background-color 0.2s ease-in-out;
   transition: background-color 0.2s ease-in-out;
+}
+
+.console {
+  clear: both;
+}
+
+.console textarea {
+  font-family: monospace, monospace;
+  width: 100%;
+  height: 150px;
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+}
+
+.console h3 {
+  margin-bottom: 1rem;
+}
+
+.editor h3 {
+  margin-bottom: 1rem;
 }
