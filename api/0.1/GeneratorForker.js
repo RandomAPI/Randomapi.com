@@ -397,7 +397,23 @@ GeneratorForker.prototype.initQueue = function() {
           if (results.length > 65535) {
             results = "Warning: Output has been truncated\n----------\n" + results.slice(0, 65535) + "\n----------";
           }
-          task.socket.emit('codeLinted', {error, results, fmt, logs});
+
+          let logtext = "";
+          if (logs) {
+            logs.forEach(log => {
+              if (typeof log === "object") {
+                logtext += JSON.stringify(log) + "\n";
+              } else {
+                logtext += log + "\n";
+              }
+            });
+
+            if (logtext.length > 65535) {
+              logtext = "Warning: Output has been truncated\n----------\n" + logtext.slice(0, 65535) + "\n----------";
+            }
+          }
+
+          task.socket.emit('codeLinted', {error, results, fmt, logs: logtext});
           callback();
         });
 
@@ -431,7 +447,22 @@ GeneratorForker.prototype.initQueue = function() {
             results = "";
           }
 
-          task.socket.emit('codeLinted', {error, results, fmt, logs});
+          let logtext = "";
+          if (logs) {
+            logs.forEach(log => {
+              if (typeof log === "object") {
+                logtext += JSON.stringify(log) + "\n";
+              } else {
+                logtext += log + "\n";
+              }
+            });
+
+            if (logtext.length > 65535) {
+              logtext = "Warning: Output has been truncated\n----------\n" + logtext.slice(0, 65535) + "\n----------";
+            }
+          }
+
+          task.socket.emit('codeLinted', {error, results, fmt, logs: logtext});
           callback();
         });
       }

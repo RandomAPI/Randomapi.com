@@ -45,12 +45,7 @@ socket.on('codeLinted', msg => {
   }
 
   if (msg.logs) {
-    let logs = "";
-    msg.logs.forEach(log => {
-      logs += log + "\n";
-    });
-
-    $("#log").val(logs + $("#log").val());
+    $("#log").val(msg.logs + $("#log").val());
   }
 });
 
