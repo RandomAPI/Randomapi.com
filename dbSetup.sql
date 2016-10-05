@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Oct 05, 2016 at 09:12 PM
+-- Generation Time: Oct 05, 2016 at 09:44 PM
 -- Server version: 5.7.15
 -- PHP Version: 5.6.24
 
@@ -32,6 +32,8 @@ CREATE TABLE `api` (
   `name` varchar(32) COLLATE utf8_unicode_ci NOT NULL,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `lastcall` timestamp NULL DEFAULT NULL,
+  `lifetime` int(11) NOT NULL DEFAULT '0',
   `generator` tinyint(4) NOT NULL,
   `owner` int(11) NOT NULL,
   `hash` varchar(32) COLLATE utf8_unicode_ci NOT NULL
@@ -230,6 +232,7 @@ CREATE TABLE `user` (
   `password` varchar(64) COLLATE utf8_unicode_ci NOT NULL,
   `joined` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `lastlogin` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `lastcall` timestamp NULL DEFAULT NULL,
   `apikey` varchar(19) COLLATE utf8_unicode_ci NOT NULL,
   `role` tinyint(4) NOT NULL DEFAULT '4',
   `memory` int(11) NOT NULL DEFAULT '0',

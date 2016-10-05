@@ -109,9 +109,41 @@ module.exports = {
       });
     });
   },
+  getVal(key, ref) {
+    return new Promise((resolve, reject) => {
+      db.query('SELECT * FROM `api` WHERE ?', {ref}, (err, data) => {
+        if (err) reject(err);
+        else if (data.length === 0) resolve(null);
+        else resolve(data[0][key]);
+      });
+    });
+  },
+  incVal(key, value, ref) {
+    value = Number(value);
+    return new Promise((resolve, reject) => {
+      this.getVal(key, ref).then(previous => {
+        previous += value;
+        db.query('UPDATE `api` SET ? WHERE ?', [{[key]: previous}, {ref}], (err, data) => {
+          if (err) reject(err);
+          else if (data.length === 0) resolve(null);
+          else resolve(previous);
+        });
+      });
+    });
+  },
+  decVal(key, value, ref) {
+    return this.incVal(key, -Number(value), ref);
+  },
   modified(ref) {
     return new Promise((resolve, reject) => {
       db.query('UPDATE `api` SET ? WHERE ?', [{modified: moment(new Date().getTime()).format("YYYY-MM-DD HH:mm:ss")}, {ref}], (err, result) => {
+        resolve({err: err, result: result});
+      });
+    });
+  },
+  lastcall(ref) {
+    return new Promise((resolve, reject) => {
+      db.query('UPDATE `api` SET ? WHERE ?', [{lastcall: moment(new Date().getTime()).format("YYYY-MM-DD HH:mm:ss")}, {ref}], (err, result) => {
         resolve({err: err, result: result});
       });
     });

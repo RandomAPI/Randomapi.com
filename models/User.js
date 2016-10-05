@@ -163,5 +163,12 @@ module.exports = {
         resolve({err: err, result: result});
       });
     });
+  },
+  lastcall(id) {
+    return new Promise((resolve, reject) => {
+      db.query('UPDATE `user` SET ? WHERE ?', [{lastcall: moment(new Date().getTime()).format("YYYY-MM-DD HH:mm:ss")}, {id}], (err, result) => {
+        resolve({err: err, result: result});
+      });
+    });
   }
 };

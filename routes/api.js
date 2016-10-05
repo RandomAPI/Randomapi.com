@@ -105,11 +105,21 @@ router.get('/:ref?', (req, res, next) => {
         if (req.query.results > tier.per) {
           req.query.results = tier.per;
         }
+
         if (user.results+Number(req.query.results) >= tier.results && tier.results !== 0) {
           req.query.results = tier.results - user.results;
         }
+
+        // Update User API calls and API lifetime calls
         User.incVal('results', req.query.results, user.username);
         User.incVal('lifetime', req.query.results, user.username);
+        API.incVal('lifetime', req.query.results, req.params.ref);
+
+        // Update User and API last call
+        User.lastcall(user.id);
+        API.lastcall(req.params.ref);
+
+        // Finally, push task into queue
         Generators[type][shortest].queue.push({req, res});
       }
     }
