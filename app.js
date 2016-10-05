@@ -165,18 +165,19 @@ app.use('*', (req, res, next) => {
 });
 
 // Routes
-app.use('/',         require('./routes/index'));
-app.use('/ajax',     require('./routes/ajax'));
-app.use('/code',     require('./routes/code'));
-app.use('/publish',  require('./routes/publish'));
-app.use('/charge',   require('./routes/charge'));
-app.use('/new',      require('./routes/new'));
-app.use('/view',     require('./routes/view'));
-app.use('/edit',     require('./routes/edit'));
-app.use('/delete',   require('./routes/delete'));
-app.use('/api',      require('./routes/api'));
-app.use('/settings', require('./routes/settings'));
-app.use('/offline',  require('./routes/offline'));
+app.use('/',           require('./routes/index'));
+app.use('/ajax',       require('./routes/ajax'));
+app.use('/code',       require('./routes/code'));
+app.use('/publish',    require('./routes/publish'));
+app.use('/charge',     require('./routes/charge'));
+app.use('/new',        require('./routes/new'));
+app.use('/view',       require('./routes/view'));
+app.use('/edit',       require('./routes/edit'));
+app.use('/delete',     require('./routes/delete'));
+app.use('/api',        require('./routes/api'));
+app.use('/settings',   require('./routes/settings'));
+app.use('/offline',    require('./routes/offline'));
+app.use('/statistics', require('./routes/statistics'));
 
 if (settings.general.stats) {
   app.use(`/${settings.general.statsPath}`,  require('./routes/stats'));
