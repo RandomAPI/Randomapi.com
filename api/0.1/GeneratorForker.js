@@ -423,7 +423,7 @@ GeneratorForker.prototype.initQueue = function() {
         if (task.data.owner === null) {
           options = {key: null, src: task.data.src, ref: null};
         } else {
-          options = {key: task.data.owner.apikey, src: task.data.src, ref: task.data.ref};
+          options = _.merge({key: task.data.owner.apikey, src: task.data.src, ref: task.data.ref}, task.data.uri);
         }
 
         if (checkAbuse(null, task.socket.id)) {

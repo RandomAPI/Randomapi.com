@@ -3,6 +3,7 @@ ref = $('ref').html();
 
 let typingTimer, lastAbuse;
 let editor = ace.edit("aceEditor");
+let original = editor.getValue();
 let codeArea = $(editor.textInput.getElement());
 let changed = false;
 
@@ -21,12 +22,25 @@ $("#submit").click(() => {
 });
 
 codeArea.keyup(() => {
-  changed = true;
+  if (editor.getValue() !== original) {
+    changed = true;
+  } else {
+    changed = false;
+  }
   clearTimeout(typingTimer);
   typingTimer = setTimeout(lintCode, 250);
 });
 
 codeArea.keydown(() => {
+  clearTimeout(typingTimer);
+});
+
+$('#uri').keyup(() => {
+  clearTimeout(typingTimer);
+  typingTimer = setTimeout(lintCode, 250);
+});
+
+$('#uri').keydown(() => {
   clearTimeout(typingTimer);
 });
 
@@ -62,7 +76,7 @@ socket.on('abuse', msg => {
 });
 
 function lintCode() {
-  socket.emit('lintCode', {code: String(editor.getValue()).slice(0, 8192), ref});
+  socket.emit('lintCode', {code: String(editor.getValue()).slice(0, 8192), ref, uri: jsonify($('#uri').val())});
 };
 
 function updateCharCount() {
@@ -82,3 +96,14 @@ window.onbeforeunload = function() {
     return "You haven't saved your changes.";
   }
 };
+
+function jsonify(uri) {
+  var hash;
+  var myJson = {};
+  var hashes = uri.slice(uri.indexOf('?') + 1).split('&');
+  for (var i = 0; i < hashes.length; i++) {
+    hash = hashes[i].split('=');
+    myJson[hash[0]] = hash[1];
+  }
+  return myJson;
+}

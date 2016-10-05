@@ -4,6 +4,7 @@ let readonly = $('readonly').html();
 
 let typingTimer, lastAbuse;
 let editor = ace.edit("aceEditor");
+let original = editor.getValue();
 let codeArea = $(editor.textInput.getElement());
 let changed = false;
 
@@ -26,7 +27,11 @@ $("#submit").click(() => {
 });
 
 codeArea.keyup(() => {
-  changed = true;
+  if (editor.getValue() !== original) {
+    changed = true;
+  } else {
+    changed = false;
+  }
   clearTimeout(typingTimer);
   typingTimer = setTimeout(lintCode, 250);
 });

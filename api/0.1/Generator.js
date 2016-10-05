@@ -262,6 +262,13 @@ Generator.prototype.instruct = function(options, done) {
 
   if (this.mode === undefined) this.mode = options.mode || "generator";
 
+  // Linter fixes
+  if (this.mode === 'lint') {
+    this.format = 'json';
+    this.seed   = '';
+    this.page   = 1;
+  }
+
   // Sanitize values
   if (isNaN(this.results) || this.results < 0 || this.results > this.info.results || this.results === '' || this.sole) this.results = 1;
   if (this.seed === '') this.defaultSeed();

@@ -129,7 +129,7 @@ io.on('connection', socket => {
       if (JSON.parse(socket.session).loggedin === undefined) {
         Generators.realtime[shortest].queue.push({socket, data: {src: msg.code, ref: null, owner: 'demo', type: 'lint'}});
       } else {
-        Generators.realtime[shortest].queue.push({socket, data: {src: msg.code, ref: msg.ref, owner: JSON.parse(socket.session).user, type: 'lint'}});
+        Generators.realtime[shortest].queue.push({socket, data: {src: msg.code, ref: msg.ref, owner: JSON.parse(socket.session).user, type: 'lint', uri: msg.uri}});
       }
     }
   });

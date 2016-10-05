@@ -637,7 +637,6 @@ input:read-only {
   }
 
   #clearLog {
-    position: absolute;
     margin: -5px 0 0 10px !important;
   }
 
@@ -774,8 +773,26 @@ input:read-only {
 
 .console h3 {
   margin-bottom: 1rem;
+  float: left;
 }
 
 .editor h3 {
   margin-bottom: 1rem;
+}
+
+.console .consoleInfo {
+  width: auto;
+  float: left;
+  display: inline-block;
+}
+
+.console .consoleURI {
+  display: inline-block;
+  margin-left: 10px;
+}
+
+.console .consoleURI input {
+  display: block;
+  overflow: hidden;
+  width: 500px;
 }
