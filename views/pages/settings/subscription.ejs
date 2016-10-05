@@ -31,7 +31,44 @@
           </p>
 
         <% } %>
-        <% if (tier.name !== "Premium" && subscription.status !== 3) { %>
+
+        <% if (subscription.plan === 10) { %>
+          <h4>Available upgrades</h4>
+          <div class="card">
+            <div class="title" style="color: #0CB863">Premium</div>
+            <div class="pricing">$5.00</div>
+            <div class="info">
+              <ul>
+                <li><span id="main">unlimited</span> daily results</li>
+                <li><span id="main">2,500</span> results / request</li>
+                <li><span id="main">25 MB</span> list data</li>
+                <li><span id="main">unlimited</span> APIs</li>
+                <li><span id="main">unlimited</span> snippets</li>
+                <li><span id="main" class="check">✓</span> ads disabled</li>
+                <li><span id="main" class="check">✓</span> Offline APIs</li>
+                <li><span id="main">5</span> Generators <sup>1</sup></li>
+                <li><span id="main">240/480/20</span> Cache settings <sup>2</sup></li>
+                <li id='upgradeButton'>
+                  <form action="/charge<% subscription.cid === null ? "" : "/upgrade" %>" method="POST">
+                    <input type="hidden" name="price" value="500">
+                    <script 
+                      src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                      data-key="<%=publishableKey%>"
+                      data-amount="500"
+                      data-name="RandomAPI"
+                      data-description="RandomAPI Premium Tier (Beta)"
+                      data-image="https://s3.amazonaws.com/stripe-uploads/acct_102bx12y2KIUsl34merchant-icon-499777-logo.png"
+                      data-locale="auto"
+                      data-label="Upgrade"
+                      data-zip-code="true">
+                    </script>
+                    <input type="hidden" name="plan" value="premium_beta_promotion_upgrade">
+                  </form>
+                </li>
+              </ul>
+            </div>
+          </div>
+        <% } else if (tier.name !== "Premium" && subscription.status !== 3) { %>
           <h4>Available upgrades</h4>
           <h6><span style="color: orange">Discount applied for previous upgrade</span></h6>
           <div class="card">

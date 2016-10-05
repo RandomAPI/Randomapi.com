@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Sep 05, 2016 at 05:48 PM
--- Server version: 5.7.13
--- PHP Version: 5.5.36
+-- Generation Time: Oct 05, 2016 at 09:12 PM
+-- Server version: 5.7.15
+-- PHP Version: 5.6.24
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -97,7 +97,9 @@ INSERT INTO `plan` (`id`, `name`, `tier`, `price`) VALUES
 (6, 'standard_legacy', 2, 500),
 (7, 'premium_legacy', 3, 1000),
 (8, 'premium_beta_upgrade', 3, 250),
-(9, 'premium_upgrade', 3, 500);
+(9, 'premium_upgrade', 3, 500),
+(10, 'standard_beta_promotion', 2, 0),
+(11, 'premium_beta_promotion_upgrade', 3, 500);
 
 -- --------------------------------------------------------
 
@@ -345,7 +347,7 @@ ALTER TABLE `list`
 -- AUTO_INCREMENT for table `plan`
 --
 ALTER TABLE `plan`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 --
 -- AUTO_INCREMENT for table `snippet`
 --
