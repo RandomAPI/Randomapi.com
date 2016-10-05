@@ -4,6 +4,7 @@ const logger   = require('../utils').logger;
 const dbStatus = require('../utils').dbStatus;
 
 let db = settings.db.prod;
+let initDone = false;
 
 if (process.env.spec === "true") {
   db = settings.db.spec
@@ -23,7 +24,11 @@ module.exports.init = function(cb) {
 
   pool.on('connection', connection => {
     logger('[db]: connected as id ' + connection.threadId);
-    cb();
+
+    if (!initDone) {
+      initDone = true;
+      cb();
+    }
   });
 
   pool.getConnection((err, connection) => {
