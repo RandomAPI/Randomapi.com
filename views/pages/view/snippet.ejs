@@ -27,7 +27,7 @@
       </ul>
       <div class="tab-content">
         <div class="tab-pane active" id="private">
-          <table class="table table-striped" style="width: 90%">
+          <table class="table table-striped">
             <thead>
               <tr>
                 <th>#</th>
@@ -56,14 +56,13 @@
           </table>
         </div>
         <div class="tab-pane" id="publish">
-          <table class="table table-striped" style="width: 90%">
+          <table class="table table-striped">
             <thead>
               <tr>
                 <th>#</th>
                 <th>Name</th>
                 <th>Created</th>
                 <th>Modified</th>
-                <!--<th>Ref ID</th>-->
                 <th>Selected revision</th>
                 <th>Revision Actions</th>
                 <th>Snippet Actions</th>
@@ -79,7 +78,6 @@
                 <td><%=snippet.name%></td>
                 <td><span class="date" name="created" data-date="<%=snippet.created%>"></span></td>
                 <td><span class="date" name="modified" data-date="<%=snippet.modified%>"></span></td>
-                <!--<td><%=snippet.ref%></td>-->
                 <td>
                   <select name='revision'>
                   <% for (let i = snippet.version; i > 0 ; i--) { %>

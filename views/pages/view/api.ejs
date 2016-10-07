@@ -13,7 +13,7 @@
       <h3 id='mobileSubNavMenu'>View APIs <span id='mobileSubNavArrow' class=""></span></h3>
       <% include ../../snippets/mobilesubnav %>
       <p><span id='quotaResults' class='<%= session.tier.apis !== 0 && session.user.apis > session.tier.apis ? "red" : "green" %>'><%= session.user.apis %></span> of <span id='tierResults' class="green"><%= session.tier.apis === 0 ? 'unlimited' : session.tier.apis %></span> APIs used.</p>
-      <table class="table table-striped" style="width: 90%">
+      <table class="table table-striped">
         <thead>
           <tr>
             <th>#</th>
@@ -21,7 +21,6 @@
             <th>Ref ID</th>
             <th>Created</th>
             <th>Modified</th>
-            <!-- <th>Generator Version</th> -->
             <th>Actions</th>
           </tr>
         </thead>
@@ -36,7 +35,6 @@
             <td><%=api.ref%></td>
             <td><span class="date" data-date="<%=api.created%>"></span></td>
             <td><span class="date" data-date="<%=api.modified%>"></span></td>
-            <!-- <td><%=api.generator%></td> -->
             <td><a title="Delete" href="" onClick="apiDeletePrompt('<%=api.ref%>');return false;"><img width='15px' src='img/delete.svg'></a> <a title="Code" href="code/api/<%=api.ref%>"><img width='18px' src='img/code.svg'></a> <a title="Edit" href="edit/api/<%=api.ref%>"><img style="top: 2px; position: relative;" width='20px' src='img/edit.svg'></a> <a title="View Stats" href="statistics/api/<%=api.ref%>"><img width='20px' src='img/stats.svg'></a> <a title="Run" href="api/<%=api.ref%>?key=<%=session.user.apikey%>" target="_blank"><img width='15px' src='img/run.svg'></a> <a title="Run (Public URL)" href="api/<%=api.hash%>" target="_blank"><img style="top: 2px; position: relative;" width='20px' src='img/link.svg'></a></td>
           </tr>
         <%  });

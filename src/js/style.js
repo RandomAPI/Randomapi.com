@@ -10,6 +10,7 @@ $(() => {
       $('#mobileSubNav').removeClass("invisible");
       $('#mobileSubNavMenu').on('click', () => mobileDropDown());
       $("#mobileSubNavArrow").addClass('arrow-down')
+      $('.ten.columns').css('width', '100%');
     } else {
       $('.tripleSection').addClass("column");
       $('.freeLogo').addClass("invisible");
@@ -17,6 +18,7 @@ $(() => {
       $('#mobileSubNav').addClass("invisible");
       $('#mobileSubNavMenu').unbind('click');
       $("#mobileSubNavArrow").removeClass('arrow-down');
+      $('.ten.columns').css('width', '82.6666666667%');
     }
   }
 
