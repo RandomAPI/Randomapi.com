@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <% include ../../snippets/header %>
+  <link rel="stylesheet" href="css/editor.css">
+</head>
+<body>
+  <server hidden><%=socket%></server>
+  <ref hidden><%=api.ref%></ref>
+  <% include ../../snippets/navbar %>
+  <div class="main">
+    <div class="two columns">
+      <% include ../../snippets/subnav %>
+    </div>
+    <div class="ten columns">
+      <h3 id='mobileSubNavMenu'>Stats for  API <%=api.name%> [<%=api.ref%>] <span id='mobileSubNavArrow' class=""></span></h3>
+      <% include ../../snippets/mobilesubnav %>
+      <div id="container" style="height: 400px"></div>
+    </div>
+  </div>
+  <div class="ads">
+    <% include ../../snippets/ads %>
+  </div>
+  <% include ../../snippets/footer %>
+  <script src="js/apiStats.js"></script>
+  <script src="js/socket.io.min.js"></script>
+  <script src="js/highcharts.js"></script>
+</body>
+</html>

@@ -3,6 +3,7 @@ const _       = require('lodash');
 const router  = express.Router();
 const logger  = require('../utils').logger;
 const stripe  = require('../utils').stripe;
+const redis   = require('../utils').redis;
 const moment  = require('moment');
 const request = require('request');
 const settings     = require('../utils').settings;

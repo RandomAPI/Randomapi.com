@@ -715,7 +715,7 @@ Generator.prototype.require = function(signature) {
         throw new Error(`Invalid version number`);
 
       } else if (!done) {
-        redis.GET(`snippet:${obj}:contents`, (err, snippet) => {
+        redis.get(`snippet:${obj}:contents`, (err, snippet) => {
 
           // Fetch metadata for snippet and store in local generator snippet cache
           redis.hgetall(`snippet:${obj}`, (err, info) => {
@@ -852,6 +852,30 @@ Generator.prototype.returnResults = function(err, output, logs, cb) {
         results: numeral(this.user.results).format('0,0') + " / " + String(this.user.tierResults !== 0 ? numeral(this.user.tierResults).format('0,0') : "unlimited"),
         remaining: this.user.tierResults !== 0 ? numeral(this.user.tierResults - this.user.results).format('0,0') : "unlimited"
       };
+    }
+
+    if (this.mode === 'generator') {
+      // Add to redis stats
+      let timestamp = new Date().getTime();
+
+      let props = {time: timestamp, page: 1};
+      let keys  = Object.keys(this.options);
+
+      keys.forEach(key => {
+        if (['userID', 'numericSeed', 'key', 'time'].indexOf(key) === -1) {
+          props[key] = this.options[key];
+        }
+      });
+
+      redis.zadd(`stats:API:${this.options.ref}`, timestamp, JSON.stringify(props));
+      redis.zadd(`stats:User:${this.user.id}`, timestamp, JSON.stringify({time: timestamp, results: this.results}));
+
+      // zadd test2 25 900001
+      // zincrby test2 25 900001
+      // zrange test2 0 -1 WITHSCORES
+
+      //redis.incrby(`stats:User:${this.user.id}:${new Date().getHours()}`, this.results);
+      //redis.expire(`stats:User:${this.user.id}:${new Date().getHours()}`, 82800);
     }
 
     if (this.noInfo) delete json.info;
