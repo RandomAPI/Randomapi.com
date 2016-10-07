@@ -10,7 +10,8 @@
       <% include ../../snippets/subnav %>
     </div>
     <div class="ten columns">
-      <h3>New Snippet</h3>
+      <h3 id='mobileSubNavMenu'>New Snippet <span id='mobileSubNavArrow' class=""></span></h3>
+      <% include ../../snippets/mobilesubnav %>
       <p><span id='quotaResults' class='<%= session.tier.snippets !== 0 && session.user.snippets > session.tier.snippets ? "red" : "green" %>'><%= session.user.snippets %></span> of <span id='tierResults' class="green"><%= session.tier.snippets === 0 ? 'unlimited' : session.tier.snippets %></span> snippets used.</p>
       <form action="" method="POST">
         <span class='red' id='limits'>Accepted chars: a-zA-Z0-9 _-.+[]{}()</span><br>

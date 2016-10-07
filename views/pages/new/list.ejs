@@ -10,7 +10,8 @@
       <% include ../../snippets/subnav %>
     </div>
     <div class="ten columns">
-      <h3>New List</h3>
+      <h3 id='mobileSubNavMenu'>New List <span id='mobileSubNavArrow' class=""></span></h3>
+      <% include ../../snippets/mobilesubnav %>
       <p><span class='<%= session.user.memory > session.tier.memory ? "red" : "green" %>'><%= filesize(session.user.memory) %></span> of <span class="green"><%= session.tier.memory === 0 ? 'unlimited' : filesize(session.tier.memory) %></span> used.</p>
       <form enctype="multipart/form-data" action="" method="POST">
         <span class='red' id='limits'>Accepted chars: a-zA-Z0-9 _-.+[]{}()</span><br>

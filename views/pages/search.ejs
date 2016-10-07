@@ -22,7 +22,8 @@
   }
   %>
     <div class="<%=size%> columns">
-      <h3>Search</h3>
+      <h3 id='mobileSubNavMenu'>Search <span id='mobileSubNavArrow' class=""></span></h3>
+      <% include ../snippets/mobilesubnav %>
       <input type='text' id='search' name='search' placeholder='Search for a snippet' maxlength='255' autofocus autocomplete='off'>
       <span id='found'><span class='green' id='foundNum'>0</span> snippet<span id='s'>s</span> found</span>
       <table id="results" class="table table-striped" style="width: 100%">

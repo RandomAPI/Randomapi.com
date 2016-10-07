@@ -11,7 +11,8 @@
       <% include ../../snippets/settingsSubnav %>
     </div>
     <div class="ten columns">
-      <h3>Offline RandomAPI</h3>
+      <h3 id='mobileSubNavMenu'>Offline RandomAPI <span id='mobileSubNavArrow' class=""></span></h3>
+      <% include ../../snippets/mobilesettingssubnav %>
       <% if (session.user.tierID !== 3) { %>
         <p>Offline RandomAPI requires a Premium tier subscription. <br>Check out the available upgrade options <a href="upgrade" class='green'>here</a>.</p>
       <% } else { %>

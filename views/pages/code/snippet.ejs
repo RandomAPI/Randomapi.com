@@ -14,7 +14,8 @@
       <% include ../../snippets/subnav %>
     </div>
     <div class="ten columns">
-      <h3><%= version.published ? "View" : "Code" %> Snippet <%=snippet.name%><%= snippet.published ? " | revision " + version.version : "" %></h3>
+      <h3 id='mobileSubNavMenu'><%= version.published ? "View" : "Code" %> Snippet <%=snippet.name%><%= snippet.published ? " | revision " + version.version : "" %> <span id='mobileSubNavArrow' class=""></span></h3>
+      <% include ../../snippets/mobilesubnav %>
       <div class='info'>
         <span id='charCount'><span id='currentCharCount'>0</span> / 8,192 chars</span>
       </div>

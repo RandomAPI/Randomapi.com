@@ -10,7 +10,8 @@
       <% include ../snippets/subnav %>
     </div>
     <div class="ten columns">
-      <h3>Dashboard</h3>
+      <h3 id='mobileSubNavMenu'>Dashboard <span id='mobileSubNavArrow' class=""></span></h3>
+      <% include ../snippets/mobilesubnav %>
       <h5>Welcome <span class="green"><%= session.user.username %></span>!</h5>
       Your api key is <input class="apikey" onClick="this.select();" value="<%= session.user.apikey %>" readonly size="23"><br>
       Your tier is <span class="green"><%= session.user.tierName %></span>.<br>

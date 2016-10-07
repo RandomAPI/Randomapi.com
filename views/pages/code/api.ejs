@@ -13,7 +13,8 @@
       <% include ../../snippets/subnav %>
     </div>
     <div class="ten columns">
-      <h3>Code API <%=api.name%> [<%=api.ref%>]</h3>
+      <h3 id='mobileSubNavMenu'>Code API <%=api.name%> [<%=api.ref%>] <span id='mobileSubNavArrow' class=""></span></h3>
+      <% include ../../snippets/mobilesubnav %>
       <div class='info'>
         <span id='charCount'><span id='currentCharCount'>0</span> / 8,192 chars</span>
       </div>

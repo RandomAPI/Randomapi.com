@@ -10,7 +10,8 @@
       <% include ../../snippets/settingsSubnav %>
     </div>
     <div class="ten columns">
-      <h3>Subscription</h3>
+      <h3 id='mobileSubNavMenu'>Subscription <span id='mobileSubNavArrow' class=""></span></h3>
+      <% include ../../snippets/mobilesettingssubnav %>
       <% if (session.user.tierID === 1) { %>
         <p>You don't currently have an active subscription.<br>Check out the available upgrade options <a href="upgrade" class='green'>here</a>.</p>
         <% } else {

@@ -11,7 +11,8 @@
       <% include ../../snippets/subnav %>
     </div>
     <div class="ten columns">
-      <h3>View Snippets</h3>
+      <h3 id='mobileSubNavMenu'>View Snippets <span id='mobileSubNavArrow' class=""></span></h3>
+      <% include ../../snippets/mobilesubnav %>
       <p><span id='quotaResults' class='<%= session.tier.snippets !== 0 && session.user.snippets > session.tier.snippets ? "red" : "green" %>'><%= session.user.snippets %></span> of <span id='tierResults' class="green"><%= session.tier.snippets === 0 ? 'unlimited' : session.tier.snippets %></span> snippets used.</p>
       <ul class="tab-nav">
         <li>

@@ -10,7 +10,8 @@
       <% include ../../snippets/settingsSubnav %>
     </div>
     <div class="ten columns">
-      <h3>General</h3>
+      <h3 id='mobileSubNavMenu'>General <span id='mobileSubNavArrow' class=""></span></h3>
+      <% include ../../snippets/mobilesettingssubnav %>
       <form action="" method="POST">
         <input type='password' name="current" placeholder='current password' autofocus required><br>
         <input type='password' name="new" placeholder='new password' required><br>

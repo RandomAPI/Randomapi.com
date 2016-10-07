@@ -1,0 +1,59 @@
+<%
+var selected = {};
+var style = "class='selected'";
+var path;
+try {
+  let matches = originalUrl.match(/(?:^(\/\w+\/\w+)(?:$|.*)|(\/.*))/);
+  path = matches[1] || matches[2];
+} catch(e) {
+  path = "/";
+}
+
+switch(path) {
+  case '/search':
+    selected['search'] = style;
+    break;
+  case '/new/api':
+    selected['newapi'] = style;
+    break;
+  case '/view/api':
+  case '/edit/api':
+  case '/code/api':
+  case '/statistics/api':
+    selected['viewapi'] = style;
+    break;
+  case '/new/list':
+    selected['newlist'] = style;
+    break;
+  case '/view/list':
+  case '/edit/list':
+    selected['viewlist'] = style;
+    break;
+  case '/new/snippet':
+    selected['newsnippet'] = style;
+    break;
+  case '/view/snippet':
+  case '/edit/snippet':
+  case '/code/snippet':
+  case '/publish/snippet':
+    selected['viewsnippet'] = style;
+    break;
+  case '/':
+  default:
+    selected['dashboard'] = style;
+}
+%>
+<div id="mobileSubNav" class="invisible">
+  <div id="dropdown" class="dropdown-content">
+    <a href="">Dashboard</a>
+    <a href="search">Search</a>
+    <a href="" class='noclicky'></a>
+    <a href="new/api">New API</a>
+    <a href="new/list">New List</a>
+    <a href="new/snippet">New Snippet</a>
+    <a href="" class='noclicky'></a>
+    <a href="view/api">View APIs</a>
+    <a href="view/list">View Lists</a>
+    <a href="view/snippet">View Snippets</a>
+  </div>
+</div>
