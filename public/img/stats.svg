@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="74px" height="70px" viewBox="0 0 74 70" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 39.1 (31720) - http://www.bohemiancoding.com/sketch -->
+    <title>Stats</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Stats" transform="translate(-1.000000, 0.000000)">
+            <circle id="Oval-5" fill="#7ED321" cx="8" cy="55" r="3"></circle>
+            <circle id="Oval-5" fill="#7ED321" cx="30" cy="33" r="3"></circle>
+            <circle id="Oval-5" fill="#7ED321" cx="43" cy="46" r="3"></circle>
+            <circle id="Oval-5" fill="#7ED321" cx="68" cy="22" r="3"></circle>
+            <rect id="Rectangle-9" fill="#7ED321" transform="translate(19.672466, 43.833631) rotate(45.000000) translate(-19.672466, -43.833631) " x="17.6724657" y="29.0983496" width="4" height="29.4705627"></rect>
+            <rect id="Rectangle-9" fill="#7ED321" transform="translate(56.083631, 34.422466) rotate(45.000000) translate(-56.083631, -34.422466) " x="54.0836309" y="17.9194174" width="4" height="33.0060967"></rect>
+            <rect id="Rectangle-9" fill="#7ED321" transform="translate(36.511932, 39.511932) rotate(-45.000000) translate(-36.511932, -39.511932) " x="34.5119318" y="30.888456" width="4" height="17.2469517"></rect>
+            <path d="M1.5,0.5 L1.5,69.5" id="Line" stroke="#979797" stroke-linecap="square"></path>
+            <path d="M74.5,69.5 L1.5,69.5" id="Line" stroke="#979797" stroke-linecap="square"></path>
+        </g>
+    </g>
+</svg>

@@ -25,11 +25,7 @@ $(function() {
     $('div.tab-content div.tab-pane.active').removeClass('active');
     pane.addClass('active');
 
-    if (history.pushState) {
-        history.pushState({}, 'RandomAPI :: View Snippets', `view/snippet${tab}`);
-    } else {
-        location.hash = tab;
-    }
+    location.hash = tab;
 
     return false;
   }
@@ -52,9 +48,9 @@ $(function() {
 
     $.when($.ajax(`ajax/snippetLookup/${$(this).closest('tr').data('ref')}/${$(this).val()}`)).then(function(data) {
       if (data.published === 1) {
-        code.html('View Snippet');
+        code.html("<img title='View' width='18px' src='img/view.svg'>");
       } else {
-        code.html('Code Snippet');
+        code.html("<img title='Code' width='18px' src='img/code.svg'>");
       }
     });
   }

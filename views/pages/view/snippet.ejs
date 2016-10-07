@@ -47,7 +47,7 @@
                 <td><%=snippet.name%></td>
                 <td><span class="date" data-date="<%=snippet.created%>"></span></td>
                 <td><span class="date" data-date="<%=snippet.modified%>"></span></td>
-                <td><a href="" onClick="snippetDeletePrompt('<%=snippet.ref%>', '<%=snippet.name%>', '<%=snippet.version%>');return false;">Delete</a> | <a href="code/snippet/<%=snippet.ref%>/<%=snippet.version%>">Code Snippet</a> | <a href="edit/snippet/<%=snippet.ref%>">Edit</a> | <a href="publish/snippet/<%=snippet.ref%>">Publish Snippet</a></td>
+                <td><a title="Delete" href="" onClick="snippetDeletePrompt('<%=snippet.ref%>', '<%=snippet.name%>', '<%=snippet.version%>');return false;"><img width='15px' src='img/delete.svg'></a> <a title="Code" href="code/snippet/<%=snippet.ref%>/<%=snippet.version%>"><img width='18px' src='img/code.svg'></a> <a title="Edit" href="edit/snippet/<%=snippet.ref%>"><img style="top: 2px; position: relative;" width='20px' src='img/edit.svg'></a> <a title="Publish" href="publish/snippet/<%=snippet.ref%>"><img style="top: 2px; position: relative;" width='15px' src='img/publish.svg'></a></td>
               </tr>
             <%  });
             }
@@ -86,8 +86,8 @@
                     <option value='<%=i%>' <%= i === snippet.version ? "selected" : ""%>><%=i%>%></option>
                   <% } %>
                 </td>
-                <td><a href="code/snippet/<%=snippet.ref%>/<%=snippet.version%>" name='codeSnippet'><%= snippet.latestPublished ? "View" : "Code" %> Snippet</a> | <a href="edit/snippet/<%=snippet.ref%>/<%=snippet.version%>" name='editSnippet'>Edit</a></td>
-                <td><%- !snippet.latestPublished ? `<a href='' onClick='revisionPublishPrompt("${snippet.ref}", "${snippet.name}", "${snippet.version}"); return false;'>Publish revision ${snippet.version}</a>` : `<a href='code/snippet/${snippet.ref}/newRevision'>New Revision</a>` %> | <a href="edit/snippet/<%=snippet.ref%>" name='editSnippet'>Edit</a></td>
+                <td><a title="<%=snippet.latestPublished ? "View" : "Code" %>" href="code/snippet/<%=snippet.ref%>/<%=snippet.version%>" name='codeSnippet'><%-snippet.latestPublished ? "<img width='18px' src='img/view.svg'>" : "<img width='18px' src='img/code.svg'>" %></a> <a title="Edit" href="edit/snippet/<%=snippet.ref%>/<%=snippet.version%>" name='editSnippet'><img style="top: 2px; position: relative;" width='20px' src='img/edit.svg'></a></td>
+                <td><%- !snippet.latestPublished ? `<a title="Publish Revision" href='' onClick='revisionPublishPrompt("${snippet.ref}", "${snippet.name}", "${snippet.version}"); return false;'><img style="top: 2px; position: relative;" width='15px' src='img/publish.svg'></a>` : `<a title="New Revision" href='code/snippet/${snippet.ref}/newRevision'><img style="top: 4px; position: relative;" width='20px' src='img/revision.svg'></a>` %> <a title="Edit" href="edit/snippet/<%=snippet.ref%>" name='editSnippet'><img style="top: 2px; position: relative;" width='20px' src='img/edit.svg'></a></td>
               </tr>
             <%  });
             }

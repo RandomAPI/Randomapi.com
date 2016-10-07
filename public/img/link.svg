@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="66px" height="66px" viewBox="0 0 66 66" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 39.1 (31720) - http://www.bohemiancoding.com/sketch -->
+    <title>Link</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <rect id="path-1" x="33" y="4" width="31" height="51" rx="15.5"></rect>
+        <mask id="mask-2" maskContentUnits="userSpaceOnUse" maskUnits="objectBoundingBox" x="0" y="0" width="31" height="51" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+        <rect id="path-3" x="14" y="23" width="31" height="51" rx="15.5"></rect>
+        <mask id="mask-4" maskContentUnits="userSpaceOnUse" maskUnits="objectBoundingBox" x="0" y="0" width="31" height="51" fill="white">
+            <use xlink:href="#path-3"></use>
+        </mask>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Link" transform="translate(-6.000000, -6.000000)">
+            <use id="Rectangle-12" stroke="#979797" mask="url(#mask-2)" stroke-width="12" transform="translate(48.500000, 29.500000) rotate(45.000000) translate(-48.500000, -29.500000) " xlink:href="#path-1"></use>
+            <path d="" id="Path-5" stroke="#979797"></path>
+            <path d="M43.5148229,24.9556175 C72.7536366,51.2092855 30.8486524,64.9556175 30.8486524,64.9556175" id="Path-6" stroke="#FFFFFF" stroke-width="5" transform="translate(42.364483, 44.955618) rotate(18.000000) translate(-42.364483, -44.955618) "></path>
+            <use id="Rectangle-12" stroke="#979797" mask="url(#mask-4)" stroke-width="12" transform="translate(29.500000, 48.500000) rotate(45.000000) translate(-29.500000, -48.500000) " xlink:href="#path-3"></use>
+            <path d="M29.8074323,22.5039257 C44.7010712,42.3164616 23.3555505,52.6902386 23.3555505,52.6902386" id="Path-6" stroke="#FFFFFF" stroke-width="5" transform="translate(29.221473, 37.597082) rotate(885.000000) translate(-29.221473, -37.597082) "></path>
+            <rect id="Rectangle-13" fill="#FFFFFF" transform="translate(38.840990, 48.840990) rotate(45.000000) translate(-38.840990, -48.840990) " x="36.2374369" y="40.3409903" width="5.20710678" height="17" rx="2.60355339"></rect>
+            <rect id="Rectangle-13" fill="#FFFFFF" transform="translate(39.701373, 28.391437) rotate(45.000000) translate(-39.701373, -28.391437) " x="37.0978201" y="19.891437" width="5.20710678" height="17" rx="2.60355339"></rect>
+        </g>
+    </g>
+</svg>

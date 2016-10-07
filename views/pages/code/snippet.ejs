@@ -30,12 +30,18 @@
 Loading...
           </pre>
       </div>
+      <%
+        if (!version.published) {
+      %>
       <div class='console'>
         <div class='consoleInfo'>
           <h3>Console</h3> <button id="clearLog" onClick="clearLog()">Clear Log</button>
         </div>
         <textarea id='log'></textarea>
       </div>
+      <%
+        }
+      %>
     </div>
   </div>
   <div class="ads">

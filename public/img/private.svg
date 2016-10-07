@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32px" height="24px" viewBox="0 0 32 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 39.1 (31720) - http://www.bohemiancoding.com/sketch -->
+    <title>Private</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <rect id="path-1" x="2.5" y="0" width="7" height="11.3142857" rx="3.5"></rect>
+        <mask id="mask-2" maskContentUnits="userSpaceOnUse" maskUnits="objectBoundingBox" x="0" y="0" width="7" height="11.3142857" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Private">
+            <g id="Lock" transform="translate(19.000000, 5.000000)">
+                <use id="Rectangle-11" stroke="#424242" mask="url(#mask-2)" stroke-width="3" xlink:href="#path-1"></use>
+                <ellipse id="Oval-6" stroke="#424242" fill="#FFFFFF" cx="6" cy="11.8285714" rx="6" ry="6.17142857"></ellipse>
+                <ellipse id="Oval-7" fill="#424242" cx="5.875" cy="10.6714286" rx="1.375" ry="1.41428571"></ellipse>
+                <rect id="Rectangle-10" fill="#424242" x="5.125" y="10.2857143" width="1.5" height="4.62857143" rx="0.75"></rect>
+            </g>
+            <polygon id="Run" fill="#000000" transform="translate(10.500000, 10.500000) rotate(90.000000) translate(-10.500000, -10.500000) " points="10.5 0 21 21 0 21"></polygon>
+        </g>
+    </g>
+</svg>
