@@ -10,19 +10,27 @@
       <% include ../snippets/subnav %>
     </div>
     <div class="ten columns">
-      <h3 id='mobileSubNavMenu'>Dashboard <span id='mobileSubNavArrow' class=""></span></h3>
-      <% include ../snippets/mobilesubnav %>
-      <h5>Welcome <span class="green"><%= session.user.username %></span>!</h5>
-      Your api key is <input class="apikey" onClick="this.select();" value="<%= session.user.apikey %>" readonly size="23"><br>
-      Your tier is <span class="green"><%= session.user.tierName %></span>.<br>
+      <div class="dashboard">
+        <div class="info">
+          <h3 id='mobileSubNavMenu'>Dashboard <span id='mobileSubNavArrow' class=""></span></h3>
+          <% include ../snippets/mobilesubnav %>
+          <h5>Welcome <span class="green"><%= session.user.username %></span>!</h5>
+          Your api key is <input class="apikey" onClick="this.select();" value="<%= session.user.apikey %>" readonly size="23"><br>
+          Your tier is <span class="green"><%= session.user.tierName %></span>.<br>
 
-      You have used <span id='quotaResults' class='green'><%= session.user.results %></span> of your daily <span id='tierResults' class="green"><%= session.tier.results === 0 ? 'unlimited' : session.tier.results %></span> results.<br>
+          You have used <span id='quotaResults' class='green'><%= session.user.results %></span> of your daily <span id='tierResults' class="green"><%= session.tier.results === 0 ? 'unlimited' : session.tier.results %></span> results.<br>
 
-      You have used <span id='quotaResults' class='<%= session.tier.apis !== 0 && session.user.apis > session.tier.apis ? "red" : "green" %>'><%= session.user.apis %></span> of your <span id='tierResults' class="green"><%= session.tier.apis === 0 ? 'unlimited' : session.tier.apis %></span> APIs.<br>
+          You have used <span id='quotaResults' class='<%= session.tier.apis !== 0 && session.user.apis > session.tier.apis ? "red" : "green" %>'><%= session.user.apis %></span> of your <span id='tierResults' class="green"><%= session.tier.apis === 0 ? 'unlimited' : session.tier.apis %></span> APIs.<br>
 
-      You have used <span class='<%= session.user.memory > session.tier.memory ? "red" : "green" %>'><%= filesize(session.user.memory) %></span> of your <span class="green"><%= session.tier.memory === 0 ? 'unlimited' : filesize(session.tier.memory) %></span> List memory.<br>
+          You have used <span class='<%= session.user.memory > session.tier.memory ? "red" : "green" %>'><%= filesize(session.user.memory) %></span> of your <span class="green"><%= session.tier.memory === 0 ? 'unlimited' : filesize(session.tier.memory) %></span> List memory.<br>
 
-      You have used <span id='quotaResults' class='<%= session.tier.snippets !== 0 && session.user.snippets > session.tier.snippets ? "red" : "green" %>'><%= session.user.snippets %></span> of your <span id='tierResults' class="green"><%= session.tier.snippets === 0 ? 'unlimited' : session.tier.snippets %></span> Snippets.<br>
+          You have used <span id='quotaResults' class='<%= session.tier.snippets !== 0 && session.user.snippets > session.tier.snippets ? "red" : "green" %>'><%= session.user.snippets %></span> of your <span id='tierResults' class="green"><%= session.tier.snippets === 0 ? 'unlimited' : session.tier.snippets %></span> Snippets.<br>
+        </div>
+        <div class="stats">
+          <!-- <h3>Usage in last 24 hours</h3> -->
+          <div id="container" style="height: 300px"></div>
+        </div>
+      </div>
       <div class="announcements">
         <h3>Announcements</h3>
         <p><span style="color: orange">Beta users:</span> Have any questions or feedback? Send an email to <a href="mailto:hello@randomapi.com" class="green">hello@randomapi.com</a>.</p>
@@ -47,6 +55,8 @@
     </div>
   </div>
   <% include ../snippets/footer %>
+  <script src="js/dashboardStats.js"></script>
   <script src="js/moment.min.js"></script>
+  <script src="js/highcharts.js"></script>
 </body>
 </html>
