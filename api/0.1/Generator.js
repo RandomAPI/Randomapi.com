@@ -893,7 +893,7 @@ Generator.prototype.returnResults = function(err, output, logs, cb) {
         cb(null, csv, 'csv', logs);
       });
     } else if (this.format === 'raw') {
-      cb(null, JSON.stringify(json.results), 'json', logs);
+      cb(null, json.results, 'txt', logs);
     } else if (this.format === 'prettyraw') {
       cb(null, JSON.stringify(json.results, null, 2), 'json', logs);
     } else {
