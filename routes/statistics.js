@@ -64,7 +64,7 @@ function getAPIStats(ref, cb) {
   let flooredHour = ~~(~~(new Date().getTime()/1000)/3600)*3600000;
 
   for (let i = 0; i < 24; i++) {
-    redis.zrangebyscore(`stats:API:${ref}`, flooredHour-(86400000*i), (i === 0 ? timestamp : flooredHour)-(86400000*(i-1)), (err, data) => {
+    redis.zrangebyscore(`stats:API:${ref}`, flooredHour-(3600000*i), (i === 0 ? timestamp : flooredHour)-(3600000*(i-1)), (err, data) => {
       hours.unshift(data);
       if (i === 23) cb(hours);
     });
@@ -77,7 +77,7 @@ function getUsageHours(userid, cb) {
   let flooredHour = ~~(~~(new Date().getTime()/1000)/3600)*3600000;
 
   for (let i = 0; i < 24; i++) {
-    redis.zrangebyscore(`stats:User:${userid}`, flooredHour-(86400000*i), (i === 0 ? timestamp : flooredHour)-(86400000*(i-1)), (err, data) => {
+    redis.zrangebyscore(`stats:User:${userid}`, flooredHour-(3600000*i), (i === 0 ? timestamp : flooredHour)-(3600000*(i-1)), (err, data) => {
       hours.unshift(data);
       if (i === 23) cb(hours);
     });
