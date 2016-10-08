@@ -7,7 +7,8 @@
         "basehref": "http://localhost:3000/",
         "baseURL": "",
         "stats": false,
-        "statsPath": "stats"
+        "statsPath": "stats",
+        "twitterPromoBearer": ""
     },
     "console": {
         "queueLength": 250,

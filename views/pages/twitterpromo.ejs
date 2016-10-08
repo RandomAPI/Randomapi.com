@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <% include ../snippets/header %>
+  <style>
+
+  #thanks {
+    display: none;
+  }
+
+  #thanksButton {
+    margin: 10px auto 10px auto;
+    width: 200px;
+    padding: 0px;
+    background-color: #0CB863;
+    color: white;
+    height: 50px;
+    font-size: 11pt;
+    text-transform: none;
+  }
+
+  #thanksButton:hover {
+    background-color: #09A459;
+    -webkit-transition: background-color 0.2s ease-in-out;
+    -moz-transition: background-color 0.2s ease-in-out;
+    -ms-transition: background-color 0.2s ease-in-out;
+    -o-transition: background-color 0.2s ease-in-out;
+    transition: background-color 0.2s ease-in-out;
+  }
+  </style>
+</head>
+<body>
+  <% include ../snippets/navbar %>
+  <div class="main">
+    <section class="hero">
+      <h3>Twitter Promo</h3>
+      <h5>Thanks for helping spread the word about RandomAPI! We really appreciate it!</h5>
+      <p>When you have finished tweeting, please provide the username of your Twitter account</p>
+      <p style="height: 75px" id="result"></p>
+      <div id="verify">
+        <input type="text" id="twitterhandle" placeholder="Twitter Username" autofocus><br>
+        <input type="submit" id="twittersubmit" value="Verify tweet">
+      </div>
+      <div id="thanks">
+        <input type="button" id="thanksButton" onClick="window.location.href='twitterpromosuccess'" value="Back to your Dashboard">
+      </div>
+    </section>
+  </div>
+  <% include ../snippets/footer %>
+  <script src="js/twitterpromo.js"></script>
+</body>
+</html>

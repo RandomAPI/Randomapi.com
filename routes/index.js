@@ -174,4 +174,54 @@ router.post('/register', (req, res, next) => {
   }
 });
 
+router.get('/twitterpromo', (req, res, next) => {
+  if (req.session.user.tierID !== 1) return res.redirect(baseURL + '/');
+
+  res.render('twitterpromo', _.merge(defaultVars, {title: 'Twitter Promo'}));
+});
+
+router.get('/twitterpromosuccess', (req, res, next) => {
+  if (req.session.subscription.plan !== 10) return res.redirect(baseURL + '/');
+
+  req.flash('info', `Your account was upgraded successfully to the Standard tier!`);
+  res.redirect(baseURL + '/');
+});
+
+router.post('/twitterpromo', (req, res, next) => {
+  if (req.session.user.tierID !== 1) return res.redirect(baseURL + '/');
+
+  request.get('https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=' + req.body.username, {
+    'auth': {
+      'bearer': settings.general.twitterPromoBearer
+    }
+  }, (err, resp, body) => {
+    let done = false;
+    body = JSON.parse(body);
+    if (err || !Array.isArray(body) || body.length === 0) return res.sendStatus(401);
+
+    let total = 0
+    body.forEach(tweet => {
+      if (tweet.text.includes('https://t.co/03C9JGt5dI')) {
+        let time = ~~((new Date().getTime() - new Date(tweet.created_at).getTime())/1000);
+        if (time < 3600) {
+          done = true;
+
+          Subscription.update(req.session.user.id, {
+            plan: 10
+          }).then(() => {
+            logger(`${req.session.user.username} just upgraded to the Standard tier via Twitter Promo!`);
+            res.sendStatus(200);
+          });
+        }
+      }
+
+      total++;
+
+      if (total === body.length && !done) {
+        res.sendStatus(401);
+      }
+    });
+  });
+});
+
 module.exports = router;

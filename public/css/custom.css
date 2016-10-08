@@ -900,3 +900,11 @@ input:read-only {
 .noclicky a:hover {
     background-color: red !important;
 }
+
+#promote {
+  margin-top: 10px;
+}
+
+#twitterhandle {
+  text-align: center;
+}
