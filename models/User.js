@@ -51,6 +51,13 @@ module.exports = {
       });
     });
   },
+  twitterUsed(twitterPromo) {
+    return new Promise((resolve, reject) => {
+      db.query('SELECT * FROM `user` WHERE ?', {twitterPromo}, (err, data) => {
+        err ? reject(err) : resolve(data.length !== 0);
+      });
+    });
+  },
   validPass(password, hash) {
     return bcrypt.compareSync(password, hash);
   },

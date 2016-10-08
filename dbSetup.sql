@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Oct 05, 2016 at 09:44 PM
+-- Generation Time: Oct 08, 2016 at 03:39 AM
 -- Server version: 5.7.15
 -- PHP Version: 5.6.24
 
@@ -241,7 +241,8 @@ CREATE TABLE `user` (
   `timezone` double(3,1) NOT NULL,
   `results` int(11) NOT NULL DEFAULT '0',
   `lifetime` int(11) NOT NULL DEFAULT '0',
-  `referrer` text COLLATE utf8_unicode_ci
+  `referrer` text COLLATE utf8_unicode_ci,
+  `twitterPromo` varchar(16) COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --

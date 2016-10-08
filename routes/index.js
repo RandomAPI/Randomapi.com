@@ -4,6 +4,7 @@ const router  = express.Router();
 const logger  = require('../utils').logger;
 const stripe  = require('../utils').stripe;
 const redis   = require('../utils').redis;
+const async   = require('async');
 const moment  = require('moment');
 const request = require('request');
 const settings     = require('../utils').settings;
@@ -188,31 +189,41 @@ router.get('/twitterpromosuccess', (req, res, next) => {
 });
 
 router.post('/twitterpromo', (req, res, next) => {
+  let username = req.body.username;
   if (req.session.user.tierID !== 1) return res.redirect(baseURL + '/');
 
-  // Make sure user's account is at least a day old
-  request.get('https://api.twitter.com/1.1/users/lookup.json?screen_name=' + req.body.username, {
-    'auth': {
-      'bearer': settings.general.twitterPromoBearer
-    }
-  }, (err, resp, body) => {
+  async.series([
+    cb => {
+      // Make sure Twitter account hasn't been used with another account
+      User.twitterUsed(username).then(used => {
+        if (used) cb("already_used_twitter");
+        else cb(null);
+      });
+    },
 
-    body = JSON.parse(body);
+    cb => {
+      // Make sure user's account is at least a day old
+      request.get('https://api.twitter.com/1.1/users/lookup.json?screen_name=' + username, {
+        'auth': {
+          'bearer': settings.general.twitterPromoBearer
+        }
+      }, (err, resp, body) => {
 
-    // Account doesn't exist
-    if (err || !Array.isArray(body) || body.length === 0) return res.sendStatus(401);
+        body = JSON.parse(body);
 
+        // Account doesn't exist
+        if (err || !Array.isArray(body) || body.length === 0) return cb("account_doesn't_exist");
 
-    // 1 day
-    let time = ~~((new Date().getTime() - new Date(body[0].created_at).getTime())/1000);
-    if (time < 86400) {
-      done = true;
-      return res.status(401).send(String(time));
+        // 1 day
+        let time = ~~((new Date().getTime() - new Date(body[0].created_at).getTime())/1000);
+        if (time < 86400) cb("too_new");
+        else cb(null);
+      });
+    },
 
-    } else {
-
+    cb => {
       // Get tweets from user's timeline
-      request.get('https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=' + req.body.username, {
+      request.get('https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=' + username, {
         'auth': {
           'bearer': settings.general.twitterPromoBearer
         }
@@ -222,22 +233,26 @@ router.post('/twitterpromo', (req, res, next) => {
         let total = 0
 
         // No tweets or some other error
-        if (err || !Array.isArray(body) || body.length === 0) return res.sendStatus(401);
+        if (err || !Array.isArray(body) || body.length === 0) return cb("no_tweets");
 
         body.forEach(tweet => {
+          if (done) return;
 
           if (tweet.entities.urls.some(url => url.display_url === 'beta.randomapi.com')) {
             let time = ~~((new Date().getTime() - new Date(tweet.created_at).getTime())/1000);
 
             // Make sure within an hour
-            if (time < 60) {
+            if (time < 3600) {
               done = true;
 
-              Subscription.update(req.session.user.id, {
-                plan: 10
-              }).then(() => {
-                logger(`${req.session.user.username} just upgraded to the Standard tier via Twitter Promo!`);
-                res.sendStatus(200);
+              User.update({twitterPromo: username}, req.session.user.username).then(() => {
+                Subscription.update(req.session.user.id, {
+                  plan: 10
+                }).then(() => {
+                  logger(`${req.session.user.username} just upgraded to the Standard tier via Twitter Promo!`);
+
+                  return cb(null);
+                });
               });
             }
           }
@@ -245,11 +260,26 @@ router.post('/twitterpromo', (req, res, next) => {
           total++;
 
           if (total === body.length && !done) {
-            res.sendStatus(401);
+            return cb("no_tweet_found");
           }
         });
       });
     }
+  ],
+  err => {
+    switch(err) {
+      case null:
+        res.sendStatus(200);
+        break;
+
+      case "too_new":
+      case "no_tweet_found":
+      case "account_doesn't_exist":
+      case "already_used_twitter":
+      default:
+        res.status(401).send(err);
+        break;
+    };
   });
 });
 

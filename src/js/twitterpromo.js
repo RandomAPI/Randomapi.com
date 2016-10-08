@@ -16,6 +16,7 @@ $(() => {
   });
 
   function verify() {
+    clearResult();
     if (input.val() === '') return;
 
     disable();
@@ -29,15 +30,26 @@ $(() => {
         $("#thanks").css('display', 'block');
       })
       .fail((xhr, status, error) => {
-        if (xhr.responseText !== "Unauthorized") {
-          result.html("Your Twitter account seems a little too new 😕<br>Please tweet on a legit account.");
-          result.css("color", "red");
-          enable();
-        } else {
-          result.html("Sorry, we couldn't find your tweet. Please make sure that you typed<br>your Twitter username properly and that you've tweeted within the last hour.");
-          result.css("color", "red");
-          enable();
-        }
+        switch(xhr.responseText) {
+          case "too_new":
+            result.html("Your Twitter account seems a little too new 😕<br>Please tweet on a legit account.");
+            result.css("color", "red");
+            break;
+          case "account_doesn't_exist":
+            result.html("The provided Twitter username doesn't exist.<br>Please make sure that you typed your Twitter username properly.");
+            result.css("color", "red");
+            break;
+          case "already_used_twitter":
+            result.html("This Twitter username has already been used to promote RandomAPI. Please be good 😕");
+            result.css("color", "red");
+            break;
+          case "no_tweet_found":
+          default:
+            result.html("Sorry, we couldn't find your tweet. Please make sure that you typed<br>your Twitter username properly and that you've tweeted within the last hour.");
+            result.css("color", "red");
+            break;
+        };
+        enable();
       });
   }
 
