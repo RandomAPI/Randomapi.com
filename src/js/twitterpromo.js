@@ -29,9 +29,15 @@ $(() => {
         $("#thanks").css('display', 'block');
       })
       .fail((xhr, status, error) => {
-        result.html("Sorry, we couldn't find your tweet. Please make sure that you typed<br>your Twitter username properly and that you've tweeted within the last hour.");
-        result.css("color", "red");
-        enable();
+        if (xhr.responseText !== "Unauthorized") {
+          result.html("Your Twitter account seems a little too new 😕<br>Please tweet on a legit account.");
+          result.css("color", "red");
+          enable();
+        } else {
+          result.html("Sorry, we couldn't find your tweet. Please make sure that you typed<br>your Twitter username properly and that you've tweeted within the last hour.");
+          result.css("color", "red");
+          enable();
+        }
       });
   }
 

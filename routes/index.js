@@ -190,37 +190,66 @@ router.get('/twitterpromosuccess', (req, res, next) => {
 router.post('/twitterpromo', (req, res, next) => {
   if (req.session.user.tierID !== 1) return res.redirect(baseURL + '/');
 
-  request.get('https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=' + req.body.username, {
+  // Make sure user's account is at least a day old
+  request.get('https://api.twitter.com/1.1/users/lookup.json?screen_name=' + req.body.username, {
     'auth': {
       'bearer': settings.general.twitterPromoBearer
     }
   }, (err, resp, body) => {
-    let done = false;
+
     body = JSON.parse(body);
+
+    // Account doesn't exist
     if (err || !Array.isArray(body) || body.length === 0) return res.sendStatus(401);
 
-    let total = 0
-    body.forEach(tweet => {
-      if (tweet.text.includes('https://t.co/03C9JGt5dI')) {
-        let time = ~~((new Date().getTime() - new Date(tweet.created_at).getTime())/1000);
-        if (time < 3600) {
-          done = true;
 
-          Subscription.update(req.session.user.id, {
-            plan: 10
-          }).then(() => {
-            logger(`${req.session.user.username} just upgraded to the Standard tier via Twitter Promo!`);
-            res.sendStatus(200);
-          });
+    // 1 day
+    let time = ~~((new Date().getTime() - new Date(body[0].created_at).getTime())/1000);
+    if (time < 86400) {
+      done = true;
+      return res.status(401).send(String(time));
+
+    } else {
+
+      // Get tweets from user's timeline
+      request.get('https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=' + req.body.username, {
+        'auth': {
+          'bearer': settings.general.twitterPromoBearer
         }
-      }
+      }, (err, resp, body) => {
+        let done = false;
+        body = JSON.parse(body);
+        let total = 0
 
-      total++;
+        // No tweets or some other error
+        if (err || !Array.isArray(body) || body.length === 0) return res.sendStatus(401);
 
-      if (total === body.length && !done) {
-        res.sendStatus(401);
-      }
-    });
+        body.forEach(tweet => {
+
+          if (tweet.entities.urls.some(url => url.display_url === 'beta.randomapi.com')) {
+            let time = ~~((new Date().getTime() - new Date(tweet.created_at).getTime())/1000);
+
+            // Make sure within an hour
+            if (time < 60) {
+              done = true;
+
+              Subscription.update(req.session.user.id, {
+                plan: 10
+              }).then(() => {
+                logger(`${req.session.user.username} just upgraded to the Standard tier via Twitter Promo!`);
+                res.sendStatus(200);
+              });
+            }
+          }
+
+          total++;
+
+          if (total === body.length && !done) {
+            res.sendStatus(401);
+          }
+        });
+      });
+    }
   });
 });
 
