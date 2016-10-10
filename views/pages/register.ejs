@@ -10,7 +10,8 @@
   <section class="register">
     <h4 class="title">Sign Up</h4>
     <form method="POST">
-      <input type="text" name="username" placeholder="username" maxlength="20" autofocus required>
+      <span class='red' id='usernameLimits'>Only 20 alphanumeric chars max please!</span><br>
+      <input type="text" id='usernameInput' name="username" placeholder="username" maxlength="20" autofocus required>
       <br>
       <input type="password" name="password" placeholder="password" required>
       <br>
@@ -55,5 +56,6 @@
     </form>
   </section>
   <% include ../snippets/footer %>
+  <script src="js/nameLimits.js"></script>
 </body>
 </html>

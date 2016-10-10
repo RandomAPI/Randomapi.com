@@ -12,7 +12,7 @@
     <div class="ten columns">
       <h3 id='mobileSubNavMenu'>View Lists <span id='mobileSubNavArrow' class=""></span></h3>
       <% include ../../snippets/mobilesubnav %>
-      <p><span class='<%= session.user.memory > session.tier.memory ? "red" : "green" %>'><%= filesize(session.user.memory) %></span> of <span class="green"><%= session.tier.memory === 0 ? 'unlimited' : filesize(session.tier.memory) %></span> used.</p>
+      <p><span class='<%= session.user.memory > session.tier.memory ? "red" : "green" %>'><%= filesize(session.user.memory) %></span> of <span class="green"><%= session.tier.memory === 0 ? 'unlimited' : filesize(session.tier.memory) %></span> used. - <a href="new/list"><span class='green'>Create new List</span></a></p>
       <table class="table table-striped">
         <thead>
           <tr>

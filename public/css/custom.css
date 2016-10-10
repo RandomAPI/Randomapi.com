@@ -1,6 +1,7 @@
 html {
   height: 100%;
   width: 100%;
+  overflow-x: hidden;
 }
 
 .navbarContainer {
@@ -225,12 +226,14 @@ section.tryitout h4 {
 }
 
 section.why {
+  position: absolute;
   clear: both;
-  margin: auto;
+  margin: 0 auto 50px auto;
+
 }
 
 section.why .main {
-  margin: auto;
+  margin: 15px auto auto auto;
   text-align: center;
 }
 
@@ -265,7 +268,7 @@ section.why #subtitle {
   width: 33%;
   padding-left: 5px;
   padding-right: 5px;
-  margin: 0 auto auto auto;
+  margin: 5px auto 5px auto;
 }
 
 .tripleTitle {
@@ -287,7 +290,7 @@ section.why #subtitle {
 }
 
 .readmore {
-  color: #ADADAD;
+  color: #8D8D8D;
   float: left;
   font-size: 11pt;
 }
@@ -343,6 +346,13 @@ section.why #subtitle {
   overflow-y: auto;
   border: #CECECE solid 1px;
   padding: 10px;
+}
+
+#newExample {
+  position: absolute;
+  margin-top: 5px;
+  margin-left: 10px;
+  margin-bottom: 0;
 }
 
 @media screen and (max-width: 1000px) {
@@ -417,7 +427,7 @@ section.why #subtitle {
   color: white !important;
 }
 
-#limits {
+#limits, #tagLimits, #usernameLimits {
   display: none;
 }
 
