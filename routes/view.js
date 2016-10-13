@@ -41,7 +41,7 @@ router.get('/api', (req, res, next) => {
 router.get('/list', (req, res, next) => {
   if (req.session.subscription.status !== 3) {
     List.getLists(req.session.user.id).then(lists => {
-      res.render('view/list', _.merge(defaultVars, {lists, title: 'View APIs'}));
+      res.render('view/list', _.merge(defaultVars, {lists, title: 'View Lists'}));
     });
   } else {
     if (req.session.subscription.status === 3) {

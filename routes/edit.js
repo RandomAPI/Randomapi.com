@@ -95,7 +95,7 @@ router.post('/api/:ref', (req, res, next) => {
 // list //
 router.get('/list/:ref', (req, res, next) => {
   List.getCond({ref: req.params.ref}).then(doc => {
-    res.render('edit/list', _.merge(defaultVars, {list: doc, title: `Editing list ${doc.name} [${doc.ref}]`}));
+    res.render('edit/list', _.merge(defaultVars, {list: doc, title: `Edit List ${doc.name} [${doc.ref}]`}));
   });
 });
 
