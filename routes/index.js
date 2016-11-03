@@ -238,7 +238,7 @@ router.post('/twitterpromo', (req, res, next) => {
         body.forEach(tweet => {
           if (done) return;
 
-          if (tweet.entities.urls.some(url => url.display_url === 'beta.randomapi.com')) {
+          if (tweet.entities.urls.some(url => url.display_url === 'randomapi.com')) {
             let time = ~~((new Date().getTime() - new Date(tweet.created_at).getTime())/1000);
 
             // Make sure within an hour
