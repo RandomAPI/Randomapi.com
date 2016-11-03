@@ -94,7 +94,7 @@ function randomEmail() {
 function newExample() {
   let samples = [
 `// Example of a random customer generator
-const faker = require('faker'); // Faker.js
+var faker = require('faker'); // Faker.js
 
 api.customer  = {
     id:    random.special(4, 8),
@@ -108,17 +108,17 @@ api.customer  = {
 };`,
 
 `// Example of a random user purchase invoice
-const moment = require('moment'); // moment.js to format dates
+var moment = require('moment'); // moment.js to format dates
 
 // Generate fake credit card numbers
-const cc = require('keith/Credit Card Generator/2');
+var cc = require('keith/Credit Card Generator/2');
 
 // User defined code to generate invoice numbers
 api.invoiceID = require('keith/invoice number generator/1')();
 api.date = moment().format('LLL');
 
 // Inline list of products to choose from
-let products = {
+var products = {
     milk: 229, eggs: 100, bread: 243, butter: 200,
     juice: 369, cereal: 312, poptarts: 371, sprite: 1077,
     mentos: 330, beer: 945, apple: 75, avocado: 85
@@ -127,9 +127,9 @@ let products = {
 api.itemsPurchased = random.numeric(1, 10);
 api.items = [];
 
-let total = 0;
-for (let i = 0; i < api.itemsPurchased; i++) {
-    let item = list(products);
+var total = 0;
+for (var i = 0; i < api.itemsPurchased; i++) {
+    var item = list(products);
     api.items.push(item);
     total += products[item];
 }
@@ -138,10 +138,10 @@ api.card  = cc('VISA').toString().match(/.{4}/g).join('-');
 api.total = \`$\${total/100}\`;`,
 
 `// Example of a random user generator
-const faker = require('faker'); // Faker.js library
+var faker = require('faker'); // Faker.js library
 
 // Custom user snippet to generate formatted phone numbers
-const phonenum = require('keith/phonenum/1');
+var phonenum = require('keith/phonenum/1');
 
 api.company  = faker.company.companyName();
 api.username = faker.internet.userName();
@@ -151,8 +151,8 @@ api.phone    = phonenum();
 api.cell     = phonenum(\`(\${list(['214', '469', '972'])}) xxx-xxxx\`);`,
 
 `// Geocaching API demo from http://blog.randomapi.com/geocaching-api-demo/
-const faker  = require('faker'); // Faker.js library
-const moment = require('moment');
+var faker  = require('faker'); // Faker.js library
+var moment = require('moment');
 
 api.name       = trailname();
 api.username   = faker.internet.userName();
@@ -164,31 +164,33 @@ api.terrain    = random.numeric(1, 5);
 api.size       = list(['mini', 'small', 'medium', 'big', 'large']);
 
 // Created 30 - 900 days ago
-let created = timestamp() - 86400 * random.numeric(30, 900);
+var created = timestamp() - 86400 * random.numeric(30, 900);
 
 // Moment accepts timestamps in milliseconds
 api.created = moment(created * 1000).format('LL');
 
 // Updated date will be before the present but after the creation date
-let updated = timestamp() - random.numeric(0, timestamp() - created);
+var updated = timestamp() - random.numeric(0, timestamp() - created);
 api.updated = moment(updated * 1000).format('LL');
 
 api.coords = \`\${faker.address.latitude()} \${faker.address.longitude()}\`;
 
 // Snippet code
 function trailname() {
-    let trails     = ["trail", "path", "route", "stream", "walkway", "beaten path", "footpath"]
-    let adjectives = ["dusty", "old", "scenic", "historic", "shady", "sunny"];
-    let colors     = ["red", "orange", "yellow", "green", "blue", "indigo", "violet"];
+    var trails     = ["trail", "path", "route", "stream", "walkway", "beaten path", "footpath"]
+    var adjectives = ["dusty", "old", "scenic", "historic", "shady", "sunny"];
+    var colors     = ["red", "orange", "yellow", "green", "blue", "indigo", "viovar"];
 
-    let combos = [
+    var combos = [
         [colors, trails],
         [adjectives, trails],
         [colors, adjectives, trails]
     ];
 
-    let trailName = "";
-    list(combos).forEach(part => trailName += " " + capitalize(list(part)));
+    var trailName = "";
+    list(combos).forEach(function(part) {
+      return trailName += " " + capitalize(list(part));
+    });
 
     return trailName.trim();
 
