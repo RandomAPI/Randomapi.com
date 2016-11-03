@@ -883,7 +883,7 @@ Generator.prototype.returnResults = function(err, output, logs, cb) {
     if (this.sole) json.results = json.results[0];
 
     if (this.format === 'yaml') {
-      cb(null, YAML.stringify(json, 4), 'yaml', logs);
+      cb(null, YAML.stringify(json, Infinity, 4), 'yaml', logs);
     } else if (this.format === 'xml') {
       cb(null, js2xmlparser('user', json), 'xml', logs);
     } else if (this.format === 'prettyjson' || this.format === 'pretty') {
