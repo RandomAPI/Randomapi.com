@@ -1,6 +1,6 @@
-const express  = require('express');
-const fs       = require('fs');
-const router   = express.Router();
+const express = require('express');
+const fs      = require('fs');
+const router  = express.Router();
 
 const API     = require('../models/API');
 const List    = require('../models/List');

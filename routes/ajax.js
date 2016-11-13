@@ -1,8 +1,8 @@
-const express   = require('express');
-const _         = require('lodash');
-const router    = express.Router();
-const logger    = require('../utils').logger;
-const settings  = require('../utils').settings;
+const express  = require('express');
+const _        = require('lodash');
+const router   = express.Router();
+const logger   = require('../utils').logger;
+const settings = require('../utils').settings;
 
 const Snippet = require('../models/Snippet');
 const Version = require('../models/Version');

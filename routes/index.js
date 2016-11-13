@@ -113,7 +113,7 @@ router.get('/register', (req, res, next) => {
 });
 
 router.get('/register/guest', (req, res, next) => {
-  req.flash('info', "Please create an account first before you upgrade to a subscription plan.");
+  req.flash('info', "Please create an account first before you upgrade to a plan.");
   res.redirect(baseURL + '/register');
 });
 
@@ -175,6 +175,7 @@ router.post('/register', (req, res, next) => {
   }
 });
 
+/*
 router.get('/twitterpromo', (req, res, next) => {
   if (req.session.user.tierID !== 1) return res.redirect(baseURL + '/');
 
@@ -282,5 +283,6 @@ router.post('/twitterpromo', (req, res, next) => {
     };
   });
 });
+*/
 
 module.exports = router;

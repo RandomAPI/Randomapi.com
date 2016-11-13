@@ -1,7 +1,7 @@
-const express  = require('express');
-const _        = require('lodash');
-const async    = require('async');
-const router   = express.Router();
+const express = require('express');
+const _       = require('lodash');
+const async   = require('async');
+const router  = express.Router();
 
 const API       = require('../models/API');
 const List      = require('../models/List');

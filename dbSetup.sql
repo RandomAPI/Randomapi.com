@@ -93,13 +93,13 @@ CREATE TABLE `plan` (
 INSERT INTO `plan` (`id`, `name`, `tier`, `price`) VALUES
 (1, 'free', 1, 0),
 (2, 'standard_beta', 2, 250),
-(3, 'standard', 2, 500),
+(3, 'standard', 2, 1000),
 (4, 'premium_beta', 3, 500),
-(5, 'premium', 3, 1000),
+(5, 'premium', 3, 2000),
 (6, 'standard_legacy', 2, 500),
 (7, 'premium_legacy', 3, 1000),
 (8, 'premium_beta_upgrade', 3, 250),
-(9, 'premium_upgrade', 3, 500),
+(9, 'premium_upgrade', 3, 1000),
 (10, 'standard_beta_promotion', 2, 0),
 (11, 'premium_beta_promotion_upgrade', 3, 500);
 

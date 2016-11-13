@@ -8,7 +8,6 @@
   <div class="main">
     <section class="hero">
       <h3>Choose from our 3 simple plans</h3>
-      <h5 id="discount">All paid plans 75% off during beta period.</h5>
     </section>
     <div class="pricingTable">
       <div class="card">
@@ -33,7 +32,7 @@
       </div>
       <div class="card">
         <div class="title" style="color: #056335">Standard</div>
-        <div class="pricing"><strike>$10.00</strike> <span id="discountPrice">$2.50</span></div>
+        <div class="pricing">$10.00</div>
         <div class="info">
           <ul>
             <li><span id="main">100,000</span> daily results</li>
@@ -47,19 +46,19 @@
             <li><span id="main">120/240/10</span> Cache settings <sup>2</sup></li>
             <li id='upgradeButton'>
               <form action="charge" method="POST">
-                <input type="hidden" name="price" value="250">
+                <input type="hidden" name="price" value="1000">
                 <script 
                   src="https://checkout.stripe.com/checkout.js" class="stripe-button"
                   data-key="<%=publishableKey%>"
-                  data-amount="250"
+                  data-amount="1000"
                   data-name="RandomAPI"
-                  data-description="RandomAPI Standard Tier (Beta)"
+                  data-description="RandomAPI Standard Tier"
                   data-image="https://s3.amazonaws.com/stripe-uploads/acct_102bx12y2KIUsl34merchant-icon-499777-logo.png"
                   data-locale="auto"
                   data-label="Upgrade"
                   data-zip-code="true">
                 </script>
-                <input type="hidden" name="plan" value="standard_beta">
+                <input type="hidden" name="plan" value="standard">
               </form>
             </li>
           </ul>
@@ -67,7 +66,7 @@
       </div>
       <div class="card">
         <div class="title" style="color: #0CB863">Premium</div>
-        <div class="pricing"><strike>$20.00</strike> <span id="discountPrice">$5.00</span></div>
+        <div class="pricing">$20.00</div>
         <div class="info">
           <ul>
             <li><span id="main">unlimited</span> daily results</li>
@@ -81,19 +80,19 @@
             <li><span id="main">240/480/20</span> Cache settings <sup>2</sup></li>
             <li id='upgradeButton'>
               <form action="/charge" method="POST">
-                <input type="hidden" name="price" value="500">
+                <input type="hidden" name="price" value="2000">
                 <script 
                   src="https://checkout.stripe.com/checkout.js" class="stripe-button"
                   data-key="<%=publishableKey%>"
-                  data-amount="500"
+                  data-amount="2000"
                   data-name="RandomAPI"
-                  data-description="RandomAPI Premium Tier (Beta)"
+                  data-description="RandomAPI Premium Tier"
                   data-image="https://s3.amazonaws.com/stripe-uploads/acct_102bx12y2KIUsl34merchant-icon-499777-logo.png"
                   data-locale="auto"
                   data-label="Upgrade"
                   data-zip-code="true">
                 </script>
-                <input type="hidden" name="plan" value="premium_beta">
+                <input type="hidden" name="plan" value="premium">
               </form>
             </li>
           </ul>
@@ -104,8 +103,6 @@
       <% include ../snippets/ads %>
     </div>
     <div class="disclaimers">
-      <p><br><b><span style="color: orange">Beta users</span></b>: These are the current prices and perks. If you purchase a plan during the beta period, it'll carry over when RandomAPI is released. Beta prices will most likely increase and perk values will <b>definitely</b> increase in the final version.</p>
-      <hr>
       Here be techno jargon<br>
       <sup>1</sup>: <span id='disclaimer'>API requests are queued into the generator with the least number of tasks. If there are many users of a tier currently using a generator, it may take a longer time for your results to be generated. Example: 100 tasks spread out over 5 generators gives each generator a load of 20 tasks while 100 tasks all in 1 generator would be significantly slower to receive results for since only 1 generator is doing all of the work. <b>tl;dr</b>: bigger numbers are better.</span><br><br>
       <sup>2</sup>: <span id='disclaimer'>If your API uses Lists/Snippets, their contents are cached in memory in order to speed up access times. 60/120/5 means 60 seconds TTL in local cache, 120 seconds TTL in redis cache, and the Generator has 5 MB of local cache. When you make your intial API request, it has to read in all of the List/Snippet data into memory from disk. This is a timely process, so caching solves this problem by making your list data available in memory until the list hasn't been accessed for X seconds. At that point, your list/snippet will be removed from the local cache and any request after that will either have to check the redis cache, or worst case, reread the data from disk again. <b>tl;dr</b>: bigger numbers are better.</span>
