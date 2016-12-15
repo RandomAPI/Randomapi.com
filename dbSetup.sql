@@ -93,13 +93,13 @@ CREATE TABLE `plan` (
 INSERT INTO `plan` (`id`, `name`, `tier`, `price`) VALUES
 (1, 'free', 1, 0),
 (2, 'standard_beta', 2, 250),
-(3, 'standard', 2, 1000),
+(3, 'standard', 2, 500),
 (4, 'premium_beta', 3, 500),
-(5, 'premium', 3, 2000),
+(5, 'premium', 3, 1000),
 (6, 'standard_legacy', 2, 500),
 (7, 'premium_legacy', 3, 1000),
 (8, 'premium_beta_upgrade', 3, 250),
-(9, 'premium_upgrade', 3, 1000),
+(9, 'premium_upgrade', 3, 500),
 (10, 'standard_beta_promotion', 2, 0),
 (11, 'premium_beta_promotion_upgrade', 3, 500);
 
@@ -197,9 +197,9 @@ CREATE TABLE `tier` (
 --
 
 INSERT INTO `tier` (`id`, `name`, `price`, `memory`, `results`, `per`, `apis`, `snippets`) VALUES
-(1, 'Free', '0.00', 262144, 1000, 10, 1, 5),
-(2, 'Standard', '2.50', 5242880, 100000, 500, 10, 25),
-(3, 'Premium', '5.00', 26214400, 0, 2500, 0, 0);
+(1, 'Free', '0.00', 262144, 500, 10, 1, 5),
+(2, 'Standard', '5.00', 5242880, 100000, 500, 10, 25),
+(3, 'Premium', '10.00', 26214400, 0, 2500, 0, 0);
 
 -- --------------------------------------------------------
 

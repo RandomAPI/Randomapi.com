@@ -15,7 +15,7 @@
         <div class="pricing">$0.00</div>
         <div class="info">
           <ul>
-            <li><span id="main">1,000</span> daily results</li>
+            <li><span id="main">500</span> daily results</li>
             <li><span id="main">10</span> results / request</li>
             <li><span id="main">256 KB</span> list data</li>
             <li><span id="main">1</span> API</li>
@@ -32,7 +32,7 @@
       </div>
       <div class="card">
         <div class="title" style="color: #056335">Standard</div>
-        <div class="pricing">$10.00</div>
+        <div class="pricing">$5.00</div>
         <div class="info">
           <ul>
             <li><span id="main">100,000</span> daily results</li>
@@ -46,11 +46,11 @@
             <li><span id="main">120/240/10</span> Cache settings <sup>2</sup></li>
             <li id='upgradeButton'>
               <form action="charge" method="POST">
-                <input type="hidden" name="price" value="1000">
+                <input type="hidden" name="price" value="500">
                 <script 
                   src="https://checkout.stripe.com/checkout.js" class="stripe-button"
                   data-key="<%=publishableKey%>"
-                  data-amount="1000"
+                  data-amount="500"
                   data-name="RandomAPI"
                   data-description="RandomAPI Standard Tier"
                   data-image="https://s3.amazonaws.com/stripe-uploads/acct_102bx12y2KIUsl34merchant-icon-499777-logo.png"
@@ -66,7 +66,7 @@
       </div>
       <div class="card">
         <div class="title" style="color: #0CB863">Premium</div>
-        <div class="pricing">$20.00</div>
+        <div class="pricing">$10.00</div>
         <div class="info">
           <ul>
             <li><span id="main">unlimited</span> daily results</li>
@@ -80,11 +80,11 @@
             <li><span id="main">240/480/20</span> Cache settings <sup>2</sup></li>
             <li id='upgradeButton'>
               <form action="/charge" method="POST">
-                <input type="hidden" name="price" value="2000">
+                <input type="hidden" name="price" value="1000">
                 <script 
                   src="https://checkout.stripe.com/checkout.js" class="stripe-button"
                   data-key="<%=publishableKey%>"
-                  data-amount="2000"
+                  data-amount="1000"
                   data-name="RandomAPI"
                   data-description="RandomAPI Premium Tier"
                   data-image="https://s3.amazonaws.com/stripe-uploads/acct_102bx12y2KIUsl34merchant-icon-499777-logo.png"

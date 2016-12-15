@@ -43,11 +43,11 @@ if (session.user !== undefined && session.user.tierName === 'Free') {
   upgrade = "settings/subscription";
 }
 %>
-<a href="" class="freeLogo invisible"><h3>RandomAPI<span id="beta">Beta</span></h3></a>
+<a href="" class="freeLogo invisible"><h3>RandomAPI</h3></a>
 
 <div class="navbarContainer">
   <div id="navbar">
-    <a href="" class="navLogo"><h3>RandomAPI<span id="beta">Beta</span></h3></a>
+    <a href="" class="navLogo"><h3>RandomAPI</h3></a>
     <div class="nav">
       <ul>
         <% if (session.loggedin === true) { %>
@@ -73,7 +73,7 @@ if (session.user !== undefined && session.user.tierName === 'Free') {
 <div class="mobileNav">
   <button class="toggleButton"></button>
   <div class="mobileMenu">
-      <a href=""><h3>RandomAPI<span id="beta">Beta</span></h3></a>
+      <a href=""><h3>RandomAPI</h3></a>
     <% if (session.loggedin === true) { %>
       <a href="">Home</a>
       <a href="<%= upgrade %>">Upgrade</a>
