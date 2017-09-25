@@ -11,6 +11,7 @@ const Promise      = require('bluebird').Promise;
 const mersenne     = new (require('mersenne-twister'));
 const _            = require('lodash');
 const numeral      = require('numeral')
+const esprima      = require('esprima');
 const logger       = require('../../utils').logger;
 const redis        = require('../../utils').redis;
 const settings     = require('../../utils').settings;
@@ -345,7 +346,6 @@ Generator.prototype.generate = function(cb) {
 
   // Replaces requires with the src code so that they can run in sandbox
   this.updateRequires().then(() => {
-
     try {
       if (this.mode !== 'snippet') {
         this.sandBox = new vm.Script(`
@@ -373,6 +373,10 @@ ${this.src}
           })();
           function getVar(key) {
             return key in _APIgetVars ? _APIgetVars[key] : null;
+          }
+          function _APIeval(src) {
+            if (typeof src === "string") return eval(src);
+            else return src
           }
         `);
       } else {
@@ -414,6 +418,10 @@ if (_APISnippetKeys.length === 0) {
           })();
           function getVar(key) {
             return key in _APIgetVars ? _APIgetVars[key] : null;
+          }
+          function _APIeval(src) {
+            if (typeof src === "string") return eval(src);
+            else return src
           }
         `);
       }
@@ -632,7 +640,7 @@ Generator.prototype.availableFuncs = function() {
         };
         return self.globs[lib];
       } else {
-        throw new Error(`Global snippet ${lib} was not found`);
+        return self.require(lib);
       }
     }
   };
@@ -666,7 +674,16 @@ Generator.prototype.availableFuncs = function() {
 Generator.prototype.require = function(signature) {
   if (signature === undefined || signature.length === 0) {
     throw new Error(`No snippet signature provided`);
-    return;
+    return undefined;
+  }
+
+  if (signature.indexOf('~') === 0) {
+    if (this.user.id !== -1) {
+      signature = this.user.username + '/' + signature.slice(1);
+    } else {
+      throw("Shorthand user requires can not be used in demo mode.");
+      return undefined;
+    }
   }
 
   let tmp = signature.split('/');
@@ -688,7 +705,8 @@ Generator.prototype.require = function(signature) {
       this.cache.snippet.objects[obj].lastUsed = new Date().getTime();
       return this.cache.snippet.objects[obj].snippet;
     } else {
-      throw new Error(`Snippet signature ${obj} wasn't recognized`);
+      throw new Error(`Snippet signature ${signature} wasn't recognized`);
+      return undefined;
     }
   } else {
     process.send({
@@ -704,15 +722,18 @@ Generator.prototype.require = function(signature) {
       // Generic unrecognized snippet
       if (result.status === false && result.msg === undefined) {
         done = true;
-        throw new Error(`Snippet signature ${obj} wasn't recognized`);
+        throw new Error(`Snippet signature ${signature} wasn't recognized`);
+        return undefined;
 
       } else if (result.msg === "missing_version") {
         done = true;
         throw new Error(`Version number is missing`);
+        return undefined
 
       } else if (result.msg === "invalid_version") {
         done = true;
         throw new Error(`Invalid version number`);
+        return undefined
 
       } else if (!done) {
         redis.get(`snippet:${obj}:contents`, (err, snippet) => {
@@ -796,38 +817,17 @@ Generator.prototype.emptySnippetCache = function() {
 
 // Only global snippets can be required in other snippets
 Generator.prototype.updateRequires = function() {
+  let self = this;
 
   return new Promise((resolve, reject) => {
-    // Don't let snippets include other snippets
-    if (this.mode === 'snippet') resolve();
-    else {
-      let rawMatches = this.src.match(/require\((?:["'`]([A-z0-9]*\/[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]*(?:\/[0-9]*?)?|~.[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]*(?:\/[0-9]*?)?)["'`]\))/g);
-      let index = 0;
-
-      try {
-        // There are matches
-        if (rawMatches !== null) {
-          let reg = new RegExp(/require\((?:["'`]([A-z0-9]*\/[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]*(?:\/[0-9]*?)?|~.[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]*(?:\/[0-9]*?)?)["'`]\))/g);
-          let match = reg.exec(this.src);
-          while (match !== null) {
-            let result = (match[1] || match[2]).trim();
-            if (result.indexOf('~') === 0) {
-              if (this.user.id !== -1) {
-                result = this.user.username + '/' + result.slice(1);
-              } else {
-                reject("Shorthand user requires can not be used in demo mode.");
-                return;
-              }
-            }
-            this.src = this.src.replace(rawMatches[index++], this.require(result));
-            match = reg.exec(this.src);
-          }
-        }
-      } catch(e) {
-        reject(e);
+    let requireCount = 0;
+    esprima.parse(this.src, {comment: true, range: true}, (node, meta) => {
+      if (node.type === "CallExpression" && node.callee.name === "require" && self.globRequires.indexOf(node.arguments[0].value) === -1) {
+        this.src = this.src.slice(0, node.range[0]+requireCount*10) + "_APIeval(" + this.src.slice(node.range[0]+requireCount*10, node.range[1]+requireCount*10) + ")" + this.src.slice(node.range[1]+requireCount*10);
+        requireCount++;
       }
-      resolve();
-    }
+    });
+    resolve();
   });
 };
 
@@ -917,7 +917,7 @@ Generator.prototype.returnResults = function(err, output, logs, cb) {
       parseStack = err.stack.split('\n').slice(0, 2).join('').match(/evalmachine.*?:(\d+)(?::(\d+))?/);
       let line = parseStack[1]-14;
       let col  = parseStack[2];
-      if (line <= 0) {
+      if (line < 0) {
         err.error = "SyntaxError: Unexpected end of input";
       }
 
