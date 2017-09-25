@@ -95,6 +95,7 @@ router.post('/sync', (req, res, next) => {
 
               // Convert require signatures to refs
               getRequireRefs(user, _.uniq(requires), requires => {
+                if (typeof requires === "string") return cb(requires);
                 async.each(requires, (require, callback) => {
                   requireSize += fs.statSync(`./data/snippets/${require.snippetID}-${require.version}.snippet`)["size"];
                   callback();
@@ -116,6 +117,7 @@ router.post('/sync', (req, res, next) => {
           });
         }
       ], (err, data) => {
+        if (err) return res.status(404).send(err);
 
         // Send to user results
         var obj = {}
@@ -247,13 +249,15 @@ function getRequireRefs(user, raw, done) {
     // private and no version num
     } else {
       Snippet.getCond({username: split[0], name: split[1]}).then(snip => {
+        if (snip === null) return cb('One of your APIs has an invalid snippet reference and sync cannot be completed.');
         Version.getVersion(snip.ref, 1).then(ver => {
           refs.push(_.merge(snip, ver, {username: split[0]}));
           cb();
         });
       });
     }
-  }, () => {
-    done(refs);
+  }, (err) => {
+    if (err) done (err);
+    else done(refs);
   });
 }
