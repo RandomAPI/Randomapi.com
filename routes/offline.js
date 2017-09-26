@@ -83,23 +83,42 @@ router.post('/sync', (req, res, next) => {
         // Fetch APIs and extract requires from APIs
         cb => {
           API.getAPIs(user.id).then(apis => {
-            apis = apis || [];
-            let requires = [];
-            let apiSize = 0;
-            let requireSize = 0;
+            Snippet.getCond({owner: user.id}).then(requires => {
+              apis = apis || [];
+              requires = requires || [];
+              if (!Array.isArray(requires)) requires = [requires];
+              let snippets = [];
+              console.log(requires);
+              let apiSize = 0;
+              let requireSize = 0;
 
-            async.each(apis, (api, callback) => {
-              apiSize += fs.statSync(`./data/apis/${api.id}.api`)["size"];
-              extractRequires(requires, user, api, callback);
-            }, () => {
-
-              // Convert require signatures to refs
-              getRequireRefs(user, _.uniq(requires), requires => {
-                if (typeof requires === "string") return cb(requires);
+              async.each(apis, (api, callback) => {
+                apiSize += fs.statSync(`./data/apis/${api.id}.api`)["size"];
+                callback();
+              }, () => {
                 async.each(requires, (require, callback) => {
-                  requireSize += fs.statSync(`./data/snippets/${require.snippetID}-${require.version}.snippet`)["size"];
-                  callback();
-                }, () => cb(null, {apis, apiSize, requires, requireSize}));
+                  Version.getVersions(require.ref).then(versions => {
+                    versions.forEach(version => {
+                      console.log(version);
+
+                      requireSize += fs.statSync(`./data/snippets/${version.snippetID}-${version.version}.snippet`)["size"];
+                      snippets.push({
+                        id: version.id,
+                        ref: require.ref,
+                        name: require.name,
+                        created: version.created,
+                        modified: version.modified,
+                        description: version.description,
+                        published: version.published,
+                        owner: require.owner,
+                        snippetID: version.snippetID,
+                        version: version.version,
+                        username: user.username
+                      });
+                    });
+                    callback();
+                  });
+                }, () => cb(null, {apis, apiSize, snippets, requireSize}));
               });
             });
           });
@@ -122,7 +141,7 @@ router.post('/sync', (req, res, next) => {
         // Send to user results
         var obj = {}
         obj.apis = data[0].apis;
-        obj.requires = data[0].requires;
+        obj.requires = data[0].snippets;
         obj.apiSize = filesize(data[0].apiSize);
         obj.requireSize = filesize(data[0].requireSize);
         obj.lists = data[1].lists;
@@ -199,33 +218,6 @@ router.all('/?', (req, res, next) => {
 
 module.exports = router;
 
-
-function extractRequires(requires, user, api, callback) {
-  let src = fs.readFileSync(`./data/apis/${api.id}.api`, 'utf8');
-
-  let rawMatches = src.match(/require\((?:["'`]([A-z0-9]*\/[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]*(?:\/[0-9]*?)?|~.[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]*(?:\/[0-9]*?)?)["'`]\))/g);
-  let index = 0;
-
-  try {
-    // There are matches
-    if (rawMatches !== null) {
-      let reg = new RegExp(/require\((?:["'`]([A-z0-9]*\/[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]*(?:\/[0-9]*?)?|~.[a-zA-Z0-9 _\-\.+\[\]\{\}\(\)]*(?:\/[0-9]*?)?)["'`]\))/g);
-      let match = reg.exec(src);
-
-      while (match !== null) {
-        let result = (match[1] || match[2]).trim();
-        if (result.indexOf('~') === 0) {
-          result = user.username + '/' + result.slice(1);
-        }
-        requires.push(result);
-        match = reg.exec(src);
-      }
-    }
-  } catch(e) {
-    console.log(e);
-  }
-  callback(null);
-}
 
 function getRequireRefs(user, raw, done) {
   let refs = [];
