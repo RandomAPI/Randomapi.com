@@ -88,7 +88,6 @@ router.post('/sync', (req, res, next) => {
               requires = requires || [];
               if (!Array.isArray(requires)) requires = [requires];
               let snippets = [];
-              console.log(requires);
               let apiSize = 0;
               let requireSize = 0;
 
@@ -99,7 +98,6 @@ router.post('/sync', (req, res, next) => {
                 async.each(requires, (require, callback) => {
                   Version.getVersions(require.ref).then(versions => {
                     versions.forEach(version => {
-                      console.log(version);
 
                       requireSize += fs.statSync(`./data/snippets/${version.snippetID}-${version.version}.snippet`)["size"];
                       snippets.push({
